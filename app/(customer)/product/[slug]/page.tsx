@@ -22,6 +22,8 @@ import {
   Sparkles,
 } from 'lucide-react';
 
+import { brandConfig } from '@/config';
+
 export default function ProductDetailPage() {
   const params = useParams();
   const slug = params['slug'] as string;
@@ -218,7 +220,7 @@ export default function ProductDetailPage() {
             </div>
             <div className="p-3 rounded-xl bg-slate-50 flex justify-between">
               <span className="font-semibold text-slate-500">Brand</span>
-              <span className="font-bold text-slate-900">{product.brand?.name || 'Vistora Private Label'}</span>
+              <span className="font-bold text-slate-900">{product.brand?.name || `${brandConfig.name} Label`}</span>
             </div>
             <div className="p-3 rounded-xl bg-slate-50 flex justify-between">
               <span className="font-semibold text-slate-500">SKU Number</span>

@@ -7,6 +7,8 @@ import { QuickViewModal } from './quick-view-modal';
 import { Heart, Eye, Sparkles, Star } from 'lucide-react';
 import { useWishlistMutations } from '@/hooks/use-shopping';
 
+import { brandConfig } from '@/config';
+
 interface ProductCardProps {
   product: Product;
 }
@@ -141,11 +143,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
             <div className="flex items-baseline gap-1.5">
               <span className="text-base font-black text-slate-900 dark:text-white">
-                ${priceNum.toFixed(2)}
+                {brandConfig.currency.symbol}{priceNum.toFixed(2)}
               </span>
               {compareAtPriceNum && compareAtPriceNum > priceNum && (
                 <span className="text-xs font-semibold text-slate-400 line-through">
-                  ${compareAtPriceNum.toFixed(2)}
+                  {brandConfig.currency.symbol}{compareAtPriceNum.toFixed(2)}
                 </span>
               )}
             </div>

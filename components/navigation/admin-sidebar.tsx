@@ -26,6 +26,8 @@ import {
   Sparkles
 } from 'lucide-react';
 
+import { brandConfig } from '@/config';
+
 export interface AdminNavItem {
   label: string;
   href: string;
@@ -100,12 +102,12 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
       <div className="h-16 px-4 flex items-center justify-between border-b border-slate-800 shrink-0">
         <Link href="/admin/dashboard" className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-amber-400 via-indigo-500 to-purple-600 text-white flex items-center justify-center font-black text-lg shadow-md shrink-0">
-            V
+            {brandConfig.logoLetter}
           </div>
           {!collapsed && (
             <div className="flex flex-col min-w-0">
               <span className="font-extrabold text-sm tracking-tight text-white truncate">
-                VISTORA ADMIN
+                {brandConfig.shortName} ADMIN
               </span>
               <span className="text-[9px] font-bold text-amber-400 uppercase tracking-widest leading-none">
                 Enterprise Portal

@@ -8,13 +8,15 @@ import { SearchBar } from '@/components/layout/search-bar';
 import { UserMenu } from '@/components/layout/user-menu';
 import { Heart, ShoppingBag, Sparkles } from 'lucide-react';
 
+import { brandConfig } from '@/config';
+
 export const CustomerHeader: React.FC = () => {
   return (
     <header className="sticky top-0 z-40 w-full bg-white/90 backdrop-blur-md border-b border-slate-200/80 shadow-xs transition-all duration-200">
       {/* Top Banner Notice */}
       <div className="bg-slate-900 text-white text-[11px] py-1.5 px-4 text-center font-medium flex items-center justify-center gap-2">
         <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-        <span>Discover New Season Collections — Enjoy Free Express Shipping on Orders Over $150</span>
+        <span>Discover New Season Collections — Enjoy Free Express Shipping on Orders Over {brandConfig.currency.symbol}150</span>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -24,11 +26,11 @@ export const CustomerHeader: React.FC = () => {
             <MobileCustomerNav />
             <Link href="/" className="flex items-center gap-2.5 group">
               <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 text-white flex items-center justify-center font-black text-lg tracking-wider shadow-md group-hover:scale-105 transition-transform duration-200">
-                V
+                {brandConfig.logoLetter}
               </div>
               <div className="flex flex-col">
                 <span className="font-extrabold text-base tracking-tight text-slate-900 leading-none group-hover:text-indigo-600 transition-colors">
-                  VISTORA
+                  {brandConfig.shortName}
                 </span>
                 <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400 leading-none mt-0.5">
                   COMMERCE

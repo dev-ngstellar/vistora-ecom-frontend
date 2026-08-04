@@ -2,13 +2,13 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { 
-  Sparkles, 
-  ArrowLeft, 
-  Clock, 
-  Construction, 
-  Layers, 
-  CheckCircle2, 
+import {
+  Sparkles,
+  ArrowLeft,
+  Clock,
+  Construction,
+  Layers,
+  CheckCircle2,
   ShieldAlert,
   ChevronRight,
   Compass
@@ -42,15 +42,15 @@ export const PlaceholderPage: React.FC<PlaceholderPageProps> = ({
 
   const defaultLinks: QuickLink[] = isAdmin
     ? [
-        { label: 'Go to Dashboard', href: '/admin/dashboard', primary: true },
-        { label: 'View Products', href: '/admin/products' },
-        { label: 'View Orders', href: '/admin/orders' },
-      ]
+      { label: 'Go to Dashboard', href: '/admin/dashboard', primary: true },
+      { label: 'View Products', href: '/admin/products' },
+      { label: 'View Orders', href: '/admin/orders' },
+    ]
     : [
-        { label: 'Back to Home', href: '/', primary: true },
-        { label: 'Browse Catalog', href: '/shop' },
-        { label: 'View Cart', href: '/cart' },
-      ];
+      { label: 'Back to Home', href: '/', primary: true },
+      { label: 'Browse Catalog', href: '/shop' },
+      { label: 'View Cart', href: '/cart' },
+    ];
 
   const linksToDisplay = quickLinks || defaultLinks;
 
@@ -60,23 +60,21 @@ export const PlaceholderPage: React.FC<PlaceholderPageProps> = ({
       <div className="w-full max-w-3xl overflow-hidden rounded-3xl bg-white shadow-xl border border-slate-100 dark:border-slate-800 transition-all duration-300 hover:shadow-2xl">
         {/* Banner top */}
         <div
-          className={`px-8 py-10 text-white relative overflow-hidden ${
-            isAdmin
+          className={`px-8 py-10 text-white relative overflow-hidden ${isAdmin
               ? 'bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900'
               : 'bg-gradient-to-r from-indigo-900 via-purple-900 to-slate-900'
-          }`}
+            }`}
         >
           {/* Subtle decorative grid */}
           <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px]" />
-          
+
           <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center gap-3">
               <span
-                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider ${
-                  isAdmin
+                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider ${isAdmin
                     ? 'bg-amber-400/20 text-amber-300 border border-amber-400/30'
                     : 'bg-indigo-400/20 text-indigo-200 border border-indigo-400/30'
-                }`}
+                  }`}
               >
                 <Layers className="w-3.5 h-3.5" />
                 {module} Module
@@ -147,13 +145,12 @@ export const PlaceholderPage: React.FC<PlaceholderPageProps> = ({
                 <Link
                   key={idx}
                   href={link.href}
-                  className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
-                    link.primary
+                  className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${link.primary
                       ? isAdmin
                         ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-md shadow-indigo-200'
                         : 'bg-slate-900 text-white hover:bg-slate-800 shadow-md shadow-slate-300'
                       : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-300'
-                  }`}
+                    }`}
                 >
                   {link.primary && <ArrowLeft className="w-4 h-4" />}
                   {link.label}

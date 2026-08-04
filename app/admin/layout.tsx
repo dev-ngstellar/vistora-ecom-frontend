@@ -5,6 +5,8 @@ import { ProtectedRoute } from '@/components/protected-route';
 import { AdminSidebar } from '@/components/navigation/admin-sidebar';
 import { AdminHeader } from '@/components/navigation/admin-header';
 
+import { brandConfig } from '@/config';
+
 export default function AdminGlobalLayout({
   children,
 }: {
@@ -43,8 +45,8 @@ export default function AdminGlobalLayout({
 
           {/* Admin Footer */}
           <footer className="py-4 px-6 border-t border-slate-200 bg-white text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-2">
-            <span>© {new Date().getFullYear()} Vistora Commerce Administration Portal</span>
-            <span className="text-[11px] font-mono text-slate-400">v1.0.0-sprint2</span>
+            <span>© {new Date().getFullYear()} {brandConfig.name} Administration Portal</span>
+            <span className="text-[11px] font-mono text-slate-400">v1.0.0</span>
           </footer>
         </div>
       </div>

@@ -16,13 +16,15 @@ import {
   Linkedin
 } from 'lucide-react';
 
+import { brandConfig, navigationConfig, socialConfig } from '@/config';
+
 export const CustomerFooter: React.FC = () => {
   const [email, setEmail] = useState('');
 
   const handleSubscribe = (e: React.FormEvent) => {
     e.preventDefault();
     if (email.trim()) {
-      toast.success('Thank you for subscribing to Vistora Commerce newsletter!');
+      toast.success(`Thank you for subscribing to ${brandConfig.name} newsletter!`);
       setEmail('');
     }
   };
@@ -38,7 +40,7 @@ export const CustomerFooter: React.FC = () => {
             </div>
             <div>
               <h4 className="text-xs font-bold uppercase tracking-wider text-slate-200">Express Delivery</h4>
-              <p className="text-xs text-slate-400 mt-0.5">Complimentary shipping on orders over $150</p>
+              <p className="text-xs text-slate-400 mt-0.5">Complimentary shipping on orders over {brandConfig.currency.symbol}150</p>
             </div>
           </div>
 
@@ -81,13 +83,13 @@ export const CustomerFooter: React.FC = () => {
           <div className="lg:col-span-2 space-y-4">
             <div className="flex items-center gap-2.5">
               <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-600 text-white flex items-center justify-center font-black text-lg shadow-md">
-                V
+                {brandConfig.logoLetter}
               </div>
-              <span className="font-extrabold text-lg tracking-tight">VISTORA COMMERCE</span>
+              <span className="font-extrabold text-lg tracking-tight">{brandConfig.name.toUpperCase()}</span>
             </div>
 
             <p className="text-xs text-slate-400 leading-relaxed max-w-sm">
-              Vistora Commerce is an enterprise-grade luxury fashion platform delivering curated apparel, footwear, and accessories crafted for timeless elegance.
+              {brandConfig.tagline}
             </p>
 
             <form onSubmit={handleSubscribe} className="pt-2">
@@ -112,51 +114,48 @@ export const CustomerFooter: React.FC = () => {
             </form>
           </div>
 
-          {/* Catalog & Shop Links */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-200">Catalog</h4>
-            <ul className="space-y-2 text-xs text-slate-400">
-              <li><Link href="/shop" className="hover:text-indigo-400 transition">Shop All</Link></li>
-              <li><Link href="/shop?category=women" className="hover:text-indigo-400 transition">Women's Couture</Link></li>
-              <li><Link href="/shop?category=men" className="hover:text-indigo-400 transition">Men's Apparel</Link></li>
-              <li><Link href="/shop?category=accessories" className="hover:text-indigo-400 transition">Luxury Accessories</Link></li>
-              <li><Link href="/wishlist" className="hover:text-indigo-400 transition">Saved Wishlist</Link></li>
-            </ul>
-          </div>
-
-          {/* Account Links */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-200">Customer Account</h4>
-            <ul className="space-y-2 text-xs text-slate-400">
-              <li><Link href="/profile" className="hover:text-indigo-400 transition">My Profile</Link></li>
-              <li><Link href="/orders" className="hover:text-indigo-400 transition">Order History</Link></li>
-              <li><Link href="/cart" className="hover:text-indigo-400 transition">View Shopping Cart</Link></li>
-              <li><Link href="/checkout" className="hover:text-indigo-400 transition">Checkout</Link></li>
-            </ul>
-          </div>
-
-          {/* Information Links */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-200">Company & Legal</h4>
-            <ul className="space-y-2 text-xs text-slate-400">
-              <li><Link href="/about" className="hover:text-indigo-400 transition">About Vistora</Link></li>
-              <li><Link href="/contact" className="hover:text-indigo-400 transition">Contact Us</Link></li>
-              <li><Link href="/faq" className="hover:text-indigo-400 transition">Help & FAQs</Link></li>
-              <li><Link href="/privacy-policy" className="hover:text-indigo-400 transition">Privacy Policy</Link></li>
-              <li><Link href="/terms" className="hover:text-indigo-400 transition">Terms of Service</Link></li>
-            </ul>
-          </div>
+          {/* Dynamic Footer Link Groups */}
+          {Object.entries(navigationConfig.footerGroups).map(([groupKey, group]) => (
+            <div key={groupKey} className="space-y-3">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-200">{group.title}</h4>
+              <ul className="space-y-2 text-xs text-slate-400">
+                {group.links.map((link) => (
+                  <li key={link.href}>
+                    <Link href={link.href} className="hover:text-indigo-400 transition">
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
       </div>
 
       {/* Bottom Copyright & Social */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-        <p>© {new Date().getFullYear()} Vistora Commerce, Inc. All rights reserved.</p>
+        <p>{brandConfig.copyright}</p>
         <div className="flex items-center space-x-4">
-          <a href="#" className="hover:text-indigo-400 transition" aria-label="Instagram"><Instagram className="w-4 h-4" /></a>
-          <a href="#" className="hover:text-indigo-400 transition" aria-label="Facebook"><Facebook className="w-4 h-4" /></a>
-          <a href="#" className="hover:text-indigo-400 transition" aria-label="Twitter"><Twitter className="w-4 h-4" /></a>
-          <a href="#" className="hover:text-indigo-400 transition" aria-label="LinkedIn"><Linkedin className="w-4 h-4" /></a>
+          {socialConfig.links.instagram && (
+            <a href={socialConfig.links.instagram} target="_blank" rel="noreferrer" className="hover:text-indigo-400 transition" aria-label="Instagram">
+              <Instagram className="w-4 h-4" />
+            </a>
+          )}
+          {socialConfig.links.facebook && (
+            <a href={socialConfig.links.facebook} target="_blank" rel="noreferrer" className="hover:text-indigo-400 transition" aria-label="Facebook">
+              <Facebook className="w-4 h-4" />
+            </a>
+          )}
+          {socialConfig.links.twitter && (
+            <a href={socialConfig.links.twitter} target="_blank" rel="noreferrer" className="hover:text-indigo-400 transition" aria-label="Twitter">
+              <Twitter className="w-4 h-4" />
+            </a>
+          )}
+          {socialConfig.links.linkedin && (
+            <a href={socialConfig.links.linkedin} target="_blank" rel="noreferrer" className="hover:text-indigo-400 transition" aria-label="LinkedIn">
+              <Linkedin className="w-4 h-4" />
+            </a>
+          )}
         </div>
       </div>
     </footer>

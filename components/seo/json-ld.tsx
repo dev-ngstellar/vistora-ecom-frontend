@@ -2,30 +2,29 @@
 
 import React from 'react';
 
+import { brandConfig, seoConfig, socialConfig } from '@/config';
+
 interface JsonLdProps {
   type?: 'Organization' | 'Product';
   data?: Record<string, any>;
 }
 
 export const JsonLd: React.FC<JsonLdProps> = ({ type = 'Organization', data }) => {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://vistoracommerce.com';
+  const baseUrl = seoConfig.siteUrl;
 
   const defaultOrgSchema = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
-    name: 'Vistora Commerce',
+    name: brandConfig.name,
     url: baseUrl,
     logo: `${baseUrl}/images/logo.png`,
-    sameAs: [
-      'https://instagram.com/vistoracommerce',
-      'https://facebook.com/vistoracommerce',
-    ],
+    sameAs: Object.values(socialConfig.links).filter(Boolean),
     contactPoint: {
       '@type': 'ContactPoint',
-      telephone: '+91-1800-200-9000',
+      telephone: seoConfig.jsonLdOrg.telephone,
       contactType: 'customer service',
-      areaServed: 'IN',
-      availableLanguage: ['English', 'Hindi'],
+      areaServed: seoConfig.jsonLdOrg.areaServed,
+      availableLanguage: seoConfig.jsonLdOrg.languages,
     },
   };
 
