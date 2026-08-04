@@ -412,7 +412,7 @@ export default function AdminUsersPage() {
       <Drawer
         title="Edit Staff Account Details"
         placement="right"
-        width={500}
+        size={500}
         onClose={() => setIsEditDrawerOpen(false)}
         open={isEditDrawerOpen}
         extra={
@@ -472,7 +472,7 @@ export default function AdminUsersPage() {
           )
         }
         placement="right"
-        width={580}
+        size={580}
         onClose={() => setIsProfileDrawerOpen(false)}
         open={isProfileDrawerOpen}
       >

@@ -185,9 +185,9 @@ export default function AdminCategoriesPage() {
         onCancel={() => setIsModalOpen(false)}
         onOk={() => form.submit()}
         confirmLoading={createCategory.isPending || updateCategory.isPending}
-        destroyOnClose
+        destroyOnHidden
       >
-        <Form form={form} layout="vertical" onFinish={handleFormSubmit} className="mt-4">
+        <Form form={form} layout="vertical" onFinish={handleFormSubmit} preserve={false} className="mt-4">
           <Form.Item
             name="name"
             label="Category Name"
@@ -241,7 +241,7 @@ export default function AdminCategoriesPage() {
         placement="right"
         onClose={() => setIsTreeDrawerOpen(false)}
         open={isTreeDrawerOpen}
-        width={400}
+        size={400}
       >
         {categoryTree && categoryTree.length > 0 ? (
           <Tree treeData={mapTreeData(categoryTree)} defaultExpandAll />

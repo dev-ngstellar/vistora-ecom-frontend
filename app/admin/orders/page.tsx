@@ -394,7 +394,7 @@ export default function AdminOrdersPage() {
           )
         }
         placement="right"
-        width={640}
+        size={640}
         onClose={() => setIsDetailDrawerOpen(false)}
         open={isDetailDrawerOpen}
         extra={

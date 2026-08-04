@@ -322,7 +322,7 @@ export default function AdminBannersPage() {
           </span>
         }
         placement="right"
-        width={580}
+        size={580}
         onClose={() => setIsModalOpen(false)}
         open={isModalOpen}
         extra={

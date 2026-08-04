@@ -152,7 +152,7 @@ export default function AdminCollectionsPage() {
         onCancel={() => setIsModalOpen(false)}
         onOk={() => form.submit()}
         confirmLoading={createCollection.isPending || updateCollection.isPending}
-        destroyOnClose
+        destroyOnHidden
       >
         <Form form={form} layout="vertical" onFinish={handleFormSubmit} className="mt-4">
           <Form.Item

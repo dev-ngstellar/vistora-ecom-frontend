@@ -357,7 +357,7 @@ export default function AdminCouponsPage() {
         onCancel={() => setIsModalOpen(false)}
         onOk={() => form.submit()}
         confirmLoading={createCoupon.isPending || updateCoupon.isPending}
-        destroyOnClose
+        destroyOnHidden
       >
         <Form form={form} layout="vertical" onFinish={handleFormSubmit} className="mt-4">
           <div className="grid grid-cols-2 gap-4">
@@ -460,7 +460,7 @@ export default function AdminCouponsPage() {
           )
         }
         placement="right"
-        width={540}
+        size={540}
         onClose={() => setIsUsageDrawerOpen(false)}
         open={isUsageDrawerOpen}
         loading={isDetailsLoading}

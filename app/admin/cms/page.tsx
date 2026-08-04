@@ -340,7 +340,7 @@ export default function AdminCMSPage() {
           </span>
         }
         placement="right"
-        width={720}
+        size={720}
         onClose={() => setIsDrawerOpen(false)}
         open={isDrawerOpen}
         extra={

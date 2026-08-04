@@ -329,7 +329,7 @@ export default function AdminReviewsPage() {
           )
         }
         placement="right"
-        width={560}
+        size={560}
         onClose={() => setIsReplyDrawerOpen(false)}
         open={isReplyDrawerOpen}
         loading={isDetailsLoading}

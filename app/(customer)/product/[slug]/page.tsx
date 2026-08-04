@@ -9,6 +9,7 @@ import { VariantSelector } from '@/components/catalogue/variant-selector';
 import { PriceCard } from '@/components/catalogue/price-card';
 import { ProductDetailSkeleton } from '@/components/catalogue/skeleton-loaders';
 import { ProductVariant } from '@/types/catalogue.types';
+import { useCartMutations, useWishlistMutations } from '@/hooks/use-shopping';
 import toast from 'react-hot-toast';
 import {
   ShoppingBag,
@@ -26,6 +27,8 @@ export default function ProductDetailPage() {
   const slug = params['slug'] as string;
 
   const { data: product, isLoading, isError } = useProduct(slug);
+  const { addToCart } = useCartMutations();
+  const { addToWishlist } = useWishlistMutations();
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
   const [quantity, setQuantity] = useState<number>(1);
   const [activeTab, setActiveTab] = useState<'description' | 'specifications'>('description');
@@ -56,7 +59,11 @@ export default function ProductDetailPage() {
   const currentSku = selectedVariant ? selectedVariant.sku : product.sku;
 
   const handleAddToCart = () => {
-    toast.success(`Added ${quantity} x "${product.name}" to cart!`);
+    addToCart.mutate({
+      productId: product.id,
+      variantId: selectedVariant?.id || null,
+      quantity,
+    });
   };
 
   return (
@@ -147,7 +154,7 @@ export default function ProductDetailPage() {
               </button>
 
               <button
-                onClick={() => toast.success('Added to Wishlist!')}
+                onClick={() => addToWishlist.mutate({ productId: product.id, variantId: selectedVariant?.id || null })}
                 className="p-4 rounded-2xl border border-slate-200 text-slate-700 hover:text-red-500 hover:bg-slate-50 transition shadow-xs"
                 title="Wishlist"
               >

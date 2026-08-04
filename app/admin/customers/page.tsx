@@ -284,7 +284,7 @@ export default function AdminCustomersPage() {
           )
         }
         placement="right"
-        width={680}
+        size={680}
         onClose={() => setIsDrawerOpen(false)}
         open={isDrawerOpen}
         loading={isDetailsLoading}

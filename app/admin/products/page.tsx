@@ -53,11 +53,17 @@ export default function AdminProductsPage() {
     setIsDrawerOpen(true);
   };
 
-  const handleFormSubmit = async (values: Partial<Product>) => {
+  const handleFormSubmit = async (values: Record<string, any>) => {
+    const payload: Record<string, any> = {};
+    Object.keys(values).forEach((key) => {
+      const val = values[key];
+      payload[key] = val === '' ? null : val;
+    });
+
     if (editingProduct) {
-      await updateProduct.mutateAsync({ id: editingProduct.id, data: values });
+      await updateProduct.mutateAsync({ id: editingProduct.id, data: payload as Partial<Product> });
     } else {
-      await createProduct.mutateAsync(values);
+      await createProduct.mutateAsync(payload as Partial<Product>);
     }
     setIsDrawerOpen(false);
     form.resetFields();
@@ -238,7 +244,7 @@ export default function AdminProductsPage() {
       {/* Product Drawer Form */}
       <Drawer
         title={editingProduct ? 'Edit Product' : 'Create New Product'}
-        width={560}
+        size={560}
         onClose={() => setIsDrawerOpen(false)}
         open={isDrawerOpen}
         extra={
@@ -252,7 +258,7 @@ export default function AdminProductsPage() {
           </Button>
         }
       >
-        <Form form={form} layout="vertical" onFinish={handleFormSubmit}>
+        <Form form={form} layout="vertical" onFinish={handleFormSubmit} preserve={false}>
           <Form.Item
             name="name"
             label="Product Title"

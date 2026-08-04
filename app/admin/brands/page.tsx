@@ -33,11 +33,17 @@ export default function AdminBrandsPage() {
     setIsModalOpen(true);
   };
 
-  const handleFormSubmit = async (values: Partial<Brand>) => {
+  const handleFormSubmit = async (values: Record<string, any>) => {
+    const payload: Record<string, any> = {};
+    Object.keys(values).forEach((key) => {
+      const val = values[key];
+      payload[key] = val === '' ? null : val;
+    });
+
     if (editingBrand) {
-      await updateBrand.mutateAsync({ id: editingBrand.id, data: values });
+      await updateBrand.mutateAsync({ id: editingBrand.id, data: payload as Partial<Brand> });
     } else {
-      await createBrand.mutateAsync(values);
+      await createBrand.mutateAsync(payload as Partial<Brand>);
     }
     setIsModalOpen(false);
     form.resetFields();
@@ -160,9 +166,9 @@ export default function AdminBrandsPage() {
         onCancel={() => setIsModalOpen(false)}
         onOk={() => form.submit()}
         confirmLoading={createBrand.isPending || updateBrand.isPending}
-        destroyOnClose
+        destroyOnHidden
       >
-        <Form form={form} layout="vertical" onFinish={handleFormSubmit} className="mt-4">
+        <Form form={form} layout="vertical" onFinish={handleFormSubmit} preserve={false} className="mt-4">
           <Form.Item
             name="name"
             label="Brand Name"

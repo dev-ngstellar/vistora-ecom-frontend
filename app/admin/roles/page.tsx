@@ -268,7 +268,7 @@ export default function AdminRolesPage() {
           </span>
         }
         placement="right"
-        width={780}
+        size={780}
         onClose={() => setIsDrawerOpen(false)}
         open={isDrawerOpen}
         extra={
