@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { CartItemResponse } from '@/types/shopping.types';
 import { QuantitySelector } from './quantity-selector';
 import { Trash2 } from 'lucide-react';
+import { brandConfig } from '@/config';
 
 interface CartItemCardProps {
   item: CartItemResponse;
@@ -24,6 +25,9 @@ export const CartItemCard: React.FC<CartItemCardProps> = ({
     item.imageUrl ||
     'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&q=80&w=300';
 
+  const unitPriceNum = Number(item.unitPrice) || 0;
+  const totalPriceNum = Number(item.totalPrice) || 0;
+
   return (
     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-3xl bg-white border border-slate-200/80 shadow-xs hover:border-slate-300 transition">
       {/* Product info */}
@@ -41,7 +45,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = ({
         <div className="space-y-1">
           <Link
             href={`/product/${item.productSlug}`}
-            className="text-sm font-bold text-slate-900 hover:text-indigo-600 transition line-clamp-1"
+            className="text-sm font-bold text-slate-900 hover:text-maroon transition line-clamp-1"
           >
             {item.productName}
           </Link>
@@ -66,7 +70,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = ({
           )}
 
           <div className="text-xs text-slate-500 font-medium">
-            Unit Price: ${item.unitPrice.toFixed(2)}
+            Unit Price: {brandConfig.currency.symbol}{unitPriceNum.toFixed(2)}
           </div>
         </div>
       </div>
@@ -82,7 +86,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = ({
 
         <div className="text-right">
           <span className="text-base font-extrabold text-slate-900 block">
-            ${item.totalPrice.toFixed(2)}
+            {brandConfig.currency.symbol}{totalPriceNum.toFixed(2)}
           </span>
         </div>
 

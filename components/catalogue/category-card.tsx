@@ -18,7 +18,7 @@ export const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
   return (
     <Link
       href={`/shop?categoryId=${category.id}`}
-      className="group relative h-48 rounded-3xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 flex flex-col justify-end p-5 text-white"
+      className="group relative h-40 rounded-2xl overflow-hidden shadow-xs hover:shadow-lg border border-slate-200/80 transition-all duration-300 flex flex-col justify-end p-4 text-white"
     >
       <Image
         src={bgImage}
@@ -27,17 +27,20 @@ export const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
         className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
       />
-      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-900/40 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-900/30 to-transparent" />
 
-      <div className="relative z-10">
-        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-white/20 text-white border border-white/30 backdrop-blur-md uppercase tracking-wider mb-1.5">
-          <Layers className="w-3 h-3" />
-          Category
-        </span>
-        <h3 className="text-lg font-bold text-white tracking-tight flex items-center justify-between">
-          <span>{category.name}</span>
-          <ArrowRight className="w-4 h-4 text-white opacity-0 group-hover:opacity-100 transition-all duration-200 transform translate-x-[-8px] group-hover:translate-x-0" />
-        </h3>
+      <div className="relative z-10 flex items-center justify-between">
+        <div>
+          <span className="text-[10px] font-extrabold uppercase tracking-wider text-purple-300 block mb-0.5">
+            Category
+          </span>
+          <h3 className="text-base font-extrabold text-white tracking-tight">
+            {category.name}
+          </h3>
+        </div>
+        <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center group-hover:bg-purple-600 transition-colors">
+          <ArrowRight className="w-4 h-4 text-white" />
+        </div>
       </div>
     </Link>
   );

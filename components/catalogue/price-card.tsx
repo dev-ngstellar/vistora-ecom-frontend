@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Tag } from 'lucide-react';
+import { brandConfig } from '@/config';
 
 interface PriceCardProps {
   price: number;
@@ -26,12 +27,12 @@ export const PriceCard: React.FC<PriceCardProps> = ({ price, compareAtPrice, sku
     <div className="space-y-1">
       <div className="flex items-baseline gap-3">
         <span className="text-3xl font-black text-slate-900 tracking-tight">
-          ${priceNum.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+          {brandConfig.currency.symbol}{priceNum.toLocaleString('en-US', { minimumFractionDigits: 2 })}
         </span>
 
         {compareNum && compareNum > priceNum && (
           <span className="text-lg font-semibold text-slate-400 line-through">
-            ${compareNum.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+            {brandConfig.currency.symbol}{compareNum.toLocaleString('en-US', { minimumFractionDigits: 2 })}
           </span>
         )}
 

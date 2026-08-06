@@ -77,7 +77,7 @@ export const DynamicBreadcrumb: React.FC<DynamicBreadcrumbProps> = ({
         <li>
           <Link
             href={admin ? '/admin/dashboard' : '/'}
-            className="flex items-center gap-1 text-slate-500 hover:text-indigo-600 transition-colors"
+            className="flex items-center gap-1 text-slate-500 hover:text-maroon transition-colors"
           >
             {admin ? <LayoutDashboard className="w-3.5 h-3.5" /> : <Home className="w-3.5 h-3.5" />}
             <span className="sr-only sm:not-sr-only sm:inline">{admin ? 'Admin' : 'Home'}</span>
@@ -94,7 +94,7 @@ export const DynamicBreadcrumb: React.FC<DynamicBreadcrumbProps> = ({
             ) : (
               <Link
                 href={crumb.href}
-                className="text-slate-500 hover:text-indigo-600 transition-colors truncate max-w-[140px] sm:max-w-xs"
+                className="text-slate-500 hover:text-maroon transition-colors truncate max-w-[140px] sm:max-w-xs"
               >
                 {crumb.name}
               </Link>

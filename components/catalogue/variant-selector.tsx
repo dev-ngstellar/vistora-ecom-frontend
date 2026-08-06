@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ProductVariant } from '@/types/catalogue.types';
 import { Check, Info } from 'lucide-react';
 
@@ -21,6 +21,21 @@ export const VariantSelector: React.FC<VariantSelectorProps> = ({
 
   const [selectedColor, setSelectedColor] = useState<string | null>(colors[0] || null);
   const [selectedSize, setSelectedSize] = useState<string | null>(sizes[0] || null);
+
+  useEffect(() => {
+    if (variants && variants.length > 0 && onVariantSelect) {
+      const initColor = colors[0] || null;
+      const initSize = sizes[0] || null;
+      const initialVariant =
+        variants.find(
+          (v) => (!initColor || v.color === initColor) && (!initSize || v.size === initSize),
+        ) || variants[0];
+
+      if (initialVariant) {
+        onVariantSelect(initialVariant);
+      }
+    }
+  }, [variants]);
 
   const handleColorChange = (color: string) => {
     setSelectedColor(color);

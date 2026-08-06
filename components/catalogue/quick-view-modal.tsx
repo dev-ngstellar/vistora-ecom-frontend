@@ -6,6 +6,7 @@ import { Modal, Button, Tag, Rate, message } from 'antd';
 import { Product } from '@/types/catalogue.types';
 import { ShoppingBag, Heart, Check, ExternalLink, ShieldCheck } from 'lucide-react';
 import { useCartMutations } from '@/hooks/use-shopping';
+import { brandConfig } from '@/config';
 
 interface QuickViewModalProps {
   product: Product | null;
@@ -103,11 +104,11 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, open, o
 
             <div className="flex items-baseline gap-2 mt-2">
               <span className="text-2xl font-black text-slate-900 dark:text-white">
-                ${priceNum.toFixed(2)}
+                {brandConfig.currency.symbol}{priceNum.toFixed(2)}
               </span>
               {product.compareAtPrice && (
                 <span className="text-sm text-slate-400 line-through font-medium">
-                  ${parseFloat(String(product.compareAtPrice)).toFixed(2)}
+                  {brandConfig.currency.symbol}{parseFloat(String(product.compareAtPrice)).toFixed(2)}
                 </span>
               )}
             </div>
@@ -203,11 +204,12 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, open, o
               type="primary"
               size="large"
               block
+              disabled={product.status === 'OUT_OF_STOCK' || product.status === 'INACTIVE'}
               icon={<ShoppingBag className="w-4 h-4" />}
               onClick={handleAddToCart}
-              className="bg-slate-900 dark:bg-indigo-600 font-extrabold uppercase tracking-widest text-xs h-12 rounded-full shadow-lg"
+              className="bg-slate-900 dark:bg-indigo-600 font-extrabold uppercase tracking-widest text-xs h-12 rounded-full shadow-lg disabled:opacity-50"
             >
-              Add to Shopping Bag
+              {product.status === 'OUT_OF_STOCK' || product.status === 'INACTIVE' ? 'Out of Stock' : 'Add to Shopping Bag'}
             </Button>
 
             <div className="flex items-center justify-between text-[11px] text-slate-500">

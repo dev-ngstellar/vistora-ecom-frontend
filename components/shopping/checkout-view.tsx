@@ -10,7 +10,9 @@ import {
   usePayment,
   useOrderSummary,
   CheckoutStep,
+  checkoutService,
 } from '@/platform/checkout';
+import toast from 'react-hot-toast';
 import { brandConfig } from '@/config';
 import { ProtectedRoute } from '@/shared';
 import {
@@ -122,13 +124,27 @@ export const CheckoutView: React.FC = () => {
           </div>
         </div>
 
-        <div className="pt-4 flex items-center justify-center gap-4">
+        <div className="pt-4 flex flex-wrap items-center justify-center gap-4">
           <Link
             href="/orders"
-            className="px-6 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs transition"
+            className="px-6 py-3 rounded-2xl bg-maroon hover:bg-maroon-dark text-white font-bold text-xs transition"
           >
             View Order Status
           </Link>
+          <button
+            onClick={async () => {
+              try {
+                toast.loading('Fetching invoice receipt...', { id: 'inv' });
+                await checkoutService.downloadInvoice(createdOrderId);
+                toast.success('Invoice receipt retrieved successfully', { id: 'inv' });
+              } catch {
+                toast.error('Invoice receipt unavailable', { id: 'inv' });
+              }
+            }}
+            className="px-6 py-3 rounded-2xl bg-slate-900 hover:bg-maroon text-white font-bold text-xs transition flex items-center gap-2"
+          >
+            Download Invoice
+          </button>
           <Link
             href="/shop"
             className="px-6 py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs transition"
@@ -147,7 +163,7 @@ export const CheckoutView: React.FC = () => {
         <p className="text-xs text-slate-500">Add items to your shopping cart before initiating checkout.</p>
         <Link
           href="/shop"
-          className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-indigo-600 text-white font-bold text-xs hover:bg-indigo-700 transition"
+          className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-maroon text-white font-bold text-xs hover:bg-maroon-dark transition"
         >
           Explore Shop Catalog
         </Link>
@@ -164,7 +180,7 @@ export const CheckoutView: React.FC = () => {
             <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Checkout</h1>
             <p className="text-xs text-slate-500 mt-1">Complete your order securely</p>
           </div>
-          <Link href="/cart" className="text-xs font-bold text-slate-600 hover:text-indigo-600 flex items-center gap-1">
+          <Link href="/cart" className="text-xs font-bold text-slate-600 hover:text-maroon flex items-center gap-1">
             <ArrowLeft className="w-4 h-4" />
             <span>Return to Cart</span>
           </Link>
@@ -176,7 +192,7 @@ export const CheckoutView: React.FC = () => {
             onClick={() => goToStep(CheckoutStep.SHIPPING_ADDRESS)}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl transition ${
               currentStep === CheckoutStep.SHIPPING_ADDRESS
-                ? 'bg-indigo-600 text-white shadow-xs'
+                ? 'bg-maroon text-white shadow-xs'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
@@ -189,7 +205,7 @@ export const CheckoutView: React.FC = () => {
             onClick={() => goToStep(CheckoutStep.SHIPPING_METHOD)}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl transition ${
               currentStep === CheckoutStep.SHIPPING_METHOD
-                ? 'bg-indigo-600 text-white shadow-xs'
+                ? 'bg-maroon text-white shadow-xs'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
@@ -202,7 +218,7 @@ export const CheckoutView: React.FC = () => {
             onClick={() => goToStep(CheckoutStep.PAYMENT_METHOD)}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl transition ${
               currentStep === CheckoutStep.PAYMENT_METHOD
-                ? 'bg-indigo-600 text-white shadow-xs'
+                ? 'bg-maroon text-white shadow-xs'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
@@ -220,7 +236,7 @@ export const CheckoutView: React.FC = () => {
               <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs space-y-6">
                 <div className="flex items-center justify-between">
                   <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                    <MapPin className="w-5 h-5 text-indigo-600" />
+                    <MapPin className="w-5 h-5 text-maroon" />
                     Select Shipping Address
                   </h2>
                   <button
@@ -243,13 +259,13 @@ export const CheckoutView: React.FC = () => {
                         onClick={() => setSelectedAddressId(addr.id)}
                         className={`p-4 rounded-2xl border cursor-pointer transition flex flex-col justify-between space-y-3 ${
                           selectedAddressId === addr.id
-                            ? 'border-indigo-600 bg-indigo-50/40 ring-2 ring-indigo-500/20'
+                            ? 'border-maroon bg-maroon-light/50 ring-2 ring-maroon/20'
                             : 'border-slate-200 bg-slate-50/50 hover:border-slate-300'
                         }`}
                       >
                         <div className="flex items-center justify-between">
                           <span className="text-xs font-extrabold uppercase text-slate-900">{addr.fullName}</span>
-                          <span className="text-[10px] font-bold uppercase text-indigo-600 bg-indigo-100 px-2 py-0.5 rounded-full">
+                          <span className="text-[10px] font-bold uppercase text-maroon bg-maroon-light px-2 py-0.5 rounded-full">
                             {addr.type}
                           </span>
                         </div>
@@ -340,7 +356,7 @@ export const CheckoutView: React.FC = () => {
                       <button
                         type="submit"
                         disabled={isCreating}
-                        className="px-4 py-2 rounded-xl bg-indigo-600 text-white font-bold"
+                        className="px-4 py-2 rounded-xl bg-maroon text-white font-bold hover:bg-maroon-dark transition"
                       >
                         {isCreating ? 'Saving...' : 'Save Address'}
                       </button>
@@ -352,7 +368,7 @@ export const CheckoutView: React.FC = () => {
                   <button
                     onClick={nextStep}
                     disabled={!selectedAddressId}
-                    className="px-6 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold text-xs transition"
+                    className="px-6 py-3 rounded-2xl bg-maroon hover:bg-maroon-dark disabled:opacity-50 text-white font-bold text-xs transition"
                   >
                     Continue to Shipping Method
                   </button>
@@ -364,7 +380,7 @@ export const CheckoutView: React.FC = () => {
             {currentStep === CheckoutStep.SHIPPING_METHOD && (
               <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs space-y-6">
                 <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                  <Truck className="w-5 h-5 text-indigo-600" />
+                  <Truck className="w-5 h-5 text-maroon" />
                   Select Shipping Method
                 </h2>
 
@@ -375,7 +391,7 @@ export const CheckoutView: React.FC = () => {
                       onClick={() => setSelectedMethodId(m.id)}
                       className={`p-4 rounded-2xl border cursor-pointer transition flex items-center justify-between ${
                         selectedMethod?.id === m.id
-                          ? 'border-indigo-600 bg-indigo-50/40 ring-2 ring-indigo-500/20'
+                          ? 'border-maroon bg-maroon-light/50 ring-2 ring-maroon/20'
                           : 'border-slate-200 bg-slate-50/50 hover:border-slate-300'
                       }`}
                     >
@@ -399,7 +415,7 @@ export const CheckoutView: React.FC = () => {
                   </button>
                   <button
                     onClick={nextStep}
-                    className="px-6 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs"
+                    className="px-6 py-3 rounded-2xl bg-maroon hover:bg-maroon-dark text-white font-bold text-xs"
                   >
                     Continue to Payment Method
                   </button>
@@ -411,7 +427,7 @@ export const CheckoutView: React.FC = () => {
             {currentStep === CheckoutStep.PAYMENT_METHOD && (
               <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs space-y-6">
                 <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                  <CreditCard className="w-5 h-5 text-indigo-600" />
+                  <CreditCard className="w-5 h-5 text-maroon" />
                   Select Payment Option
                 </h2>
 
@@ -424,7 +440,7 @@ export const CheckoutView: React.FC = () => {
                     }}
                     className={`p-4 rounded-2xl border text-left transition ${
                       selectedPaymentMethod === 'COD'
-                        ? 'border-indigo-600 bg-indigo-50/40 ring-2 ring-indigo-500/20'
+                        ? 'border-maroon bg-maroon-light/50 ring-2 ring-maroon/20'
                         : 'border-slate-200 bg-slate-50/50'
                     }`}
                   >
@@ -440,7 +456,7 @@ export const CheckoutView: React.FC = () => {
                     }}
                     className={`p-4 rounded-2xl border text-left transition ${
                       selectedPaymentMethod === 'RAZORPAY'
-                        ? 'border-indigo-600 bg-indigo-50/40 ring-2 ring-indigo-500/20'
+                        ? 'border-maroon bg-maroon-light/50 ring-2 ring-maroon/20'
                         : 'border-slate-200 bg-slate-50/50'
                     }`}
                   >
@@ -456,7 +472,7 @@ export const CheckoutView: React.FC = () => {
                     }}
                     className={`p-4 rounded-2xl border text-left transition ${
                       selectedPaymentMethod === 'STRIPE'
-                        ? 'border-indigo-600 bg-indigo-50/40 ring-2 ring-indigo-500/20'
+                        ? 'border-maroon bg-maroon-light/50 ring-2 ring-maroon/20'
                         : 'border-slate-200 bg-slate-50/50'
                     }`}
                   >
@@ -473,7 +489,7 @@ export const CheckoutView: React.FC = () => {
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                     placeholder="Provide any gate codes or delivery notes..."
-                    className="w-full p-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full p-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-maroon"
                   />
                 </div>
 
@@ -487,7 +503,7 @@ export const CheckoutView: React.FC = () => {
                   <button
                     onClick={handleFinalOrder}
                     disabled={isSubmittingOrder || isProcessing}
-                    className="px-8 py-3.5 rounded-2xl bg-slate-900 hover:bg-indigo-600 text-white font-extrabold text-xs transition shadow-lg flex items-center gap-2"
+                    className="px-8 py-3.5 rounded-2xl bg-maroon hover:bg-maroon-dark text-white font-extrabold text-xs transition shadow-lg flex items-center gap-2"
                   >
                     {(isSubmittingOrder || isProcessing) && <Loader2 className="w-4 h-4 animate-spin" />}
                     <span>Complete & Pay {brandConfig.currency.symbol}{summary.grandTotal.toFixed(2)}</span>
@@ -502,7 +518,7 @@ export const CheckoutView: React.FC = () => {
             {/* Coupon Code Block */}
             <div className="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-xs space-y-3">
               <div className="flex items-center gap-2 text-xs font-bold text-slate-900">
-                <Tag className="w-4 h-4 text-indigo-600" />
+                <Tag className="w-4 h-4 text-orange" />
                 <span>Apply Promo Code</span>
               </div>
               {couponCode ? (
@@ -519,7 +535,7 @@ export const CheckoutView: React.FC = () => {
                     placeholder="Enter coupon code..."
                     value={couponInput}
                     onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
-                    className="flex-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs uppercase"
+                    className="flex-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs uppercase focus:outline-none focus:ring-2 focus:ring-maroon"
                   />
                   <button
                     onClick={() => {
@@ -529,7 +545,7 @@ export const CheckoutView: React.FC = () => {
                       }
                     }}
                     disabled={isApplying || !couponInput.trim()}
-                    className="px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold hover:bg-indigo-600 disabled:opacity-50 transition"
+                    className="px-4 py-2 rounded-xl bg-maroon text-white text-xs font-bold hover:bg-maroon-dark disabled:opacity-50 transition"
                   >
                     Apply
                   </button>

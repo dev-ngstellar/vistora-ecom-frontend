@@ -16,29 +16,140 @@ import {
 } from '@/types/shopping.types';
 import { useAuth } from '@/context/auth-context';
 
+const GUEST_CART_KEY = 'vistora_guest_cart';
+
+export interface GuestCartItem {
+  id: string;
+  productId: string;
+  variantId?: string | null;
+  quantity: number;
+  productName?: string;
+  productSlug?: string;
+  price?: number;
+  imageUrl?: string;
+}
+
+export function getGuestCartFromStorage(): GuestCartItem[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const data = localStorage.getItem(GUEST_CART_KEY);
+    return data ? JSON.parse(data) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function saveGuestCartToStorage(items: GuestCartItem[]) {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(GUEST_CART_KEY, JSON.stringify(items));
+}
+
+export function buildGuestCartSummary(items: GuestCartItem[]): CartSummaryResponse {
+  const itemCount = items.reduce((acc, i) => acc + i.quantity, 0);
+  const subtotal = items.reduce((acc, i) => acc + (i.price || 0) * i.quantity, 0);
+  const tax = Math.round(subtotal * 0.08 * 100) / 100;
+  const freeShippingThreshold = 150;
+  const freeShippingEligible = subtotal >= freeShippingThreshold;
+  const shipping = subtotal > 0 && !freeShippingEligible ? 15 : 0;
+  const discount = 0;
+  const total = subtotal + tax + shipping - discount;
+
+  return {
+    id: 'guest-cart',
+    userId: 'guest',
+    status: 'ACTIVE',
+    couponCode: null,
+    items: items.map((i) => ({
+      id: i.id,
+      productId: i.productId,
+      productName: i.productName || 'Product',
+      productSlug: i.productSlug || 'product',
+      imageUrl: i.imageUrl || 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&q=80&w=400',
+      variantId: i.variantId || null,
+      variantSku: null,
+      variantColor: null,
+      variantSize: null,
+      quantity: i.quantity,
+      unitPrice: i.price || 0,
+      totalPrice: (i.price || 0) * i.quantity,
+      availableStock: 99,
+    })),
+    subtotal,
+    discount,
+    tax,
+    shipping,
+    total,
+    itemCount,
+    freeShippingEligible,
+    freeShippingThreshold,
+  };
+}
+
 // ==================== CART HOOKS ====================
 export const useCart = () => {
   const { isAuthenticated } = useAuth();
   return useQuery<CartSummaryResponse>({
-    queryKey: ['cart'],
-    queryFn: () => cartService.get(),
-    enabled: isAuthenticated,
+    queryKey: ['cart', isAuthenticated],
+    queryFn: async () => {
+      if (isAuthenticated) {
+        return cartService.get();
+      } else {
+        const guestItems = getGuestCartFromStorage();
+        return buildGuestCartSummary(guestItems);
+      }
+    },
   });
 };
 
 export const useCartMutations = () => {
   const queryClient = useQueryClient();
+  const { isAuthenticated } = useAuth();
 
   const addToCart = useMutation({
-    mutationFn: ({
+    mutationFn: async ({
       productId,
       variantId,
-      quantity,
+      quantity = 1,
+      productName,
+      productSlug,
+      price,
+      imageUrl,
     }: {
       productId: string;
       variantId?: string | null;
       quantity?: number;
-    }) => cartService.addItem(productId, variantId, quantity),
+      productName?: string;
+      productSlug?: string;
+      price?: number;
+      imageUrl?: string;
+    }) => {
+      if (isAuthenticated) {
+        return cartService.addItem(productId, variantId, quantity);
+      } else {
+        const items = getGuestCartFromStorage();
+        const existingIndex = items.findIndex(
+          (i) => i.productId === productId && (i.variantId || null) === (variantId || null)
+        );
+
+        if (existingIndex > -1) {
+          items[existingIndex].quantity += quantity;
+        } else {
+          const itemId = `guest_${productId}_${variantId || 'default'}`;
+          items.push({
+            id: itemId,
+            productId,
+            variantId: variantId || null,
+            quantity,
+            productName,
+            productSlug,
+            price,
+            imageUrl,
+          });
+        }
+        saveGuestCartToStorage(items);
+        return buildGuestCartSummary(items);
+      }
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cart'] });
       toast.success('Item added to shopping cart!');
@@ -49,8 +160,19 @@ export const useCartMutations = () => {
   });
 
   const updateCartItem = useMutation({
-    mutationFn: ({ itemId, quantity }: { itemId: string; quantity: number }) =>
-      cartService.updateItem(itemId, quantity),
+    mutationFn: async ({ itemId, quantity }: { itemId: string; quantity: number }) => {
+      if (isAuthenticated) {
+        return cartService.updateItem(itemId, quantity);
+      } else {
+        const items = getGuestCartFromStorage();
+        const target = items.find((i) => i.id === itemId);
+        if (target) {
+          target.quantity = quantity;
+          saveGuestCartToStorage(items);
+        }
+        return buildGuestCartSummary(items);
+      }
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cart'] });
       toast.success('Cart updated');
@@ -61,7 +183,15 @@ export const useCartMutations = () => {
   });
 
   const removeCartItem = useMutation({
-    mutationFn: (itemId: string) => cartService.removeItem(itemId),
+    mutationFn: async (itemId: string) => {
+      if (isAuthenticated) {
+        return cartService.removeItem(itemId);
+      } else {
+        const items = getGuestCartFromStorage().filter((i) => i.id !== itemId);
+        saveGuestCartToStorage(items);
+        return buildGuestCartSummary(items);
+      }
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cart'] });
       toast.success('Item removed from cart');
@@ -72,7 +202,14 @@ export const useCartMutations = () => {
   });
 
   const clearCart = useMutation({
-    mutationFn: () => cartService.clear(),
+    mutationFn: async () => {
+      if (isAuthenticated) {
+        return cartService.clear();
+      } else {
+        saveGuestCartToStorage([]);
+        return buildGuestCartSummary([]);
+      }
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cart'] });
       toast.success('Shopping cart cleared');

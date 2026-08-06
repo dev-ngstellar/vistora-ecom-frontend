@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 
 export const UserMenu: React.FC = () => {
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, logout, openAuthModal } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -36,20 +36,20 @@ export const UserMenu: React.FC = () => {
   if (!isAuthenticated || !user) {
     return (
       <div className="flex items-center gap-2">
-        <Link
-          href="/auth/login"
-          className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-700 hover:text-indigo-600 hover:bg-slate-100/80 rounded-xl transition"
+        <button
+          onClick={() => openAuthModal('login')}
+          className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-700 hover:text-maroon hover:bg-maroon-light/60 rounded-xl transition"
         >
-          <LogIn className="w-4 h-4 text-slate-500" />
+          <LogIn className="w-4 h-4 text-maroon" />
           <span>Log In</span>
-        </Link>
-        <Link
-          href="/auth/register"
-          className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-xs transition"
+        </button>
+        <button
+          onClick={() => openAuthModal('register')}
+          className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-white bg-maroon hover:bg-maroon-dark rounded-xl shadow-xs transition"
         >
           <UserPlus className="w-4 h-4" />
           <span>Register</span>
-        </Link>
+        </button>
       </div>
     );
   }
@@ -63,7 +63,7 @@ export const UserMenu: React.FC = () => {
         className="flex items-center gap-2 p-1.5 rounded-2xl hover:bg-slate-100 transition-colors focus:outline-none"
         aria-expanded={isOpen}
       >
-        <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-600 text-white flex items-center justify-center font-bold text-xs shadow-xs">
+        <div className="w-8 h-8 rounded-xl bg-maroon text-white flex items-center justify-center font-bold text-xs shadow-xs">
           {userInitial}
         </div>
         <div className="hidden md:flex flex-col text-left">

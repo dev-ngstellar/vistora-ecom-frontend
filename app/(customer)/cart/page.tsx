@@ -32,72 +32,70 @@ export default function CartPage() {
   }
 
   return (
-    <ProtectedRoute allowedRoles={['CUSTOMER', 'SUPER_ADMIN', 'ADMIN', 'MANAGER']}>
-      <div className="space-y-8 pb-16">
-        {/* Page Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs">
-          <div>
-            <div className="flex items-center gap-2 text-indigo-600 text-xs font-bold uppercase tracking-wider mb-1">
-              <ShoppingBag className="w-4 h-4" />
-              <span>Shopping Bag</span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-              Your Cart ({cartSummary?.itemCount || 0} items)
-            </h1>
+    <div className="space-y-8 pb-16">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs">
+        <div>
+          <div className="flex items-center gap-2 text-maroon text-xs font-bold uppercase tracking-wider mb-1">
+            <ShoppingBag className="w-4 h-4 text-orange" />
+            <span>Shopping Bag</span>
           </div>
-
-          <div className="flex items-center gap-3">
-            <Link
-              href="/shop"
-              className="text-xs font-bold text-slate-600 hover:text-indigo-600 flex items-center gap-1.5 transition"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span>Continue Shopping</span>
-            </Link>
-
-            <button
-              onClick={() => clearCart.mutate()}
-              disabled={clearCart.isPending}
-              className="px-4 py-2 rounded-2xl border border-red-200 text-red-600 hover:bg-red-50 text-xs font-bold flex items-center gap-1.5 transition"
-            >
-              <Trash2 className="w-4 h-4" />
-              <span>Clear Cart</span>
-            </button>
-          </div>
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+            Your Cart ({cartSummary?.itemCount || 0} items)
+          </h1>
         </div>
 
-        {/* Cart Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column: Cart Items List */}
-          <div className="lg:col-span-2 space-y-4">
-            {items.map((item) => (
-              <CartItemCard
-                key={item.id}
-                item={item}
-                onUpdateQuantity={(itemId, qty) =>
-                  updateCartItem.mutate({ itemId, quantity: qty })
-                }
-                onRemoveItem={(itemId) => removeCartItem.mutate(itemId)}
-                disabled={updateCartItem.isPending || removeCartItem.isPending}
-              />
-            ))}
-          </div>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/shop"
+            className="text-xs font-bold text-slate-600 hover:text-maroon flex items-center gap-1.5 transition"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Continue Shopping</span>
+          </Link>
 
-          {/* Right Column: Coupon, Shipping, Order Summary */}
-          <div className="space-y-6">
-            <CouponForm
-              appliedCoupon={cartSummary?.couponCode}
-              onApplyCoupon={(code) => applyCoupon.mutate(code)}
-              onRemoveCoupon={() => removeCoupon.mutate()}
-              isLoading={applyCoupon.isPending || removeCoupon.isPending}
-            />
-
-            <ShippingCalculator subtotal={cartSummary?.subtotal || 0} />
-
-            {cartSummary && <CartSummaryCard summary={cartSummary} />}
-          </div>
+          <button
+            onClick={() => clearCart.mutate()}
+            disabled={clearCart.isPending}
+            className="px-4 py-2 rounded-2xl border border-red-200 text-red-600 hover:bg-red-50 text-xs font-bold flex items-center gap-1.5 transition"
+          >
+            <Trash2 className="w-4 h-4" />
+            <span>Clear Cart</span>
+          </button>
         </div>
       </div>
-    </ProtectedRoute>
+
+      {/* Cart Main Content Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Left Column: Cart Items List */}
+        <div className="lg:col-span-2 space-y-4">
+          {items.map((item) => (
+            <CartItemCard
+              key={item.id}
+              item={item}
+              onUpdateQuantity={(itemId, qty) =>
+                updateCartItem.mutate({ itemId, quantity: qty })
+              }
+              onRemoveItem={(itemId) => removeCartItem.mutate(itemId)}
+              disabled={updateCartItem.isPending || removeCartItem.isPending}
+            />
+          ))}
+        </div>
+
+        {/* Right Column: Coupon, Shipping, Order Summary */}
+        <div className="space-y-6">
+          <CouponForm
+            appliedCoupon={cartSummary?.couponCode}
+            onApplyCoupon={(code) => applyCoupon.mutate(code)}
+            onRemoveCoupon={() => removeCoupon.mutate()}
+            isLoading={applyCoupon.isPending || removeCoupon.isPending}
+          />
+
+          <ShippingCalculator subtotal={cartSummary?.subtotal || 0} />
+
+          {cartSummary && <CartSummaryCard summary={cartSummary} />}
+        </div>
+      </div>
+    </div>
   );
 }

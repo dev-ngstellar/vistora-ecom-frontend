@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { WishlistItemResponse } from '@/types/shopping.types';
 import { ShoppingBag, Trash2 } from 'lucide-react';
+import { brandConfig } from '@/config';
 
 interface WishlistCardProps {
   item: WishlistItemResponse;
@@ -49,7 +50,7 @@ export const WishlistCard: React.FC<WishlistCardProps> = ({
         <div>
           <Link
             href={`/product/${item.productSlug}`}
-            className="text-sm font-bold text-slate-900 hover:text-indigo-600 transition line-clamp-1"
+            className="text-sm font-bold text-slate-900 hover:text-maroon transition line-clamp-1"
           >
             {item.productName}
           </Link>
@@ -61,12 +62,12 @@ export const WishlistCard: React.FC<WishlistCardProps> = ({
           )}
 
           <div className="flex items-baseline gap-2 mt-2">
-            <span className="text-base font-extrabold text-slate-900">
-              ${item.price.toFixed(2)}
+            <span className="text-base font-extrabold text-maroon">
+              {brandConfig.currency.symbol}{item.price.toFixed(2)}
             </span>
             {item.compareAtPrice && item.compareAtPrice > item.price && (
               <span className="text-xs font-semibold text-slate-400 line-through">
-                ${item.compareAtPrice.toFixed(2)}
+                {brandConfig.currency.symbol}{item.compareAtPrice.toFixed(2)}
               </span>
             )}
           </div>
@@ -76,7 +77,7 @@ export const WishlistCard: React.FC<WishlistCardProps> = ({
           type="button"
           onClick={() => onMoveToCart(item.id)}
           disabled={disabled}
-          className="w-full py-3 px-4 rounded-2xl bg-slate-900 hover:bg-indigo-600 text-white font-bold text-xs transition shadow-md flex items-center justify-center gap-2"
+          className="w-full py-3 px-4 rounded-2xl bg-maroon hover:bg-maroon-dark text-white font-bold text-xs transition shadow-md flex items-center justify-center gap-2"
         >
           <ShoppingBag className="w-4 h-4" />
           <span>Move to Cart</span>

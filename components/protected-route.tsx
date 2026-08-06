@@ -12,21 +12,27 @@ interface ProtectedRouteProps {
 }
 
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRoles }) => {
-  const { user, isAuthenticated, isLoading } = useAuth();
+  const { user, isAuthenticated, isLoading, openAuthModal } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      router.push(`/auth/login?redirect=${encodeURIComponent(pathname)}`);
+      if (pathname.startsWith('/admin')) {
+        router.push(`/auth/login?redirect=${encodeURIComponent(pathname)}`);
+      } else {
+        openAuthModal('login', () => {
+          // Action callback on modal login completion
+        });
+      }
     }
-  }, [isLoading, isAuthenticated, router, pathname]);
+  }, [isLoading, isAuthenticated, router, pathname, openAuthModal]);
 
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-50">
         <div className="flex flex-col items-center gap-3">
-          <Loader2 className="h-10 w-10 animate-spin text-indigo-600" />
+          <Loader2 className="h-10 w-10 animate-spin text-maroon" />
           <p className="text-sm font-medium text-slate-600">Verifying session...</p>
         </div>
       </div>
@@ -47,7 +53,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowe
           </p>
           <button
             onClick={() => router.push('/')}
-            className="rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 transition"
+            className="rounded-xl bg-maroon px-5 py-2.5 text-sm font-semibold text-white hover:bg-maroon-dark transition shadow-xs"
           >
             Return to Store
           </button>

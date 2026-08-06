@@ -28,18 +28,18 @@ export const HeroSlider: React.FC = () => {
   }
 
   const defaultBanner = {
-    title: 'Haute Couture Autumn Collection 2026',
-    subtitle: 'Discover hand-crafted Italian silk gowns and bespoke cashmere outerwear.',
+    title: 'New Season Fashion Collection 2026',
+    subtitle: 'Discover trending apparel, luxury footwear, and designer accessories.',
     imageUrl: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1600&auto=format&fit=crop',
     mobileImageUrl: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=800&auto=format&fit=crop',
-    buttonText: 'Explore Collection',
+    buttonText: 'Shop New Arrivals',
     buttonLink: '/shop',
   };
 
   const current = banners.length > 0 ? banners[currentIndex] : defaultBanner;
 
   return (
-    <section className="relative overflow-hidden rounded-3xl bg-slate-950 text-white my-4 shadow-2xl group min-h-[520px] flex items-center">
+    <section className="relative overflow-hidden rounded-2xl bg-slate-900 text-white my-3 shadow-md group h-[320px] sm:h-[380px] flex items-center">
       {/* Background Media */}
       <picture className="absolute inset-0 w-full h-full">
         {current.mobileImageUrl && (
@@ -48,37 +48,37 @@ export const HeroSlider: React.FC = () => {
         <img
           src={current.imageUrl}
           alt={current.title}
-          className="w-full h-full object-cover opacity-75 scale-105 group-hover:scale-100 transition-transform duration-1000 ease-out"
+          className="w-full h-full object-cover opacity-70 group-hover:scale-102 transition-transform duration-700 ease-out"
         />
       </picture>
 
-      {/* Dark Luxury Gradient Overlays */}
-      <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-slate-950/20" />
+      {/* Gradient Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-950/50 to-transparent" />
 
-      {/* Editorial Content */}
-      <div className="relative z-10 max-w-4xl mx-auto px-6 py-20 text-center space-y-6">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold bg-white/10 text-amber-300 border border-white/20 backdrop-blur-md">
-          <Sparkles className="w-4 h-4 text-amber-400" />
-          <span>Exclusive Editorial Showcase</span>
+      {/* Content */}
+      <div className="relative z-10 max-w-2xl px-6 sm:px-12 py-10 space-y-4">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-extrabold bg-orange text-white shadow-xs">
+          <Sparkles className="w-3.5 h-3.5" />
+          <span>Special Offer • Up to 40% Off</span>
         </div>
 
-        <h1 className="text-4xl sm:text-6xl lg:text-7xl font-serif tracking-tight text-white leading-tight font-light">
+        <h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white leading-tight">
           {current.title}
         </h1>
 
         {current.subtitle && (
-          <p className="text-sm sm:text-base text-slate-300 max-w-xl mx-auto font-light leading-relaxed">
+          <p className="text-xs sm:text-sm text-slate-200 max-w-lg font-medium leading-relaxed line-clamp-2">
             {current.subtitle}
           </p>
         )}
 
-        <div className="pt-2">
+        <div className="pt-1">
           <Link
             href={current.buttonLink || '/shop'}
-            className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-white text-slate-950 font-extrabold text-xs uppercase tracking-widest hover:bg-slate-100 transition-all shadow-2xl hover:gap-3"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-maroon hover:bg-maroon-dark text-white font-bold text-xs shadow-md transition-all hover:gap-2.5"
           >
-            <span>{current.buttonText || 'Discover Now'}</span>
-            <ArrowRight className="w-4 h-4 text-slate-950" />
+            <span>{current.buttonText || 'Shop Now'}</span>
+            <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
       </div>

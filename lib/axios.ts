@@ -103,7 +103,10 @@ apiClient.interceptors.response.use(
         if (typeof window !== 'undefined') {
           localStorage.removeItem('accessToken');
           localStorage.removeItem('refreshToken');
-          window.location.href = '/auth/login?session_expired=true';
+          // Only redirect to login page for Admin Portal routes
+          if (window.location.pathname.startsWith('/admin')) {
+            window.location.href = '/auth/login?session_expired=true';
+          }
         }
         return Promise.reject(refreshError);
       } finally {

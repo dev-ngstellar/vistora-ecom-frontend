@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useProduct } from '@/hooks/use-catalogue';
@@ -22,11 +22,15 @@ import {
   Sparkles,
 } from 'lucide-react';
 
+import { useAuth } from '@/context/auth-context';
+import { useRouter } from 'next/navigation';
 import { brandConfig } from '@/config';
 
 export default function ProductDetailPage() {
   const params = useParams();
   const slug = params['slug'] as string;
+  const router = useRouter();
+  const { requireCustomerAuth } = useAuth();
 
   const { data: product, isLoading, isError } = useProduct(slug);
   const { addToCart } = useCartMutations();
@@ -34,6 +38,12 @@ export default function ProductDetailPage() {
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
   const [quantity, setQuantity] = useState<number>(1);
   const [activeTab, setActiveTab] = useState<'description' | 'specifications'>('description');
+
+  useEffect(() => {
+    if (product?.variants && product.variants.length > 0 && !selectedVariant) {
+      setSelectedVariant(product.variants[0]);
+    }
+  }, [product]);
 
   if (isLoading) {
     return <ProductDetailSkeleton />;
@@ -46,7 +56,7 @@ export default function ProductDetailPage() {
         <p className="text-sm text-slate-500">The product you are looking for may have been archived or removed.</p>
         <Link
           href="/shop"
-          className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-indigo-600 text-white font-bold text-xs"
+          className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-maroon text-white font-bold text-xs"
         >
           Return to Shop Catalog
         </Link>
@@ -60,25 +70,59 @@ export default function ProductDetailPage() {
     : product.compareAtPrice;
   const currentSku = selectedVariant ? selectedVariant.sku : product.sku;
 
+  const primaryImg = product.images?.find((i) => i.isPrimary)?.imageUrl || product.images?.[0]?.imageUrl || '';
+
+  const isOutOfStock =
+    product.status === 'OUT_OF_STOCK' ||
+    product.status === 'INACTIVE' ||
+    (selectedVariant ? selectedVariant.stock <= 0 : false);
+
   const handleAddToCart = () => {
+    if (isOutOfStock) return;
     addToCart.mutate({
       productId: product.id,
       variantId: selectedVariant?.id || null,
       quantity,
+      productName: product.name,
+      productSlug: product.slug,
+      price: currentPrice,
+      imageUrl: primaryImg,
     });
+  };
+
+  const handleBuyNow = () => {
+    if (isOutOfStock) return;
+    addToCart.mutate(
+      {
+        productId: product.id,
+        variantId: selectedVariant?.id || null,
+        quantity,
+        productName: product.name,
+        productSlug: product.slug,
+        price: currentPrice,
+        imageUrl: primaryImg,
+      },
+      {
+        onSuccess: () => {
+          requireCustomerAuth(() => {
+            router.push('/checkout');
+          });
+        },
+      }
+    );
   };
 
   return (
     <div className="space-y-10 pb-16">
       {/* Dynamic Breadcrumb */}
       <nav className="flex items-center gap-2 text-xs font-semibold text-slate-500 py-2">
-        <Link href="/" className="hover:text-indigo-600">Home</Link>
+        <Link href="/" className="hover:text-maroon">Home</Link>
         <ChevronRight className="w-3.5 h-3.5" />
-        <Link href="/shop" className="hover:text-indigo-600">Shop</Link>
+        <Link href="/shop" className="hover:text-maroon">Shop</Link>
         {product.category && (
           <>
             <ChevronRight className="w-3.5 h-3.5" />
-            <Link href={`/shop?categoryId=${product.category.id}`} className="hover:text-indigo-600">
+            <Link href={`/shop?categoryId=${product.category.id}`} className="hover:text-maroon">
               {product.category.name}
             </Link>
           </>
@@ -98,9 +142,14 @@ export default function ProductDetailPage() {
         <div className="space-y-6">
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-xs font-bold uppercase tracking-widest text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full">
-                {product.category?.name || 'Haute Couture'}
+              <span className="text-xs font-bold uppercase tracking-widest text-maroon bg-maroon-light px-3 py-1 rounded-full">
+                {product.category?.name || 'Fashion'}
               </span>
+              {isOutOfStock && (
+                <span className="text-xs font-extrabold uppercase tracking-widest text-white bg-rose-600 px-3 py-1 rounded-full shadow-xs">
+                  Out of Stock
+                </span>
+              )}
               {product.brand && (
                 <span className="text-xs font-semibold text-slate-400">by {product.brand.name}</span>
               )}
@@ -130,34 +179,54 @@ export default function ProductDetailPage() {
 
           {/* Quantity & Actions */}
           <div className="space-y-4 pt-2">
-            <div className="flex items-center gap-4">
-              <div className="flex items-center border border-slate-200 rounded-2xl bg-slate-50 p-1">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+              <div className="flex items-center justify-between border border-slate-200 rounded-2xl bg-slate-50 p-1 shrink-0">
                 <button
+                  disabled={isOutOfStock}
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="w-10 h-10 rounded-xl bg-white text-slate-800 font-bold text-sm hover:bg-slate-200 transition shadow-xs flex items-center justify-center"
+                  className="w-10 h-10 rounded-xl bg-white text-slate-800 font-bold text-sm hover:bg-slate-200 transition shadow-xs flex items-center justify-center disabled:opacity-50"
                 >
                   -
                 </button>
-                <span className="w-12 text-center text-sm font-bold text-slate-900">{quantity}</span>
+                <span className="w-10 text-center text-sm font-bold text-slate-900">{quantity}</span>
                 <button
+                  disabled={isOutOfStock}
                   onClick={() => setQuantity(quantity + 1)}
-                  className="w-10 h-10 rounded-xl bg-white text-slate-800 font-bold text-sm hover:bg-slate-200 transition shadow-xs flex items-center justify-center"
+                  className="w-10 h-10 rounded-xl bg-white text-slate-800 font-bold text-sm hover:bg-slate-200 transition shadow-xs flex items-center justify-center disabled:opacity-50"
                 >
                   +
                 </button>
               </div>
 
               <button
+                disabled={isOutOfStock}
                 onClick={handleAddToCart}
-                className="flex-1 py-4 px-6 rounded-2xl bg-slate-900 hover:bg-indigo-600 text-white font-extrabold text-sm transition shadow-xl flex items-center justify-center gap-2"
+                className={`flex-1 py-3.5 px-4 rounded-2xl font-extrabold text-xs tracking-wider uppercase transition shadow-md flex items-center justify-center gap-2 ${
+                  isOutOfStock
+                    ? 'bg-slate-200 text-slate-500 cursor-not-allowed'
+                    : 'bg-slate-900 hover:bg-slate-800 text-white'
+                }`}
               >
                 <ShoppingBag className="w-4 h-4" />
-                <span>Add to Shopping Cart</span>
+                <span>{isOutOfStock ? 'Out of Stock' : 'Add to Cart'}</span>
               </button>
 
               <button
-                onClick={() => addToWishlist.mutate({ productId: product.id, variantId: selectedVariant?.id || null })}
-                className="p-4 rounded-2xl border border-slate-200 text-slate-700 hover:text-red-500 hover:bg-slate-50 transition shadow-xs"
+                disabled={isOutOfStock}
+                onClick={handleBuyNow}
+                className={`flex-1 py-3.5 px-4 rounded-2xl font-extrabold text-xs tracking-wider uppercase transition shadow-xl flex items-center justify-center gap-2 ${
+                  isOutOfStock
+                    ? 'bg-slate-200 text-slate-500 cursor-not-allowed'
+                    : 'bg-maroon hover:bg-maroon-dark text-white'
+                }`}
+              >
+                <Sparkles className="w-4 h-4 text-amber-300" />
+                <span>{isOutOfStock ? 'Out of Stock' : 'Buy Now'}</span>
+              </button>
+
+              <button
+                onClick={() => requireCustomerAuth(() => addToWishlist.mutate({ productId: product.id, variantId: selectedVariant?.id || null }))}
+                className="p-3.5 rounded-2xl border border-slate-200 text-slate-700 hover:text-maroon hover:bg-maroon-light transition shadow-xs flex items-center justify-center"
                 title="Wishlist"
               >
                 <Heart className="w-5 h-5" />

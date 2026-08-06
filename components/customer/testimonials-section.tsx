@@ -29,35 +29,37 @@ export const TestimonialsSection: React.FC = () => {
   ];
 
   return (
-    <section className="space-y-6 my-16">
-      <div className="text-center space-y-2">
-        <span className="text-xs font-bold uppercase tracking-widest text-indigo-600">Patron Testimonials</span>
-        <h2 className="text-3xl sm:text-4xl font-serif font-light text-slate-900 dark:text-white">
-          Voices of Discerning Clientele
+    <section className="space-y-6 my-10">
+      <div className="text-center space-y-1.5">
+        <span className="text-xs font-extrabold uppercase tracking-wider text-maroon">Customer Feedback</span>
+        <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900">
+          What Our Shoppers Say
         </h2>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         {testimonials.map((item) => (
           <div
             key={item.id}
-            className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col justify-between space-y-4 hover:shadow-md transition-shadow"
+            className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-3 hover:shadow-md transition-shadow"
           >
-            <div className="space-y-3">
-              <Quote className="w-8 h-8 text-indigo-200 dark:text-indigo-900" />
-              <div className="flex items-center gap-1 text-amber-400">
+            <div className="space-y-2">
+              <div className="flex items-center gap-1 text-orange">
                 {[...Array(item.rating)].map((_, i) => (
-                  <Star key={i} className="w-4 h-4 fill-amber-400" />
+                  <Star key={i} className="w-3.5 h-3.5 fill-orange text-orange" />
                 ))}
               </div>
-              <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 italic font-light leading-relaxed">
+              <p className="text-xs text-slate-700 font-medium leading-relaxed">
                 "{item.comment}"
               </p>
             </div>
 
-            <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
-              <h4 className="font-extrabold text-slate-900 dark:text-white text-xs">{item.name}</h4>
-              <span className="text-[11px] text-slate-400">{item.role}</span>
+            <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+              <div>
+                <h4 className="font-extrabold text-slate-900 text-xs">{item.name}</h4>
+                <span className="text-[10px] text-slate-400">{item.role}</span>
+              </div>
+              <Quote className="w-6 h-6 text-maroon/20" />
             </div>
           </div>
         ))}

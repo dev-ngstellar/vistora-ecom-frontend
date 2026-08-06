@@ -35,7 +35,7 @@ export const CustomerFooter: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12 border-b border-slate-800">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <div className="flex items-center gap-4 p-4 rounded-2xl bg-white/5 border border-white/10">
-            <div className="p-3 rounded-xl bg-indigo-600/20 text-indigo-400">
+            <div className="p-3 rounded-xl bg-orange/20 text-orange">
               <Truck className="w-6 h-6" />
             </div>
             <div>
@@ -45,7 +45,7 @@ export const CustomerFooter: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-4 p-4 rounded-2xl bg-white/5 border border-white/10">
-            <div className="p-3 rounded-xl bg-purple-600/20 text-purple-400">
+            <div className="p-3 rounded-xl bg-maroon/20 text-maroon-light">
               <RotateCcw className="w-6 h-6" />
             </div>
             <div>
@@ -82,10 +82,15 @@ export const CustomerFooter: React.FC = () => {
           {/* Brand Info */}
           <div className="lg:col-span-2 space-y-4">
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-600 text-white flex items-center justify-center font-black text-lg shadow-md">
-                {brandConfig.logoLetter}
+              <img
+                src={brandConfig.logoUrl}
+                alt="Vistora Logo"
+                className="h-10 w-auto object-contain"
+              />
+              <div className="flex flex-col">
+                <span className="font-black text-lg tracking-tight text-white">{brandConfig.shortName}</span>
+                <span className="text-[8px] font-bold uppercase tracking-widest text-orange">STOREFRONT</span>
               </div>
-              <span className="font-extrabold text-lg tracking-tight">{brandConfig.name.toUpperCase()}</span>
             </div>
 
             <p className="text-xs text-slate-400 leading-relaxed max-w-sm">
@@ -101,11 +106,11 @@ export const CustomerFooter: React.FC = () => {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Enter your email..."
                   required
-                  className="flex-1 bg-white/10 border border-white/15 px-3.5 py-2 rounded-xl text-xs text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="flex-1 bg-white/10 border border-white/15 px-3.5 py-2 rounded-xl text-xs text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange"
                 />
                 <button
                   type="submit"
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition"
+                  className="bg-orange hover:bg-orange-dark text-white px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition"
                 >
                   <Send className="w-3.5 h-3.5" />
                   <span>Join</span>

@@ -3,6 +3,7 @@
 import React from 'react';
 import { Brand, Category, Collection, ProductQueryFilters } from '@/types/catalogue.types';
 import { Filter, RotateCcw, X } from 'lucide-react';
+import { brandConfig } from '@/config';
 
 interface FilterSidebarProps {
   categories?: Category[];
@@ -152,7 +153,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
       {/* Price Range Filter */}
       <div className="space-y-3 pt-4 border-t border-slate-100">
         <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-          Price Range ($)
+          Price Range ({brandConfig.currency.symbol})
         </h3>
         <div className="flex items-center gap-2">
           <input

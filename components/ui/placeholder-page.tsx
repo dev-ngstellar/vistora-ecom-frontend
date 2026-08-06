@@ -25,7 +25,6 @@ interface PlaceholderPageProps {
   title: string;
   description: string;
   module?: 'Customer' | 'Admin';
-  plannedSprint?: string;
   icon?: React.ElementType;
   quickLinks?: QuickLink[];
 }
@@ -34,7 +33,6 @@ export const PlaceholderPage: React.FC<PlaceholderPageProps> = ({
   title,
   description,
   module = 'Customer',
-  plannedSprint = 'Sprint 3',
   icon: IconComponent = Construction,
   quickLinks,
 }) => {
@@ -71,29 +69,20 @@ export const PlaceholderPage: React.FC<PlaceholderPageProps> = ({
           <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center gap-3">
               <span
-                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider ${isAdmin
+                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${isAdmin
                     ? 'bg-amber-400/20 text-amber-300 border border-amber-400/30'
-                    : 'bg-indigo-400/20 text-indigo-200 border border-indigo-400/30'
+                    : 'bg-white/20 text-white border border-white/30'
                   }`}
               >
                 <Layers className="w-3.5 h-3.5" />
-                {module} Module
-              </span>
-              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                <Clock className="w-3.5 h-3.5" />
-                Under Development
+                Vistora {module} Portal
               </span>
             </div>
-
-            <span className="text-xs text-slate-300 font-mono flex items-center gap-1">
-              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-              Target: {plannedSprint}
-            </span>
           </div>
 
           <div className="relative z-10 mt-6 flex items-start gap-4">
             <div className="p-3.5 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 text-amber-300 shrink-0">
-              <IconComponent className="w-8 h-8 sm:w-10 sm:h-10 animate-pulse" />
+              <IconComponent className="w-8 h-8 sm:w-10 sm:h-10" />
             </div>
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">{title}</h1>
@@ -108,30 +97,30 @@ export const PlaceholderPage: React.FC<PlaceholderPageProps> = ({
         <div className="p-8 bg-slate-50/50">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
             <div className="p-4 rounded-xl bg-white border border-slate-200/80 shadow-xs flex flex-col">
-              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Architecture</span>
+              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Platform</span>
               <span className="text-sm font-semibold text-slate-800 mt-1 flex items-center gap-1.5">
                 <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                Route Verified
+                Vistora Storefront
               </span>
-              <span className="text-xs text-slate-500 mt-1">Shell integrated with Next.js 15</span>
-            </div>
-
-            <div className="p-4 rounded-xl bg-white border border-slate-200/80 shadow-xs flex flex-col">
-              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">API Integration</span>
-              <span className="text-sm font-semibold text-slate-800 mt-1 flex items-center gap-1.5">
-                <Clock className="w-4 h-4 text-amber-500" />
-                Schema Ready
-              </span>
-              <span className="text-xs text-slate-500 mt-1">Endpoints mapped & scheduled</span>
+              <span className="text-xs text-slate-500 mt-1">Standalone Architecture</span>
             </div>
 
             <div className="p-4 rounded-xl bg-white border border-slate-200/80 shadow-xs flex flex-col">
               <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Status</span>
               <span className="text-sm font-semibold text-slate-800 mt-1 flex items-center gap-1.5">
-                <Compass className="w-4 h-4 text-indigo-500" />
-                Placeholder Active
+                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                Live Service
               </span>
-              <span className="text-xs text-slate-500 mt-1">No 404 error</span>
+              <span className="text-xs text-slate-500 mt-1">All Systems Operational</span>
+            </div>
+
+            <div className="p-4 rounded-xl bg-white border border-slate-200/80 shadow-xs flex flex-col">
+              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Support</span>
+              <span className="text-sm font-semibold text-slate-800 mt-1 flex items-center gap-1.5">
+                <Compass className="w-4 h-4 text-maroon" />
+                24/7 Concierge
+              </span>
+              <span className="text-xs text-slate-500 mt-1">Customer Care Active</span>
             </div>
           </div>
 

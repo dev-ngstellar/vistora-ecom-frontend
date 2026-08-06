@@ -19,4 +19,14 @@ export const checkoutService = {
     const res = await apiClient.get<ApiEnvelope<Order>>(`/orders/${orderId}`);
     return res.data.data;
   },
+
+  getMyOrders: async (): Promise<Order[]> => {
+    const res = await apiClient.get<ApiEnvelope<Order[]>>('/orders/my');
+    return res.data.data;
+  },
+
+  downloadInvoice: async (orderId: string): Promise<any> => {
+    const res = await apiClient.get<ApiEnvelope<any>>(`/orders/${orderId}/invoice`);
+    return res.data.data;
+  },
 };

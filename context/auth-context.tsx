@@ -5,13 +5,42 @@ import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { authService } from '@/services/auth.service';
 import { AuthContextType, AuthResponseData, User } from '@/types/auth.types';
+import { AuthModal } from '@/components/auth/auth-modal';
+
+import { getGuestCartFromStorage, saveGuestCartToStorage } from '@/hooks/use-shopping';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  // Auth Modal & Action-driven authentication states
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authModalTab, setAuthModalTab] = useState<'login' | 'register' | 'forgot'>('login');
+  const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
+
   const router = useRouter();
+
+  const syncGuestCart = async () => {
+    const guestItems = getGuestCartFromStorage();
+    if (guestItems.length > 0) {
+      try {
+        await authService.getCurrentUser(); // verify session
+        const { cartService } = await import('@/services/shopping.service');
+        await cartService.mergeGuestCart(
+          guestItems.map((i) => ({
+            productId: i.productId,
+            variantId: i.variantId || null,
+            quantity: i.quantity,
+          }))
+        );
+        saveGuestCartToStorage([]);
+      } catch {
+        // Suppress guest cart merge error if any
+      }
+    }
+  };
 
   useEffect(() => {
     const initAuth = async () => {
@@ -38,6 +67,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.setItem('refreshToken', data.refreshToken);
     }
     setUser(data.user);
+    syncGuestCart();
   };
 
   const logout = async () => {
@@ -52,12 +82,51 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       setUser(null);
       toast.success('Logged out successfully');
-      router.push('/auth/login');
+      router.push('/');
     }
   };
 
   const updateUser = (updatedFields: Partial<User>) => {
     setUser((prevUser) => (prevUser ? { ...prevUser, ...updatedFields } : null));
+  };
+
+  const openAuthModal = (
+    tab: 'login' | 'register' | 'forgot' = 'login',
+    onSuccess?: () => void
+  ) => {
+    setAuthModalTab(tab);
+    if (onSuccess) {
+      setPendingAction(() => onSuccess);
+    }
+    setIsAuthModalOpen(true);
+  };
+
+  const closeAuthModal = () => {
+    setIsAuthModalOpen(false);
+    setPendingAction(null);
+  };
+
+  const requireCustomerAuth = (
+    actionCallback: () => void,
+    tab: 'login' | 'register' | 'forgot' = 'login'
+  ) => {
+    if (user) {
+      // Authenticated user: execute action immediately
+      actionCallback();
+    } else {
+      // Guest user: open Auth Modal and save callback for execution on success
+      openAuthModal(tab, actionCallback);
+    }
+  };
+
+  const handleModalSuccess = (data: AuthResponseData) => {
+    login(data);
+    setIsAuthModalOpen(false);
+
+    if (pendingAction) {
+      pendingAction();
+      setPendingAction(null);
+    }
   };
 
   return (
@@ -66,12 +135,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         user,
         isAuthenticated: !!user,
         isLoading,
+        isAuthModalOpen,
+        authModalTab,
         login,
         logout,
         updateUser,
+        openAuthModal,
+        closeAuthModal,
+        requireCustomerAuth,
       }}
     >
       {children}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        initialTab={authModalTab}
+        onClose={closeAuthModal}
+        onSuccess={handleModalSuccess}
+      />
     </AuthContext.Provider>
   );
 };

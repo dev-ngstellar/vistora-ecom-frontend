@@ -21,45 +21,45 @@ export const NewsletterSection: React.FC = () => {
   };
 
   return (
-    <section className="bg-slate-950 text-white rounded-3xl p-8 sm:p-14 border border-slate-800 shadow-2xl relative overflow-hidden my-16">
-      <div className="absolute -right-16 -top-16 w-64 h-64 rounded-full bg-indigo-900/20 blur-3xl" />
+    <section className="bg-maroon text-white rounded-2xl p-6 sm:p-10 border border-maroon-dark shadow-md relative overflow-hidden my-10">
+      <div className="absolute -right-16 -top-16 w-64 h-64 rounded-full bg-orange/20 blur-3xl" />
 
-      <div className="relative z-10 max-w-2xl mx-auto text-center space-y-6">
-        <span className="text-[10px] font-extrabold uppercase tracking-widest text-indigo-400 bg-indigo-950/80 px-3 py-1 rounded-full border border-indigo-800">
-          The Private Gazette
+      <div className="relative z-10 max-w-xl mx-auto text-center space-y-4">
+        <span className="text-[10px] font-extrabold uppercase tracking-widest text-white/90 bg-white/20 px-3 py-1 rounded-full border border-white/30 backdrop-blur-md">
+          Stay Updated
         </span>
 
-        <h2 className="text-3xl sm:text-5xl font-serif font-light tracking-tight text-white">
-          Subscribe to Editorial Invitations
+        <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white">
+          Subscribe for Exclusive Offers
         </h2>
 
-        <p className="text-xs sm:text-sm text-slate-300 font-light leading-relaxed">
-          Be the first to receive private runway collection invitations, bespoke tailoring previews, and seasonal lookbook releases.
+        <p className="text-xs text-white/90 font-medium leading-relaxed">
+          Be the first to get new arrivals, flash sale alerts, and promo coupon codes directly in your inbox.
         </p>
 
         {subscribed ? (
-          <div className="p-4 bg-emerald-950/80 border border-emerald-800 text-emerald-300 rounded-2xl flex items-center justify-center gap-2 text-xs font-bold">
-            <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-            <span>You have been added to the Vistora Concierge Gazette list.</span>
+          <div className="p-3 bg-emerald-900/80 border border-emerald-700 text-emerald-200 rounded-xl flex items-center justify-center gap-2 text-xs font-bold">
+            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+            <span>Thank you! You are subscribed to Vistora updates.</span>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row items-center gap-3 max-w-md mx-auto pt-2">
+          <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row items-center gap-2 max-w-md mx-auto pt-1">
             <div className="relative w-full">
-              <Mail className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
+              <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="email"
                 placeholder="Enter your email address..."
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-11 pr-4 py-3 bg-slate-900 border border-slate-800 rounded-full text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
+                className="w-full pl-10 pr-4 py-2.5 bg-white border border-transparent rounded-xl text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange transition-colors"
               />
             </div>
 
             <button
               type="submit"
-              className="w-full sm:w-auto px-7 py-3 rounded-full bg-white text-slate-950 font-extrabold text-xs uppercase tracking-widest hover:bg-slate-100 transition whitespace-nowrap flex items-center justify-center gap-2"
+              className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-orange hover:bg-orange-dark text-white font-extrabold text-xs uppercase tracking-wider transition whitespace-nowrap flex items-center justify-center gap-1.5 shadow-sm"
             >
-              <span>Join Gazette</span>
+              <span>Subscribe</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </form>

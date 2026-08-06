@@ -4,9 +4,9 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { Product } from '@/types/catalogue.types';
 import { QuickViewModal } from './quick-view-modal';
-import { Heart, Eye, Sparkles, Star } from 'lucide-react';
-import { useWishlistMutations } from '@/hooks/use-shopping';
-
+import { Heart, Eye, Sparkles, Star, ShoppingCart } from 'lucide-react';
+import { useWishlistMutations, useCartMutations } from '@/hooks/use-shopping';
+import { useAuth } from '@/context/auth-context';
 import { brandConfig } from '@/config';
 
 interface ProductCardProps {
@@ -17,6 +17,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const { addToWishlist } = useWishlistMutations();
+  const { addToCart } = useCartMutations();
+  const { requireCustomerAuth } = useAuth();
 
   const primaryImage =
     product.images?.find((img) => img.isPrimary)?.imageUrl ||
@@ -38,7 +40,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       ? Math.round(((compareAtPriceNum - priceNum) / compareAtPriceNum) * 100)
       : null;
 
-  // Color Swatches
   const colorVariants = Array.from(
     new Map(
       product.variants
@@ -47,55 +48,61 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     ).values()
   );
 
-  // Available Sizes
-  const availableSizes = Array.from(
-    new Set(product.variants?.filter((v) => v.size).map((v) => v.size!))
-  );
+  const isOutOfStock = product.status === 'OUT_OF_STOCK' || product.status === 'INACTIVE';
 
   return (
     <>
       <div
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
-        className="group relative rounded-3xl bg-white dark:bg-slate-900 p-3 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between overflow-hidden"
+        className="group relative rounded-2xl bg-white p-3 border border-slate-200/80 shadow-xs hover:shadow-xl hover:border-maroon/30 transition-all duration-300 flex flex-col justify-between overflow-hidden"
       >
-        {/* Image Frame with Smooth Hover Transition */}
-        <div className="relative w-full aspect-[3/4] rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-800 mb-3">
+        {/* Image Frame */}
+        <div className="relative w-full aspect-[4/5] rounded-xl overflow-hidden bg-slate-50 mb-3">
           <img
             src={isHovered && secondaryImage ? secondaryImage : primaryImage}
             alt={product.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-all duration-700 ease-out"
+            className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out ${
+              isOutOfStock ? 'grayscale opacity-75' : ''
+            }`}
           />
 
           {/* Badges */}
-          <div className="absolute top-2.5 left-2.5 flex flex-col gap-1 z-10">
-            {product.featured && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-400 text-slate-950 shadow-xs">
-                <Sparkles className="w-3 h-3 fill-slate-950" />
-                Featured
+          <div className="absolute top-2 left-2 flex flex-col gap-1 z-10">
+            {isOutOfStock && (
+              <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-rose-600 text-white shadow-xs uppercase tracking-wider">
+                Out of Stock
               </span>
             )}
-            {discountPercent && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-600 text-white shadow-xs">
+            {discountPercent && !isOutOfStock && (
+              <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-orange text-white shadow-xs">
                 -{discountPercent}%
+              </span>
+            )}
+            {product.featured && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-maroon text-white shadow-xs">
+                <Sparkles className="w-3 h-3 fill-white" />
+                Featured
               </span>
             )}
           </div>
 
           {/* Top Right Quick Actions */}
-          <div className="absolute top-2.5 right-2.5 flex flex-col gap-1.5 z-10">
+          <div className="absolute top-2 right-2 flex flex-col gap-1.5 z-10">
             <button
-              onClick={() => addToWishlist.mutate({ productId: product.id })}
-              className="p-2 rounded-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-md text-slate-700 dark:text-slate-200 hover:text-rose-600 hover:bg-white shadow-xs transition"
+              onClick={() => requireCustomerAuth(() => addToWishlist.mutate({ productId: product.id }))}
+              className="p-1.5 rounded-full bg-white/90 text-slate-700 hover:text-maroon hover:bg-white shadow-xs transition"
               aria-label="Add to Wishlist"
+              title="Add to Wishlist"
             >
               <Heart className="w-4 h-4" />
             </button>
 
             <button
               onClick={() => setIsQuickViewOpen(true)}
-              className="p-2 rounded-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-md text-slate-700 dark:text-slate-200 hover:text-indigo-600 hover:bg-white shadow-xs transition opacity-0 group-hover:opacity-100"
+              className="p-1.5 rounded-full bg-white/90 text-slate-700 hover:text-maroon hover:bg-white shadow-xs transition opacity-0 group-hover:opacity-100"
               aria-label="Quick View"
+              title="Quick View"
             >
               <Eye className="w-4 h-4" />
             </button>
@@ -106,64 +113,77 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         <div className="px-1 flex-1 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between gap-2 mb-1 text-[11px]">
-              <span className="font-extrabold text-indigo-600 uppercase tracking-wider truncate">
-                {product.category?.name || 'Couture'}
+              <span className="font-bold text-maroon uppercase tracking-wider truncate">
+                {product.category?.name || 'Fashion'}
               </span>
-              <div className="flex items-center gap-1 text-amber-500 font-bold">
-                <Star className="w-3 h-3 fill-amber-400" />
-                <span>4.9</span>
+              <div className="inline-flex items-center gap-1 bg-orange-light border border-orange-100 px-1.5 py-0.5 rounded text-orange font-bold text-[10px]">
+                <Star className="w-3 h-3 fill-orange text-orange" />
+                <span>4.8</span>
               </div>
             </div>
 
-            <Link href={`/product/${product.slug}`} className="block group-hover:text-indigo-600 transition-colors">
-              <h3 className="text-sm font-serif font-light text-slate-900 dark:text-white line-clamp-1">
+            <Link href={`/product/${product.slug}`} className="block group-hover:text-maroon transition-colors">
+              <h3 className="text-xs sm:text-sm font-bold text-slate-900 line-clamp-1">
                 {product.name}
               </h3>
             </Link>
 
-            {/* Color Swatch Dots */}
+            {/* Color Swatches */}
             {colorVariants.length > 0 && (
-              <div className="flex items-center gap-1.5 mt-2">
+              <div className="flex items-center gap-1 mt-1.5">
                 {colorVariants.slice(0, 4).map((c) => (
                   <span
                     key={c.color}
                     title={c.color}
-                    className="w-3 h-3 rounded-full border border-slate-300 shadow-xs inline-block"
+                    className="w-2.5 h-2.5 rounded-full border border-slate-300 inline-block"
                     style={{ backgroundColor: c.hex }}
                   />
                 ))}
                 {colorVariants.length > 4 && (
-                  <span className="text-[10px] text-slate-400 font-semibold">+{colorVariants.length - 4}</span>
+                  <span className="text-[9px] text-slate-400 font-semibold">+{colorVariants.length - 4}</span>
                 )}
               </div>
             )}
           </div>
 
-          {/* Price & Sizes Bar */}
-          <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-base font-black text-slate-900 dark:text-white">
-                {brandConfig.currency.symbol}{priceNum.toFixed(2)}
-              </span>
-              {compareAtPriceNum && compareAtPriceNum > priceNum && (
-                <span className="text-xs font-semibold text-slate-400 line-through">
-                  {brandConfig.currency.symbol}{compareAtPriceNum.toFixed(2)}
+          {/* Price & Add to Cart Bar */}
+          <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between gap-2">
+            <div>
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-sm sm:text-base font-extrabold text-slate-900">
+                  {brandConfig.currency.symbol}{priceNum.toFixed(2)}
                 </span>
-              )}
+                {compareAtPriceNum && compareAtPriceNum > priceNum && (
+                  <span className="text-[11px] font-semibold text-slate-400 line-through">
+                    {brandConfig.currency.symbol}{compareAtPriceNum.toFixed(2)}
+                  </span>
+                )}
+              </div>
             </div>
 
-            {availableSizes.length > 0 && (
-              <div className="flex items-center gap-1">
-                {availableSizes.slice(0, 3).map((sz) => (
-                  <span
-                    key={sz}
-                    className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-[10px] font-bold text-slate-600 dark:text-slate-300"
-                  >
-                    {sz}
-                  </span>
-                ))}
-              </div>
-            )}
+            <button
+              onClick={() =>
+                !isOutOfStock &&
+                addToCart.mutate({
+                  productId: product.id,
+                  quantity: 1,
+                  productName: product.name,
+                  productSlug: product.slug,
+                  price: priceNum,
+                  imageUrl: primaryImage,
+                })
+              }
+              disabled={isOutOfStock || addToCart.isPending}
+              className={`px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition shadow-xs ${
+                isOutOfStock
+                  ? 'bg-slate-200 text-slate-500 cursor-not-allowed'
+                  : 'bg-maroon hover:bg-maroon-dark text-white'
+              }`}
+              title={isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
+            >
+              <ShoppingCart className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">{isOutOfStock ? 'Out of Stock' : 'Add'}</span>
+            </button>
           </div>
         </div>
       </div>

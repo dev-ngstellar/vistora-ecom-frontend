@@ -40,7 +40,12 @@ export interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  isAuthModalOpen: boolean;
+  authModalTab: 'login' | 'register' | 'forgot';
   login: (data: AuthResponseData) => void;
   logout: () => Promise<void>;
   updateUser: (user: Partial<User>) => void;
+  openAuthModal: (tab?: 'login' | 'register' | 'forgot', onSuccess?: () => void) => void;
+  closeAuthModal: () => void;
+  requireCustomerAuth: (actionCallback: () => void, tab?: 'login' | 'register' | 'forgot') => void;
 }

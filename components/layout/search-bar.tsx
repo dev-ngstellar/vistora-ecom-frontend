@@ -10,7 +10,7 @@ interface SearchBarProps {
 }
 
 export const SearchBar: React.FC<SearchBarProps> = ({
-  placeholder = 'Search luxury fashion, apparel, brands...',
+  placeholder = 'Search products, categories, brands...',
   className = '',
 }) => {
   const [query, setQuery] = useState('');
@@ -32,7 +32,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={placeholder}
-          className="w-full pl-10 pr-9 py-2 bg-slate-100/80 focus:bg-white text-slate-900 placeholder-slate-400 text-xs sm:text-sm rounded-2xl border border-transparent focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all duration-200 outline-none"
+          className="w-full pl-10 pr-9 py-2.5 bg-slate-100/90 focus:bg-white text-slate-900 placeholder-slate-400 text-xs sm:text-sm rounded-xl border border-slate-200 focus:border-maroon focus:ring-2 focus:ring-maroon/10 transition-all duration-200 outline-none shadow-xs"
         />
         {query && (
           <button

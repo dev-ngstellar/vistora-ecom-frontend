@@ -101,15 +101,17 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
       {/* Brand Header */}
       <div className="h-16 px-4 flex items-center justify-between border-b border-slate-800 shrink-0">
         <Link href="/admin/dashboard" className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-amber-400 via-indigo-500 to-purple-600 text-white flex items-center justify-center font-black text-lg shadow-md shrink-0">
-            {brandConfig.logoLetter}
-          </div>
+          <img
+            src={brandConfig.logoUrl}
+            alt="Vistora Logo"
+            className="h-9 w-auto object-contain shrink-0"
+          />
           {!collapsed && (
             <div className="flex flex-col min-w-0">
-              <span className="font-extrabold text-sm tracking-tight text-white truncate">
+              <span className="font-black text-sm tracking-tight text-white truncate">
                 {brandConfig.shortName} ADMIN
               </span>
-              <span className="text-[9px] font-bold text-amber-400 uppercase tracking-widest leading-none">
+              <span className="text-[9px] font-bold text-orange uppercase tracking-widest leading-none">
                 Enterprise Portal
               </span>
             </div>
@@ -151,7 +153,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
                   onClick={onMobileClose}
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all duration-150 group relative ${
                     isActive
-                      ? 'bg-indigo-600 text-white shadow-md shadow-indigo-900/50'
+                      ? 'bg-maroon text-white shadow-md shadow-maroon/40'
                       : 'text-slate-400 hover:text-slate-100 hover:bg-slate-800/80'
                   }`}
                   title={collapsed ? item.label : undefined}
