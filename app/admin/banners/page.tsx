@@ -373,8 +373,6 @@ export default function AdminBannersPage() {
             <ImageUpload
               label="Desktop Image (16:9 or 21:9 ratio)"
               recommendedAspect="1920 x 1080 (HD)"
-              value={form.getFieldValue('imageUrl')}
-              onChange={(url) => form.setFieldValue('imageUrl', url)}
             />
           </Form.Item>
 
@@ -383,8 +381,6 @@ export default function AdminBannersPage() {
             <ImageUpload
               label="Mobile Image (Vertical 4:5 ratio)"
               recommendedAspect="800 x 1000 (Portrait)"
-              value={form.getFieldValue('mobileImageUrl')}
-              onChange={(url) => form.setFieldValue('mobileImageUrl', url)}
             />
           </Form.Item>
 
@@ -408,12 +404,18 @@ export default function AdminBannersPage() {
             </Form.Item>
           </div>
 
-          <Form.Item name="isActive" valuePropName="checked" label="Publication Status">
+          <Form.Item label="Publication Status">
             <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700">
-              <Switch checked={form.getFieldValue('isActive')} onChange={(checked) => form.setFieldValue('isActive', checked)} />
-              <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                {form.getFieldValue('isActive') ? 'Published & Active' : 'Draft / Hidden'}
-              </span>
+              <Form.Item name="isActive" valuePropName="checked" noStyle>
+                <Switch />
+              </Form.Item>
+              <Form.Item noStyle shouldUpdate={(prev, current) => prev.isActive !== current.isActive}>
+                {() => (
+                  <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                    {form.getFieldValue('isActive') ? 'Published & Active' : 'Draft / Hidden'}
+                  </span>
+                )}
+              </Form.Item>
             </div>
           </Form.Item>
         </Form>

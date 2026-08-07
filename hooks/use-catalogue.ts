@@ -7,6 +7,7 @@ import {
   brandService,
   collectionService,
   productService,
+  inventoryService,
 } from '@/services/catalogue.service';
 import {
   Brand,
@@ -15,6 +16,7 @@ import {
   Collection,
   Product,
   ProductQueryFilters,
+  PaginatedMeta,
 } from '@/types/catalogue.types';
 
 // ==================== CATEGORIES HOOKS ====================
@@ -208,6 +210,18 @@ export const useProduct = (idOrSlug: string) => {
   });
 };
 
+const getErrorMessage = (err: any, fallback: string): string => {
+  return (
+    err?.response?.data?.errors?.[0]?.message ||
+    (err?.response?.data?.errors?.[0]?.field
+      ? `${err.response.data.errors[0].field}: ${err.response.data.errors[0].message}`
+      : undefined) ||
+    err?.response?.data?.message ||
+    err?.message ||
+    fallback
+  );
+};
+
 export const useProductMutations = () => {
   const queryClient = useQueryClient();
 
@@ -217,8 +231,8 @@ export const useProductMutations = () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
       toast.success('Product created successfully');
     },
-    onError: (err: Error) => {
-      toast.error(err.message || 'Failed to create product');
+    onError: (err: any) => {
+      toast.error(getErrorMessage(err, 'Failed to create product'));
     },
   });
 
@@ -229,8 +243,8 @@ export const useProductMutations = () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
       toast.success('Product updated successfully');
     },
-    onError: (err: Error) => {
-      toast.error(err.message || 'Failed to update product');
+    onError: (err: any) => {
+      toast.error(getErrorMessage(err, 'Failed to update product'));
     },
   });
 
@@ -240,8 +254,8 @@ export const useProductMutations = () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
       toast.success('Product deleted successfully');
     },
-    onError: (err: Error) => {
-      toast.error(err.message || 'Failed to delete product');
+    onError: (err: any) => {
+      toast.error(getErrorMessage(err, 'Failed to delete product'));
     },
   });
 
@@ -251,10 +265,62 @@ export const useProductMutations = () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
       toast.success('Product duplicated successfully as Draft');
     },
-    onError: (err: Error) => {
-      toast.error(err.message || 'Failed to duplicate product');
+    onError: (err: any) => {
+      toast.error(getErrorMessage(err, 'Failed to duplicate product'));
     },
   });
 
-  return { createProduct, updateProduct, deleteProduct, duplicateProduct };
+  const bulkAction = useMutation({
+    mutationFn: ({
+      action,
+      productIds,
+      targetId,
+    }: {
+      action: string;
+      productIds: string[];
+      targetId?: string;
+    }) => productService.bulkAction(action, productIds, targetId),
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      toast.success(`Bulk action '${variables.action}' applied to ${data.affectedCount} product(s)`);
+    },
+    onError: (err: any) => {
+      toast.error(getErrorMessage(err, 'Failed to apply bulk action'));
+    },
+  });
+
+  return { createProduct, updateProduct, deleteProduct, duplicateProduct, bulkAction };
+};
+
+// ==================== INVENTORY HOOKS ====================
+export const useInventory = (filters?: { q?: string; stockStatus?: string }) => {
+  return useQuery({
+    queryKey: ['inventory', filters],
+    queryFn: () => inventoryService.list(filters),
+  });
+};
+
+export const useInventoryMutations = () => {
+  const queryClient = useQueryClient();
+
+  const adjustStock = useMutation({
+    mutationFn: (data: {
+      inventoryId: string;
+      action: 'ADD' | 'REMOVE' | 'SET';
+      quantity: number;
+      reason: string;
+      lowStockThreshold?: number;
+      remarks?: string;
+    }) => inventoryService.adjustStock(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['inventory'] });
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      toast.success('Inventory stock adjusted successfully');
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || 'Failed to adjust stock');
+    },
+  });
+
+  return { adjustStock };
 };

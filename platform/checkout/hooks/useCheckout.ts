@@ -19,7 +19,7 @@ export const useCheckout = () => {
   const [currentStep, setCurrentStep] = useState<CheckoutStep>(CheckoutStep.SHIPPING_ADDRESS);
   const [highestStepReached, setHighestStepReached] = useState<CheckoutStep>(CheckoutStep.SHIPPING_ADDRESS);
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
-  const [selectedShippingMethodId, setSelectedShippingMethodId] = useState<string | null>(null);
+  const [selectedShippingMethodId, setSelectedShippingMethodId] = useState<string | null>('standard-delivery');
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<'RAZORPAY' | 'STRIPE' | 'COD'>('COD');
   const [notes, setNotes] = useState<string>('');
   const [createdOrderId, setCreatedOrderId] = useState<string | null>(null);

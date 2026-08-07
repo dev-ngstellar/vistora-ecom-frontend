@@ -1,22 +1,94 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useBrands, useCategories, useCollections, useProductMutations, useProducts } from '@/hooks/use-catalogue';
-import { Product } from '@/types/catalogue.types';
-import { Table, Modal, Form, Input, Select, InputNumber, Button, Tag, Space, Avatar, Drawer, Switch } from 'antd';
-import { Plus, Edit, Trash2, Copy, ShoppingBag, Search, Sparkles } from 'lucide-react';
+import {
+  useBrands,
+  useCategories,
+  useCollections,
+  useProductMutations,
+  useProducts,
+} from '@/hooks/use-catalogue';
+import { Product, ProductStatus, ProductVariant, ProductImage } from '@/types/catalogue.types';
+import { MediaUpload, UploadedMediaItem } from '@/components/ui/media-upload';
+import { brandConfig } from '@/config';
+import {
+  Table,
+  Modal,
+  Form,
+  Input,
+  Select,
+  InputNumber,
+  Button,
+  Tag,
+  Space,
+  Avatar,
+  Drawer,
+  Switch,
+  Tabs,
+  Card,
+  Popconfirm,
+  Badge,
+} from 'antd';
+import {
+  Plus,
+  Edit,
+  Trash2,
+  Copy,
+  ShoppingBag,
+  Search,
+  Sparkles,
+  Filter,
+  RefreshCw,
+  CheckCircle2,
+  XCircle,
+  FolderPlus,
+  Award,
+  Layers,
+} from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function AdminProductsPage() {
-  const [query, setQuery] = useState<{ q?: string; categoryId?: string; page: number }>({ page: 1 });
-  const { data: productsData, isLoading } = useProducts({ page: query.page, limit: 10, q: query.q, categoryId: query.categoryId });
+  // Query Filters & Pagination State
+  const [query, setQuery] = useState<{
+    q?: string;
+    categoryId?: string;
+    brandId?: string;
+    collectionId?: string;
+    status?: ProductStatus;
+    page: number;
+  }>({ page: 1 });
+
+  const { data: productsData, isLoading, refetch } = useProducts({
+    page: query.page,
+    limit: 10,
+    q: query.q,
+    categoryId: query.categoryId,
+    brandId: query.brandId,
+    collectionId: query.collectionId,
+    status: query.status,
+  });
+
   const { data: categories } = useCategories();
   const { data: brands } = useBrands();
   const { data: collections } = useCollections();
 
-  const { createProduct, updateProduct, deleteProduct, duplicateProduct } = useProductMutations();
+  const { createProduct, updateProduct, deleteProduct, duplicateProduct, bulkAction } =
+    useProductMutations();
 
+  // Drawer State & Form
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [images, setImages] = useState<UploadedMediaItem[]>([]);
+  const [variants, setVariants] = useState<Partial<ProductVariant>[]>([]);
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+
+  // Bulk Modal State
+  const [bulkAssignModal, setBulkAssignModal] = useState<{
+    open: boolean;
+    type: 'CATEGORY' | 'BRAND';
+  }>({ open: false, type: 'CATEGORY' });
+  const [bulkTargetId, setBulkTargetId] = useState<string>('');
+
   const [form] = Form.useForm();
 
   const products = productsData?.items || [];
@@ -25,29 +97,46 @@ export default function AdminProductsPage() {
   const handleOpenDrawer = (product?: Product) => {
     if (product) {
       setEditingProduct(product);
+      setImages(
+        product.images?.map((img) => ({
+          imageUrl: img.imageUrl,
+          isPrimary: img.isPrimary,
+          sortOrder: img.sortOrder,
+          altText: img.altText || '',
+        })) || []
+      );
+      setVariants(product.variants || []);
       form.setFieldsValue({
         name: product.name,
         slug: product.slug,
         sku: product.sku,
+        barcode: product.barcode,
         categoryId: product.categoryId,
         brandId: product.brandId,
         collectionId: product.collectionId,
         price: product.price,
         compareAtPrice: product.compareAtPrice,
         costPrice: product.costPrice,
+        taxRate: product.taxRate,
         shortDescription: product.shortDescription,
         description: product.description,
         status: product.status,
         visibility: product.visibility,
         featured: product.featured,
+        metaTitle: product.metaTitle,
+        metaDescription: product.metaDescription,
+        metaKeywords: product.metaKeywords,
       });
     } else {
       setEditingProduct(null);
+      setImages([]);
+      setVariants([]);
       form.resetFields();
       form.setFieldsValue({
         status: 'ACTIVE',
         visibility: 'PUBLIC',
         featured: false,
+        price: 0,
       });
     }
     setIsDrawerOpen(true);
@@ -55,10 +144,36 @@ export default function AdminProductsPage() {
 
   const handleFormSubmit = async (values: Record<string, any>) => {
     const payload: Record<string, any> = {};
+    const numericFields = ['price', 'compareAtPrice', 'costPrice', 'taxRate'];
+    
     Object.keys(values).forEach((key) => {
       const val = values[key];
-      payload[key] = val === '' ? null : val;
+      if (val === '' || val === undefined) {
+        payload[key] = null;
+      } else if (numericFields.includes(key) && val !== null) {
+        payload[key] = Number(val);
+      } else {
+        payload[key] = val;
+      }
     });
+
+    // Attach processed images and variants
+    payload.images = images.map((img, idx) => ({
+      imageUrl: img.imageUrl,
+      isPrimary: img.isPrimary ?? idx === 0,
+      sortOrder: idx,
+      altText: img.altText || payload.name,
+    }));
+
+    payload.variants = variants.map((v) => ({
+      sku: v.sku || `${payload.sku}-${v.color || ''}-${v.size || ''}`,
+      color: v.color || null,
+      size: v.size || null,
+      barcode: v.barcode || null,
+      price: v.price != null ? Number(v.price) : Number(payload.price || 0),
+      stock: v.stock != null ? Number(v.stock) : 0,
+      status: v.status || 'ACTIVE',
+    }));
 
     if (editingProduct) {
       await updateProduct.mutateAsync({ id: editingProduct.id, data: payload as Partial<Product> });
@@ -88,47 +203,154 @@ export default function AdminProductsPage() {
     });
   };
 
+  // Variant Helpers inside Form
+  const handleAddVariant = () => {
+    const defaultSku = `${form.getFieldValue('sku') || 'SKU'}-VAR-${variants.length + 1}`;
+    setVariants([
+      ...variants,
+      {
+        sku: defaultSku,
+        color: '',
+        size: '',
+        price: form.getFieldValue('price') || 0,
+        stock: 10,
+        status: 'ACTIVE',
+      },
+    ]);
+  };
+
+  const handleUpdateVariant = (index: number, key: string, value: any) => {
+    const updated = [...variants];
+    updated[index] = { ...updated[index], [key]: value };
+    setVariants(updated);
+  };
+
+  const handleRemoveVariant = (index: number) => {
+    setVariants(variants.filter((_, i) => i !== index));
+  };
+
+  // Bulk Actions
+  const handleExecuteBulk = async (action: string) => {
+    if (selectedRowKeys.length === 0) {
+      toast.error('Please select products using table checkboxes first');
+      return;
+    }
+
+    if (action === 'ASSIGN_CATEGORY' || action === 'ASSIGN_BRAND') {
+      setBulkAssignModal({ open: true, type: action === 'ASSIGN_CATEGORY' ? 'CATEGORY' : 'BRAND' });
+      setBulkTargetId('');
+      return;
+    }
+
+    Modal.confirm({
+      title: `Bulk ${action}`,
+      content: `Are you sure you want to perform '${action}' on ${selectedRowKeys.length} selected product(s)?`,
+      okText: 'Confirm Action',
+      onOk: async () => {
+        await bulkAction.mutateAsync({
+          action,
+          productIds: selectedRowKeys as string[],
+        });
+        setSelectedRowKeys([]);
+      },
+    });
+  };
+
+  const handleConfirmBulkAssign = async () => {
+    if (!bulkTargetId) {
+      toast.error('Please select a target option');
+      return;
+    }
+    const action = bulkAssignModal.type === 'CATEGORY' ? 'ASSIGN_CATEGORY' : 'ASSIGN_BRAND';
+    await bulkAction.mutateAsync({
+      action,
+      productIds: selectedRowKeys as string[],
+      targetId: bulkTargetId,
+    });
+    setBulkAssignModal({ open: false, type: 'CATEGORY' });
+    setSelectedRowKeys([]);
+  };
+
   const columns = [
     {
-      title: 'Product Info',
+      title: 'Thumbnail & Product',
       dataIndex: 'name',
       key: 'name',
       render: (text: string, record: Product) => {
-        const image = record.images?.[0]?.imageUrl || 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=100';
+        const image =
+          record.images?.find((i) => i.isPrimary)?.imageUrl ||
+          record.images?.[0]?.imageUrl ||
+          'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=100';
+
         return (
           <div className="flex items-center gap-3">
-            <Avatar src={image} shape="square" size={48} className="rounded-xl border border-slate-200" />
+            <Avatar src={image} shape="square" size={52} className="rounded-xl border border-slate-200 shrink-0" />
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-bold text-slate-900 block">{text}</span>
+                <span className="font-bold text-slate-900 block line-clamp-1">{text}</span>
                 {record.featured && (
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-100 text-amber-800 shrink-0">
                     Featured
                   </span>
                 )}
               </div>
-              <span className="text-xs text-slate-400 font-mono">SKU: {record.sku}</span>
+              <div className="flex items-center gap-2 text-[11px] text-slate-400 font-mono mt-0.5">
+                <span>SKU: {record.sku}</span>
+                {record.barcode && <span>• Barcode: {record.barcode}</span>}
+              </div>
             </div>
           </div>
         );
       },
     },
     {
-      title: 'Category',
-      dataIndex: 'category',
-      key: 'category',
-      render: (cat: any) => <span className="text-xs font-semibold text-slate-700">{cat?.name || 'N/A'}</span>,
+      title: 'Brand & Category',
+      key: 'brand_category',
+      render: (_: any, record: Product) => (
+        <div className="space-y-0.5 text-xs">
+          <div className="font-bold text-slate-800 flex items-center gap-1">
+            <Award className="w-3.5 h-3.5 text-indigo-600" />
+            <span>{record.brand?.name || 'Unbranded'}</span>
+          </div>
+          <div className="text-slate-500 font-semibold flex items-center gap-1">
+            <Layers className="w-3.5 h-3.5 text-slate-400" />
+            <span>{record.category?.name || 'General'}</span>
+          </div>
+        </div>
+      ),
     },
     {
-      title: 'Price',
+      title: 'Total Stock',
+      key: 'stock',
+      render: (_: any, record: Product) => {
+        const totalStock = record.variants && record.variants.length > 0
+          ? record.variants.reduce((sum, v) => sum + (v.stock || 0), 0)
+          : 0;
+
+        return (
+          <div>
+            <span className="font-extrabold text-slate-900 block text-xs">{totalStock} units</span>
+            {record.variants && record.variants.length > 0 && (
+              <span className="text-[10px] font-semibold text-slate-400">
+                {record.variants.length} variant(s)
+              </span>
+            )}
+          </div>
+        );
+      },
+    },
+    {
+      title: 'Selling Price',
       dataIndex: 'price',
       key: 'price',
       render: (price: number, record: Product) => (
         <div>
-          <span className="font-extrabold text-slate-900">${Number(price).toFixed(2)}</span>
+          <span className="font-extrabold text-slate-900 block text-xs">
+            {brandConfig.currency.symbol}{Number(price).toFixed(2)}
+          </span>
           {record.compareAtPrice && (
-            <span className="text-xs text-slate-400 line-through block">
-              ${Number(record.compareAtPrice).toFixed(2)}
+            <span className="text-[11px] text-slate-400 line-through block">
+              {brandConfig.currency.symbol}{Number(record.compareAtPrice).toFixed(2)}
             </span>
           )}
         </div>
@@ -138,15 +360,26 @@ export default function AdminProductsPage() {
       title: 'Status',
       dataIndex: 'status',
       key: 'status',
-      render: (status: string) => {
-        const colorMap: Record<string, string> = {
+      render: (status: ProductStatus) => {
+        const colorMap: Record<ProductStatus, string> = {
           ACTIVE: 'green',
           DRAFT: 'orange',
           OUT_OF_STOCK: 'red',
           INACTIVE: 'volcano',
+          ARCHIVED: 'default',
         };
         return <Tag color={colorMap[status] || 'default'}>{status}</Tag>;
       },
+    },
+    {
+      title: 'Updated Date',
+      dataIndex: 'updatedAt',
+      key: 'updatedAt',
+      render: (date: string) => (
+        <span className="text-xs font-semibold text-slate-500">
+          {new Date(date).toLocaleDateString()}
+        </span>
+      ),
     },
     {
       title: 'Actions',
@@ -179,182 +412,433 @@ export default function AdminProductsPage() {
 
   return (
     <div className="space-y-6 pb-12">
-      {/* Header */}
+      {/* Page Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs">
         <div>
           <div className="flex items-center gap-2 text-indigo-600 text-xs font-bold uppercase tracking-wider mb-1">
             <ShoppingBag className="w-4 h-4" />
-            <span>Catalogue Operations</span>
+            <span>Catalogue & Product Suite</span>
           </div>
           <h1 className="text-2xl font-black text-slate-900 tracking-tight">Products Management</h1>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Manage your master product catalog, media gallery, pricing, SEO metadata, and product variants.
+          </p>
         </div>
 
         <Button
           type="primary"
           icon={<Plus className="w-4 h-4" />}
           onClick={() => handleOpenDrawer()}
-          className="rounded-2xl font-bold bg-slate-900 hover:bg-indigo-600"
+          className="rounded-2xl font-bold bg-slate-900 hover:bg-indigo-600 h-11 px-5"
         >
           Create Product
         </Button>
       </div>
 
-      {/* Filter Toolbar */}
-      <div className="bg-white p-4 rounded-3xl border border-slate-200/80 shadow-xs flex flex-col sm:flex-row gap-4">
-        <Input
-          placeholder="Search by product name or SKU..."
-          prefix={<Search className="w-4 h-4 text-slate-400" />}
-          value={query.q || ''}
-          onChange={(e) => setQuery((prev) => ({ ...prev, q: e.target.value, page: 1 }))}
-          className="rounded-xl max-w-sm"
-          allowClear
-        />
+      {/* Filter & Search Bar */}
+      <div className="bg-white p-4 rounded-3xl border border-slate-200/80 shadow-xs space-y-4">
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Keyword Search */}
+          <div className="relative flex-1 min-w-[220px]">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              value={query.q || ''}
+              onChange={(e) => setQuery((prev) => ({ ...prev, q: e.target.value, page: 1 }))}
+              placeholder="Search product name, SKU, barcode..."
+              className="w-full pl-10 pr-4 py-2 rounded-2xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-600"
+            />
+          </div>
 
-        <Select
-          placeholder="Filter by Category"
-          value={query.categoryId}
-          onChange={(val) => setQuery((prev) => ({ ...prev, categoryId: val, page: 1 }))}
-          className="w-48"
-          allowClear
-        >
-          {categories?.map((cat) => (
-            <Select.Option key={cat.id} value={cat.id}>
-              {cat.name}
-            </Select.Option>
-          ))}
-        </Select>
+          {/* Category Filter */}
+          <Select
+            allowClear
+            placeholder="Filter by Category"
+            value={query.categoryId}
+            onChange={(val) => setQuery((prev) => ({ ...prev, categoryId: val, page: 1 }))}
+            className="w-44"
+            options={categories?.map((c) => ({ label: c.name, value: c.id }))}
+          />
+
+          {/* Brand Filter */}
+          <Select
+            allowClear
+            placeholder="Filter by Brand"
+            value={query.brandId}
+            onChange={(val) => setQuery((prev) => ({ ...prev, brandId: val, page: 1 }))}
+            className="w-44"
+            options={brands?.map((b) => ({ label: b.name, value: b.id }))}
+          />
+
+          {/* Status Filter */}
+          <Select
+            allowClear
+            placeholder="Filter by Status"
+            value={query.status}
+            onChange={(val) => setQuery((prev) => ({ ...prev, status: val, page: 1 }))}
+            className="w-40"
+            options={[
+              { label: 'ACTIVE', value: 'ACTIVE' },
+              { label: 'DRAFT', value: 'DRAFT' },
+              { label: 'OUT_OF_STOCK', value: 'OUT_OF_STOCK' },
+              { label: 'INACTIVE', value: 'INACTIVE' },
+              { label: 'ARCHIVED', value: 'ARCHIVED' },
+            ]}
+          />
+        </div>
+
+        {/* Bulk Toolbar */}
+        {selectedRowKeys.length > 0 && (
+          <div className="bg-indigo-50 border border-indigo-200 p-3 rounded-2xl flex items-center justify-between gap-4">
+            <span className="text-xs font-bold text-indigo-900">
+              {selectedRowKeys.length} product(s) selected
+            </span>
+            <div className="flex items-center gap-2">
+              <Button
+                size="small"
+                onClick={() => handleExecuteBulk('ACTIVATE')}
+                icon={<CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />}
+              >
+                Activate
+              </Button>
+              <Button
+                size="small"
+                onClick={() => handleExecuteBulk('DEACTIVATE')}
+                icon={<XCircle className="w-3.5 h-3.5 text-amber-600" />}
+              >
+                Deactivate
+              </Button>
+              <Button
+                size="small"
+                onClick={() => handleExecuteBulk('ASSIGN_CATEGORY')}
+                icon={<FolderPlus className="w-3.5 h-3.5 text-indigo-600" />}
+              >
+                Assign Category
+              </Button>
+              <Button
+                size="small"
+                onClick={() => handleExecuteBulk('ASSIGN_BRAND')}
+                icon={<Award className="w-3.5 h-3.5 text-purple-600" />}
+              >
+                Assign Brand
+              </Button>
+              <Button
+                size="small"
+                danger
+                onClick={() => handleExecuteBulk('DELETE')}
+                icon={<Trash2 className="w-3.5 h-3.5" />}
+              >
+                Delete Selected
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Products Table */}
-      <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs">
+      {/* Main Table */}
+      <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden">
         <Table
-          dataSource={products}
+          rowSelection={{
+            selectedRowKeys,
+            onChange: (keys) => setSelectedRowKeys(keys),
+          }}
           columns={columns}
+          dataSource={products}
           rowKey="id"
           loading={isLoading}
           pagination={{
             current: meta.page,
-            total: meta.total,
             pageSize: meta.limit,
-            onChange: (p) => setQuery((prev) => ({ ...prev, page: p })),
+            total: meta.total,
+            onChange: (page) => setQuery((prev) => ({ ...prev, page })),
           }}
         />
       </div>
 
-      {/* Product Drawer Form */}
+      {/* Product Create / Edit Drawer */}
       <Drawer
-        title={editingProduct ? 'Edit Product' : 'Create New Product'}
-        size={560}
+        title={editingProduct ? `Edit Product: ${editingProduct.name}` : 'Create New Product'}
+        styles={{ wrapper: { width: '720px', maxWidth: '100vw' } }}
         onClose={() => setIsDrawerOpen(false)}
         open={isDrawerOpen}
         extra={
           <Button
             type="primary"
             onClick={() => form.submit()}
-            loading={createProduct.isPending || updateProduct.isPending}
-            className="bg-slate-900"
+            className="font-bold bg-slate-900 hover:bg-indigo-600"
           >
-            Save Product
+            {editingProduct ? 'Save Product' : 'Publish Product'}
           </Button>
         }
       >
-        <Form form={form} layout="vertical" onFinish={handleFormSubmit} preserve={false}>
-          <Form.Item
-            name="name"
-            label="Product Title"
-            rules={[{ required: true, message: 'Please enter product title' }]}
-          >
-            <Input placeholder="e.g. Italian Silk Evening Gown" />
-          </Form.Item>
+        <Form form={form} layout="vertical" onFinish={handleFormSubmit} className="space-y-6">
+          <Tabs
+            defaultActiveKey="1"
+            items={[
+              {
+                key: '1',
+                label: <span className="font-bold text-xs">1. Basic Info & Media</span>,
+                children: (
+                  <div className="space-y-4 pt-2">
+                    <Form.Item
+                      name="name"
+                      label={<span className="font-bold text-xs">Product Name</span>}
+                      rules={[{ required: true, message: 'Product name is required' }]}
+                    >
+                      <Input placeholder="e.g. Italian Cashmere Blazer" className="rounded-xl" />
+                    </Form.Item>
 
-          <div className="grid grid-cols-2 gap-4">
-            <Form.Item
-              name="sku"
-              label="SKU Code"
-              rules={[{ required: true, message: 'Please enter SKU' }]}
-            >
-              <Input placeholder="e.g. VIS-DRS-001" />
-            </Form.Item>
+                    <div className="grid grid-cols-2 gap-4">
+                      <Form.Item
+                        name="sku"
+                        label={<span className="font-bold text-xs">SKU Code</span>}
+                        rules={[{ required: true, message: 'SKU is required' }]}
+                      >
+                        <Input placeholder="e.g. BLZ-101" className="rounded-xl font-mono" />
+                      </Form.Item>
 
-            <Form.Item
-              name="categoryId"
-              label="Category"
-              rules={[{ required: true, message: 'Please select category' }]}
-            >
-              <Select placeholder="Select Category">
-                {categories?.map((cat) => (
-                  <Select.Option key={cat.id} value={cat.id}>
-                    {cat.name}
-                  </Select.Option>
-                ))}
-              </Select>
-            </Form.Item>
-          </div>
+                      <Form.Item name="barcode" label={<span className="font-bold text-xs">Barcode / EAN</span>}>
+                        <Input placeholder="e.g. 890123456789" className="rounded-xl font-mono" />
+                      </Form.Item>
+                    </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <Form.Item name="brandId" label="Brand">
-              <Select placeholder="Select Brand (Optional)" allowClear>
-                {brands?.map((b) => (
-                  <Select.Option key={b.id} value={b.id}>
-                    {b.name}
-                  </Select.Option>
-                ))}
-              </Select>
-            </Form.Item>
+                    {/* Shared Media Upload Component */}
+                    <div>
+                      <label className="font-bold text-xs block mb-2">Product Images Gallery</label>
+                      <MediaUpload
+                        multiple
+                        value={images}
+                        onChange={(val) => setImages(val || [])}
+                      />
+                    </div>
 
-            <Form.Item name="collectionId" label="Collection">
-              <Select placeholder="Select Collection (Optional)" allowClear>
-                {collections?.map((col) => (
-                  <Select.Option key={col.id} value={col.id}>
-                    {col.name}
-                  </Select.Option>
-                ))}
-              </Select>
-            </Form.Item>
-          </div>
+                    <Form.Item name="shortDescription" label={<span className="font-bold text-xs">Short Summary</span>}>
+                      <Input.TextArea rows={2} placeholder="Brief product summary for cards..." className="rounded-xl" />
+                    </Form.Item>
 
-          <div className="grid grid-cols-3 gap-4">
-            <Form.Item
-              name="price"
-              label="Retail Price ($)"
-              rules={[{ required: true, message: 'Price is required' }]}
-            >
-              <InputNumber min={0} precision={2} className="w-full" />
-            </Form.Item>
+                    <Form.Item name="description" label={<span className="font-bold text-xs">Full Editorial Description</span>}>
+                      <Input.TextArea rows={4} placeholder="Comprehensive description..." className="rounded-xl" />
+                    </Form.Item>
+                  </div>
+                ),
+              },
+              {
+                key: '2',
+                label: <span className="font-bold text-xs">2. Organization & Pricing</span>,
+                children: (
+                  <div className="space-y-4 pt-2">
+                    <div className="grid grid-cols-3 gap-4">
+                      <Form.Item
+                        name="categoryId"
+                        label={<span className="font-bold text-xs">Category</span>}
+                        rules={[{ required: true, message: 'Category is required' }]}
+                      >
+                        <Select
+                          placeholder="Select Category"
+                          options={categories?.map((c) => ({ label: c.name, value: c.id }))}
+                        />
+                      </Form.Item>
 
-            <Form.Item name="compareAtPrice" label="Compare Price ($)">
-              <InputNumber min={0} precision={2} className="w-full" />
-            </Form.Item>
+                      <Form.Item name="brandId" label={<span className="font-bold text-xs">Brand</span>}>
+                        <Select
+                          allowClear
+                          placeholder="Select Brand"
+                          options={brands?.map((b) => ({ label: b.name, value: b.id }))}
+                        />
+                      </Form.Item>
 
-            <Form.Item name="costPrice" label="Cost Price ($)">
-              <InputNumber min={0} precision={2} className="w-full" />
-            </Form.Item>
-          </div>
+                      <Form.Item name="collectionId" label={<span className="font-bold text-xs">Collection</span>}>
+                        <Select
+                          allowClear
+                          placeholder="Select Collection"
+                          options={collections?.map((cl) => ({ label: cl.name, value: cl.id }))}
+                        />
+                      </Form.Item>
+                    </div>
 
-          <Form.Item name="shortDescription" label="Short Summary">
-            <Input.TextArea rows={2} placeholder="Brief product summary..." />
-          </Form.Item>
+                    <div className="grid grid-cols-2 gap-4">
+                      <Form.Item
+                        name="price"
+                        label={<span className="font-bold text-xs">Retail Price ({brandConfig.currency.symbol})</span>}
+                        rules={[{ required: true, message: 'Price is required' }]}
+                      >
+                        <InputNumber min={0} className="w-full rounded-xl" prefix={brandConfig.currency.symbol} />
+                      </Form.Item>
 
-          <Form.Item name="description" label="Full Editorial Description">
-            <Input.TextArea rows={4} placeholder="Full product story..." />
-          </Form.Item>
+                      <Form.Item
+                        name="compareAtPrice"
+                        label={<span className="font-bold text-xs">Compare At Price ({brandConfig.currency.symbol})</span>}
+                      >
+                        <InputNumber min={0} className="w-full rounded-xl" prefix={brandConfig.currency.symbol} />
+                      </Form.Item>
+                    </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <Form.Item name="status" label="Publication Status">
-              <Select>
-                <Select.Option value="ACTIVE">Active</Select.Option>
-                <Select.Option value="DRAFT">Draft</Select.Option>
-                <Select.Option value="OUT_OF_STOCK">Out of Stock</Select.Option>
-                <Select.Option value="INACTIVE">Inactive</Select.Option>
-              </Select>
-            </Form.Item>
+                    <div className="grid grid-cols-2 gap-4">
+                      <Form.Item name="costPrice" label={<span className="font-bold text-xs">Cost Price ({brandConfig.currency.symbol})</span>}>
+                        <InputNumber min={0} className="w-full rounded-xl" prefix={brandConfig.currency.symbol} />
+                      </Form.Item>
 
-            <Form.Item name="featured" label="Featured Showcase" valuePropName="checked">
-              <Switch />
-            </Form.Item>
-          </div>
+                      <Form.Item name="taxRate" label={<span className="font-bold text-xs">Tax Rate (%)</span>}>
+                        <InputNumber min={0} max={100} className="w-full rounded-xl" suffix="%" />
+                      </Form.Item>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-4 pt-2">
+                      <Form.Item name="status" label={<span className="font-bold text-xs">Publication Status</span>}>
+                        <Select
+                          options={[
+                            { label: 'Active', value: 'ACTIVE' },
+                            { label: 'Draft', value: 'DRAFT' },
+                            { label: 'Out of Stock', value: 'OUT_OF_STOCK' },
+                            { label: 'Inactive', value: 'INACTIVE' },
+                            { label: 'Archived', value: 'ARCHIVED' },
+                          ]}
+                        />
+                      </Form.Item>
+
+                      <Form.Item name="visibility" label={<span className="font-bold text-xs">Catalog Visibility</span>}>
+                        <Select
+                          options={[
+                            { label: 'Public Storefront', value: 'PUBLIC' },
+                            { label: 'Private / Hidden', value: 'PRIVATE' },
+                          ]}
+                        />
+                      </Form.Item>
+
+                      <Form.Item name="featured" label={<span className="font-bold text-xs">Featured Showcase</span>} valuePropName="checked">
+                        <Switch />
+                      </Form.Item>
+                    </div>
+                  </div>
+                ),
+              },
+              {
+                key: '3',
+                label: <span className="font-bold text-xs">3. Product Variants</span>,
+                children: (
+                  <div className="space-y-4 pt-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-slate-500 font-semibold">
+                        Add specific color, size, and SKU variations for this product.
+                      </span>
+                      <Button
+                        type="dashed"
+                        icon={<Plus className="w-3.5 h-3.5" />}
+                        onClick={handleAddVariant}
+                        className="font-bold text-xs"
+                      >
+                        Add Variant
+                      </Button>
+                    </div>
+
+                    {variants.length === 0 ? (
+                      <div className="p-6 text-center border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 font-medium text-xs">
+                        No variants added. Product will sell as a single standard item.
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {variants.map((v, idx) => (
+                          <Card key={idx} size="small" className="rounded-2xl border-slate-200 shadow-2xs">
+                            <div className="grid grid-cols-6 gap-2 items-center">
+                              <Input
+                                placeholder="Color"
+                                value={v.color || ''}
+                                onChange={(e) => handleUpdateVariant(idx, 'color', e.target.value)}
+                                className="text-xs"
+                              />
+                              <Input
+                                placeholder="Size"
+                                value={v.size || ''}
+                                onChange={(e) => handleUpdateVariant(idx, 'size', e.target.value)}
+                                className="text-xs"
+                              />
+                              <Input
+                                placeholder="SKU"
+                                value={v.sku || ''}
+                                onChange={(e) => handleUpdateVariant(idx, 'sku', e.target.value)}
+                                className="text-xs font-mono"
+                              />
+                              <InputNumber
+                                placeholder="Price"
+                                value={v.price}
+                                onChange={(val) => handleUpdateVariant(idx, 'price', val)}
+                                className="w-full text-xs"
+                              />
+                              <InputNumber
+                                placeholder="Stock"
+                                value={v.stock}
+                                onChange={(val) => handleUpdateVariant(idx, 'stock', val)}
+                                className="w-full text-xs"
+                              />
+                              <Button
+                                danger
+                                type="text"
+                                icon={<Trash2 className="w-4 h-4" />}
+                                onClick={() => handleRemoveVariant(idx)}
+                              />
+                            </div>
+                          </Card>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ),
+              },
+              {
+                key: '4',
+                label: <span className="font-bold text-xs">4. SEO Metadata</span>,
+                children: (
+                  <div className="space-y-4 pt-2">
+                    <Form.Item name="metaTitle" label={<span className="font-bold text-xs">Meta Title</span>}>
+                      <Input placeholder="SEO Search Engine Title" className="rounded-xl" />
+                    </Form.Item>
+
+                    <Form.Item name="metaDescription" label={<span className="font-bold text-xs">Meta Description</span>}>
+                      <Input.TextArea rows={3} placeholder="SEO Search Snippet Summary..." className="rounded-xl" />
+                    </Form.Item>
+
+                    <Form.Item name="metaKeywords" label={<span className="font-bold text-xs">Meta Keywords</span>}>
+                      <Input placeholder="e.g. blazer, fashion, cashmere, luxury" className="rounded-xl" />
+                    </Form.Item>
+                  </div>
+                ),
+              },
+            ]}
+          />
         </Form>
       </Drawer>
+
+      {/* Bulk Target Assignment Modal */}
+      <Modal
+        title={`Bulk Assign ${bulkAssignModal.type === 'CATEGORY' ? 'Category' : 'Brand'}`}
+        open={bulkAssignModal.open}
+        onOk={handleConfirmBulkAssign}
+        onCancel={() => setBulkAssignModal({ open: false, type: 'CATEGORY' })}
+      >
+        <div className="py-4 space-y-3">
+          <p className="text-xs text-slate-600 font-semibold">
+            Select target {bulkAssignModal.type.toLowerCase()} to assign to all {selectedRowKeys.length} selected products:
+          </p>
+
+          {bulkAssignModal.type === 'CATEGORY' ? (
+            <Select
+              className="w-full"
+              placeholder="Select Category"
+              value={bulkTargetId}
+              onChange={(val) => setBulkTargetId(val)}
+              options={categories?.map((c) => ({ label: c.name, value: c.id }))}
+            />
+          ) : (
+            <Select
+              className="w-full"
+              placeholder="Select Brand"
+              value={bulkTargetId}
+              onChange={(val) => setBulkTargetId(val)}
+              options={brands?.map((b) => ({ label: b.name, value: b.id }))}
+            />
+          )}
+        </div>
+      </Modal>
     </div>
   );
 }

@@ -1,8 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Brand, Category, Collection, ProductQueryFilters } from '@/types/catalogue.types';
-import { Filter, RotateCcw, X } from 'lucide-react';
+import { Filter, RotateCcw, X, ChevronDown, Check } from 'lucide-react';
 import { brandConfig } from '@/config';
 
 interface FilterSidebarProps {
@@ -24,27 +24,40 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
   onClearFilters,
   onCloseMobile,
 }) => {
+  const [openSections, setOpenSections] = useState({
+    categories: true,
+    brands: true,
+    collections: true,
+    price: true,
+    sizes: true,
+    colors: true,
+  });
+
+  const toggleSection = (section: keyof typeof openSections) => {
+    setOpenSections((prev) => ({ ...prev, [section]: !prev[section] }));
+  };
+
   return (
-    <aside className="w-full bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs space-y-6">
+    <aside className="w-full bg-white rounded-[20px] p-6 border border-[#ECECEC] shadow-xs space-y-6 sticky top-24">
       {/* Header */}
-      <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+      <div className="flex items-center justify-between pb-4 border-b border-[#ECECEC]">
         <div className="flex items-center gap-2">
-          <Filter className="w-4 h-4 text-indigo-600" />
-          <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Refine By</h2>
+          <Filter className="w-4 h-4 text-[#B5123B]" />
+          <h2 className="text-sm font-extrabold text-[#111111] uppercase tracking-wider">Filter Catalog</h2>
         </div>
 
         <div className="flex items-center gap-2">
           <button
             onClick={onClearFilters}
-            className="text-xs font-semibold text-slate-500 hover:text-indigo-600 flex items-center gap-1 transition"
+            className="text-xs font-bold text-[#6B7280] hover:text-[#B5123B] flex items-center gap-1 transition-colors"
           >
             <RotateCcw className="w-3.5 h-3.5" />
-            Reset
+            Reset All
           </button>
           {onCloseMobile && (
             <button
               onClick={onCloseMobile}
-              className="lg:hidden p-1 text-slate-400 hover:text-slate-700"
+              className="lg:hidden p-1 text-[#6B7280] hover:text-[#111111]"
             >
               <X className="w-5 h-5" />
             </button>
@@ -52,180 +65,236 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
         </div>
       </div>
 
-      {/* Categories Filter */}
+      {/* Categories Accordion Filter */}
       {categories.length > 0 && (
-        <div className="space-y-3">
-          <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Categories</h3>
-          <div className="space-y-1.5 max-h-52 overflow-y-auto pr-1 scrollbar-thin">
-            <button
-              onClick={() => onFilterChange({ categoryId: undefined })}
-              className={`w-full text-left px-3 py-1.5 rounded-xl text-xs font-medium transition ${
-                !filters.categoryId
-                  ? 'bg-indigo-50 text-indigo-700 font-bold'
-                  : 'text-slate-600 hover:bg-slate-50'
-              }`}
-            >
-              All Categories
-            </button>
-            {categories.map((cat) => (
+        <div className="border-b border-[#ECECEC] pb-5 space-y-3">
+          <button
+            onClick={() => toggleSection('categories')}
+            className="w-full flex items-center justify-between text-xs font-extrabold text-[#111111] uppercase tracking-wider text-left focus:outline-none"
+          >
+            <span>Categories</span>
+            <ChevronDown className={`w-4 h-4 text-[#6B7280] transition-transform duration-200 ${openSections.categories ? 'rotate-180 text-[#B5123B]' : ''}`} />
+          </button>
+
+          {openSections.categories && (
+            <div className="space-y-1 pt-1 max-h-56 overflow-y-auto pr-1">
               <button
-                key={cat.id}
-                onClick={() => onFilterChange({ categoryId: cat.id })}
-                className={`w-full text-left px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center justify-between ${
-                  filters.categoryId === cat.id
-                    ? 'bg-indigo-50 text-indigo-700 font-bold'
-                    : 'text-slate-600 hover:bg-slate-50'
+                onClick={() => onFilterChange({ categoryId: undefined })}
+                className={`w-full text-left px-3.5 py-2 rounded-[10px] text-xs transition-all flex items-center justify-between ${
+                  !filters.categoryId
+                    ? 'bg-[#FDF2F5] text-[#B5123B] font-extrabold'
+                    : 'text-[#6B7280] hover:bg-[#FAFAFA] hover:text-[#111111] font-semibold'
                 }`}
               >
-                <span className="truncate">{cat.name}</span>
+                <span>All Categories</span>
+                {!filters.categoryId && <Check className="w-3.5 h-3.5 text-[#B5123B]" />}
               </button>
-            ))}
-          </div>
+              {categories.map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => onFilterChange({ categoryId: cat.id })}
+                  className={`w-full text-left px-3.5 py-2 rounded-[10px] text-xs transition-all flex items-center justify-between ${
+                    filters.categoryId === cat.id
+                      ? 'bg-[#FDF2F5] text-[#B5123B] font-extrabold'
+                      : 'text-[#6B7280] hover:bg-[#FAFAFA] hover:text-[#111111] font-semibold'
+                  }`}
+                >
+                  <span className="truncate">{cat.name}</span>
+                  {filters.categoryId === cat.id && <Check className="w-3.5 h-3.5 text-[#B5123B]" />}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
-      {/* Brands Filter */}
+      {/* Brands Accordion Filter */}
       {brands.length > 0 && (
-        <div className="space-y-3 pt-4 border-t border-slate-100">
-          <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Brands</h3>
-          <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1 scrollbar-thin">
-            <button
-              onClick={() => onFilterChange({ brandId: undefined })}
-              className={`w-full text-left px-3 py-1.5 rounded-xl text-xs font-medium transition ${
-                !filters.brandId
-                  ? 'bg-indigo-50 text-indigo-700 font-bold'
-                  : 'text-slate-600 hover:bg-slate-50'
-              }`}
-            >
-              All Brands
-            </button>
-            {brands.map((b) => (
+        <div className="border-b border-[#ECECEC] pb-5 space-y-3">
+          <button
+            onClick={() => toggleSection('brands')}
+            className="w-full flex items-center justify-between text-xs font-extrabold text-[#111111] uppercase tracking-wider text-left focus:outline-none"
+          >
+            <span>Brands</span>
+            <ChevronDown className={`w-4 h-4 text-[#6B7280] transition-transform duration-200 ${openSections.brands ? 'rotate-180 text-[#B5123B]' : ''}`} />
+          </button>
+
+          {openSections.brands && (
+            <div className="space-y-1 pt-1 max-h-48 overflow-y-auto pr-1">
               <button
-                key={b.id}
-                onClick={() => onFilterChange({ brandId: b.id })}
-                className={`w-full text-left px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center justify-between ${
-                  filters.brandId === b.id
-                    ? 'bg-indigo-50 text-indigo-700 font-bold'
-                    : 'text-slate-600 hover:bg-slate-50'
+                onClick={() => onFilterChange({ brandId: undefined })}
+                className={`w-full text-left px-3.5 py-2 rounded-[10px] text-xs transition-all flex items-center justify-between ${
+                  !filters.brandId
+                    ? 'bg-[#FDF2F5] text-[#B5123B] font-extrabold'
+                    : 'text-[#6B7280] hover:bg-[#FAFAFA] hover:text-[#111111] font-semibold'
                 }`}
               >
-                <span className="truncate">{b.name}</span>
+                <span>All Brands</span>
+                {!filters.brandId && <Check className="w-3.5 h-3.5 text-[#B5123B]" />}
               </button>
-            ))}
-          </div>
+              {brands.map((b) => (
+                <button
+                  key={b.id}
+                  onClick={() => onFilterChange({ brandId: b.id })}
+                  className={`w-full text-left px-3.5 py-2 rounded-[10px] text-xs transition-all flex items-center justify-between ${
+                    filters.brandId === b.id
+                      ? 'bg-[#FDF2F5] text-[#B5123B] font-extrabold'
+                      : 'text-[#6B7280] hover:bg-[#FAFAFA] hover:text-[#111111] font-semibold'
+                  }`}
+                >
+                  <span className="truncate">{b.name}</span>
+                  {filters.brandId === b.id && <Check className="w-3.5 h-3.5 text-[#B5123B]" />}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
-      {/* Collections Filter */}
+      {/* Collections Accordion Filter */}
       {collections.length > 0 && (
-        <div className="space-y-3 pt-4 border-t border-slate-100">
-          <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-            Collections
-          </h3>
-          <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1 scrollbar-thin">
-            <button
-              onClick={() => onFilterChange({ collectionId: undefined })}
-              className={`w-full text-left px-3 py-1.5 rounded-xl text-xs font-medium transition ${
-                !filters.collectionId
-                  ? 'bg-indigo-50 text-indigo-700 font-bold'
-                  : 'text-slate-600 hover:bg-slate-50'
-              }`}
-            >
-              All Collections
-            </button>
-            {collections.map((col) => (
+        <div className="border-b border-[#ECECEC] pb-5 space-y-3">
+          <button
+            onClick={() => toggleSection('collections')}
+            className="w-full flex items-center justify-between text-xs font-extrabold text-[#111111] uppercase tracking-wider text-left focus:outline-none"
+          >
+            <span>Collections</span>
+            <ChevronDown className={`w-4 h-4 text-[#6B7280] transition-transform duration-200 ${openSections.collections ? 'rotate-180 text-[#B5123B]' : ''}`} />
+          </button>
+
+          {openSections.collections && (
+            <div className="space-y-1 pt-1 max-h-48 overflow-y-auto pr-1">
               <button
-                key={col.id}
-                onClick={() => onFilterChange({ collectionId: col.id })}
-                className={`w-full text-left px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center justify-between ${
-                  filters.collectionId === col.id
-                    ? 'bg-indigo-50 text-indigo-700 font-bold'
-                    : 'text-slate-600 hover:bg-slate-50'
+                onClick={() => onFilterChange({ collectionId: undefined })}
+                className={`w-full text-left px-3.5 py-2 rounded-[10px] text-xs transition-all flex items-center justify-between ${
+                  !filters.collectionId
+                    ? 'bg-[#FDF2F5] text-[#B5123B] font-extrabold'
+                    : 'text-[#6B7280] hover:bg-[#FAFAFA] hover:text-[#111111] font-semibold'
                 }`}
               >
-                <span className="truncate">{col.name}</span>
+                <span>All Collections</span>
+                {!filters.collectionId && <Check className="w-3.5 h-3.5 text-[#B5123B]" />}
               </button>
-            ))}
-          </div>
+              {collections.map((col) => (
+                <button
+                  key={col.id}
+                  onClick={() => onFilterChange({ collectionId: col.id })}
+                  className={`w-full text-left px-3.5 py-2 rounded-[10px] text-xs transition-all flex items-center justify-between ${
+                    filters.collectionId === col.id
+                      ? 'bg-[#FDF2F5] text-[#B5123B] font-extrabold'
+                      : 'text-[#6B7280] hover:bg-[#FAFAFA] hover:text-[#111111] font-semibold'
+                  }`}
+                >
+                  <span className="truncate">{col.name}</span>
+                  {filters.collectionId === col.id && <Check className="w-3.5 h-3.5 text-[#B5123B]" />}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
       {/* Price Range Filter */}
-      <div className="space-y-3 pt-4 border-t border-slate-100">
-        <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-          Price Range ({brandConfig.currency.symbol})
-        </h3>
-        <div className="flex items-center gap-2">
-          <input
-            type="number"
-            placeholder="Min"
-            value={filters.minPrice ?? ''}
-            onChange={(e) =>
-              onFilterChange({
-                minPrice: e.target.value ? Number(e.target.value) : undefined,
-              })
-            }
-            className="w-full px-3 py-2 rounded-xl text-xs border border-slate-200 focus:outline-hidden focus:ring-2 focus:ring-indigo-500 bg-slate-50"
-          />
-          <span className="text-slate-400 font-bold">-</span>
-          <input
-            type="number"
-            placeholder="Max"
-            value={filters.maxPrice ?? ''}
-            onChange={(e) =>
-              onFilterChange({
-                maxPrice: e.target.value ? Number(e.target.value) : undefined,
-              })
-            }
-            className="w-full px-3 py-2 rounded-xl text-xs border border-slate-200 focus:outline-hidden focus:ring-2 focus:ring-indigo-500 bg-slate-50"
-          />
-        </div>
+      <div className="border-b border-[#ECECEC] pb-5 space-y-3">
+        <button
+          onClick={() => toggleSection('price')}
+          className="w-full flex items-center justify-between text-xs font-extrabold text-[#111111] uppercase tracking-wider text-left focus:outline-none"
+        >
+          <span>Price Range ({brandConfig.currency.symbol})</span>
+          <ChevronDown className={`w-4 h-4 text-[#6B7280] transition-transform duration-200 ${openSections.price ? 'rotate-180 text-[#B5123B]' : ''}`} />
+        </button>
+
+        {openSections.price && (
+          <div className="flex items-center gap-2 pt-1">
+            <input
+              type="number"
+              placeholder="Min"
+              value={filters.minPrice ?? ''}
+              onChange={(e) =>
+                onFilterChange({
+                  minPrice: e.target.value ? Number(e.target.value) : undefined,
+                })
+              }
+              className="w-full px-3.5 py-2.5 rounded-[14px] text-xs border border-[#ECECEC] focus:outline-none focus:border-[#B5123B] focus:ring-2 focus:ring-[#B5123B]/10 bg-[#FAFAFA] text-[#111111] font-bold"
+            />
+            <span className="text-[#6B7280] font-bold">-</span>
+            <input
+              type="number"
+              placeholder="Max"
+              value={filters.maxPrice ?? ''}
+              onChange={(e) =>
+                onFilterChange({
+                  maxPrice: e.target.value ? Number(e.target.value) : undefined,
+                })
+              }
+              className="w-full px-3.5 py-2.5 rounded-[14px] text-xs border border-[#ECECEC] focus:outline-none focus:border-[#B5123B] focus:ring-2 focus:ring-[#B5123B]/10 bg-[#FAFAFA] text-[#111111] font-bold"
+            />
+          </div>
+        )}
       </div>
 
-      {/* Size Filter */}
-      <div className="space-y-3 pt-4 border-t border-slate-100">
-        <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Size</h3>
-        <div className="flex items-center gap-1.5 flex-wrap">
-          {['XS', 'S', 'M', 'L', 'XL'].map((sz) => (
-            <button
-              key={sz}
-              type="button"
-              onClick={() => onFilterChange({ q: filters.q === sz ? undefined : sz })}
-              className={`px-3 py-1.5 rounded-xl border text-xs font-bold transition-all ${
-                filters.q === sz
-                  ? 'bg-slate-900 text-white border-slate-900'
-                  : 'bg-slate-50 text-slate-700 border-slate-200 hover:border-slate-400'
-              }`}
-            >
-              {sz}
-            </button>
-          ))}
-        </div>
+      {/* Size Chips Filter */}
+      <div className="border-b border-[#ECECEC] pb-5 space-y-3">
+        <button
+          onClick={() => toggleSection('sizes')}
+          className="w-full flex items-center justify-between text-xs font-extrabold text-[#111111] uppercase tracking-wider text-left focus:outline-none"
+        >
+          <span>Size</span>
+          <ChevronDown className={`w-4 h-4 text-[#6B7280] transition-transform duration-200 ${openSections.sizes ? 'rotate-180 text-[#B5123B]' : ''}`} />
+        </button>
+
+        {openSections.sizes && (
+          <div className="flex items-center gap-2 flex-wrap pt-1">
+            {['XS', 'S', 'M', 'L', 'XL'].map((sz) => (
+              <button
+                key={sz}
+                type="button"
+                onClick={() => onFilterChange({ q: filters.q === sz ? undefined : sz })}
+                className={`px-3.5 py-2 rounded-[14px] border text-xs font-extrabold transition-all duration-200 ${
+                  filters.q === sz
+                    ? 'bg-[#111827] text-white border-[#111827] shadow-sm scale-105'
+                    : 'bg-[#FAFAFA] text-[#111111] border-[#ECECEC] hover:border-[#111111]'
+                }`}
+              >
+                {sz}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Color Swatches Filter */}
-      <div className="space-y-3 pt-4 border-t border-slate-100">
-        <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Color Palette</h3>
-        <div className="flex items-center gap-2 flex-wrap">
-          {[
-            { name: 'Camel', hex: '#C19A6B' },
-            { name: 'Black', hex: '#1A1A1A' },
-            { name: 'Red', hex: '#9E1B1B' },
-            { name: 'Green', hex: '#0E5D3E' },
-            { name: 'Off-White', hex: '#F5F5F0' },
-          ].map((c) => (
-            <button
-              key={c.name}
-              type="button"
-              title={c.name}
-              onClick={() => onFilterChange({ q: filters.q === c.name ? undefined : c.name })}
-              className={`w-6 h-6 rounded-full border-2 transition-all ${
-                filters.q === c.name ? 'border-indigo-600 scale-110 ring-2 ring-indigo-300' : 'border-slate-300'
-              }`}
-              style={{ backgroundColor: c.hex }}
-            />
-          ))}
-        </div>
+      <div className="space-y-3">
+        <button
+          onClick={() => toggleSection('colors')}
+          className="w-full flex items-center justify-between text-xs font-extrabold text-[#111111] uppercase tracking-wider text-left focus:outline-none"
+        >
+          <span>Color Palette</span>
+          <ChevronDown className={`w-4 h-4 text-[#6B7280] transition-transform duration-200 ${openSections.colors ? 'rotate-180 text-[#B5123B]' : ''}`} />
+        </button>
+
+        {openSections.colors && (
+          <div className="flex items-center gap-2.5 flex-wrap pt-1">
+            {[
+              { name: 'Camel', hex: '#C19A6B' },
+              { name: 'Black', hex: '#111111' },
+              { name: 'Crimson', hex: '#B5123B' },
+              { name: 'Emerald', hex: '#0E5D3E' },
+              { name: 'Off-White', hex: '#F5F5F0' },
+            ].map((c) => (
+              <button
+                key={c.name}
+                type="button"
+                title={c.name}
+                onClick={() => onFilterChange({ q: filters.q === c.name ? undefined : c.name })}
+                className={`w-7 h-7 rounded-full border-2 transition-all duration-200 ${
+                  filters.q === c.name ? 'border-[#B5123B] scale-110 ring-2 ring-[#B5123B]/30' : 'border-[#ECECEC] hover:scale-105'
+                }`}
+                style={{ backgroundColor: c.hex }}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </aside>
   );

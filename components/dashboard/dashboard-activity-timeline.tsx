@@ -1,49 +1,88 @@
+'use client';
+
 import React from 'react';
-import { ShoppingBag, Package, UserCheck, Star, Clock } from 'lucide-react';
+import { ShoppingBag, Package, UserCheck, Star, Activity } from 'lucide-react';
 import dayjs from 'dayjs';
 
-export const DashboardActivityTimeline: React.FC = () => {
-  const activities = [
-    {
-      id: 'act-1',
-      title: 'New Luxury Order #ORD-2026-1001',
-      description: 'Customer Aisha Sharma purchased Haute Couture Evening Gown (₹27,138.82)',
-      time: '10 mins ago',
-      icon: ShoppingBag,
-      color: 'text-indigo-600 bg-indigo-50 border-indigo-100',
-    },
-    {
-      id: 'act-2',
-      title: 'New Customer Registered',
-      description: 'Rohan Mehta created a verified buyer account',
-      time: '45 mins ago',
+interface ActivityItem {
+  id: string;
+  title: string;
+  description: string;
+  time: string;
+  icon: any;
+  color: string;
+}
+
+interface DashboardActivityTimelineProps {
+  analytics?: any;
+}
+
+export const DashboardActivityTimeline: React.FC<DashboardActivityTimelineProps> = ({ analytics }) => {
+  const dynamicActivities: ActivityItem[] = [];
+
+  // Recent Orders
+  if (analytics?.orders?.recentOrders?.length > 0) {
+    analytics.orders.recentOrders.slice(0, 2).forEach((o: any) => {
+      dynamicActivities.push({
+        id: `ord-${o.id}`,
+        title: `New Store Order #${o.id}`,
+        description: `Customer ${o.customer} placed an order of ₹${Number(o.amount).toLocaleString('en-IN')}`,
+        time: (dayjs(o.date) as any).fromNow ? (dayjs(o.date) as any).fromNow() : dayjs(o.date).format('MMM D, HH:mm'),
+        icon: ShoppingBag,
+        color: 'text-indigo-600 bg-indigo-50 border-indigo-100',
+      });
+    });
+  }
+
+  // Top Customers / New Registrations
+  if (analytics?.customers?.topCustomers?.length > 0) {
+    const cust = analytics.customers.topCustomers[0];
+    dynamicActivities.push({
+      id: `cust-${cust.id}`,
+      title: 'Top VIP Customer Activity',
+      description: `${cust.name} (${cust.email}) accumulated ₹${Number(cust.totalSpent).toLocaleString('en-IN')} across ${cust.ordersCount} orders`,
+      time: 'Recently',
       icon: UserCheck,
       color: 'text-emerald-600 bg-emerald-50 border-emerald-100',
-    },
-    {
-      id: 'act-3',
-      title: 'Product Review Submitted',
-      description: '5-Star rating received for Velvet Silk Blazer',
-      time: '2 hours ago',
-      icon: Star,
-      color: 'text-amber-600 bg-amber-50 border-amber-100',
-    },
-    {
-      id: 'act-4',
+    });
+  }
+
+  // Low Stock Alert
+  if (analytics?.products?.lowStockProducts?.length > 0) {
+    const p = analytics.products.lowStockProducts[0];
+    dynamicActivities.push({
+      id: `stock-${p.id}`,
       title: 'Restock Alert Triggered',
-      description: 'Cashmere Tailored Coat inventory dropped below minimum threshold (3 units remaining)',
-      time: '4 hours ago',
+      description: `${p.name} (SKU: ${p.sku}) inventory at ${p.stock} units remaining`,
+      time: 'Attention Required',
       icon: Package,
       color: 'text-rose-600 bg-rose-50 border-rose-100',
-    },
-  ];
+    });
+  }
+
+  // Fallback if no activity yet
+  if (dynamicActivities.length === 0) {
+    dynamicActivities.push({
+      id: 'system-ready',
+      title: 'System Operational Stream Active',
+      description: 'Listening for live order placements, customer registrations, and catalog inventory movements...',
+      time: 'Live',
+      icon: Activity,
+      color: 'text-blue-600 bg-blue-50 border-blue-100',
+    });
+  }
 
   return (
     <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs">
-      <h3 className="font-black text-slate-900 dark:text-white text-base mb-4">Live Activity Stream</h3>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="font-black text-slate-900 dark:text-white text-base">Live Activity Stream</h3>
+        <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-900">
+          Live Database Feed
+        </span>
+      </div>
 
       <div className="relative pl-6 space-y-4 before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200 dark:before:bg-slate-800 text-xs">
-        {activities.map((act) => {
+        {dynamicActivities.map((act) => {
           const Icon = act.icon;
           return (
             <div key={act.id} className="relative flex items-start gap-3">

@@ -18,6 +18,13 @@ export interface OrderReport {
   pending: number;
   cancelled: number;
   returned: number;
+  recentOrders?: Array<{
+    id: string;
+    customer: string;
+    amount: number;
+    date: string;
+    status: string;
+  }>;
   statusBreakdown: Array<{
     name: string;
     count: number;
@@ -94,6 +101,16 @@ export interface ReviewReport {
   approvedCount: number;
   pendingCount: number;
   averageRating: number;
+  recentReviews?: Array<{
+    id: string;
+    productName: string;
+    customerName: string;
+    rating: number;
+    title?: string;
+    comment: string;
+    status: 'PENDING' | 'APPROVED' | 'REJECTED';
+    createdAt: string;
+  }>;
   ratingDistribution: Array<{
     stars: string;
     count: number;

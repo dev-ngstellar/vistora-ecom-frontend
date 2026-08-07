@@ -298,10 +298,7 @@ export default function AdminRolesPage() {
           </Form.Item>
 
           <Form.Item name="permissions" label="Module Permission Matrix">
-            <PermissionMatrix
-              value={form.getFieldValue('permissions')}
-              onChange={(matrix) => form.setFieldValue('permissions', matrix)}
-            />
+            <PermissionMatrix />
           </Form.Item>
         </Form>
       </Drawer>

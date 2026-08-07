@@ -1,48 +1,82 @@
 @import "tailwindcss";
 
 @theme {
-  --color-maroon: #A50025;
-  --color-maroon-dark: #80001D;
-  --color-maroon-light: #FDF2F4;
-  --color-orange: #E66001;
-  --color-orange-dark: #CC5501;
-  --color-orange-light: #FFF7F0;
-  --color-brand-bg: #FFFFFF;
-  --color-brand-surface: #F8F9FB;
-  --color-brand-border: #E5E7EB;
-  --color-brand-text: #1F2937;
+  --color-maroon: #B5123B;
+  --color-maroon-dark: #8E0E2E;
+  --color-maroon-light: #FDF2F5;
+  --color-orange: #F59E0B;
+  --color-orange-dark: #D97706;
+  --color-orange-light: #FFFBEB;
+  
+  --color-[#B5123B]: #B5123B;
+  --color-[#111827]: #111827;
+  --color-[#FAFAFA]: #FAFAFA;
+  --color-[#ECECEC]: #ECECEC;
+  --color-[#111111]: #111111;
+  --color-[#6B7280]: #6B7280;
+
+  --color-brand-bg: #FAFAFA;
+  --color-brand-surface: #FFFFFF;
+  --color-brand-border: #ECECEC;
+  --color-brand-text: #111111;
   --color-brand-muted: #6B7280;
 }
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 224 71.4% 4.1%;
-    --primary: 347 100% 32%;
-    --accent: 25 100% 45%;
-    --border: 220 13% 91%;
+    --background: 0 0% 98%;
+    --foreground: 0 0% 7%;
+    --primary: 347 82% 39%;
+    --accent: 38 92% 50%;
+    --border: 0 0% 92.5%;
   }
 
   body {
-    background-color: #F8F9FB;
-    color: #1F2937;
+    background-color: #FAFAFA;
+    color: #111111;
     font-feature-settings: "rlig" 1, "calt" 1;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
   }
 }
 
-.glass-panel {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(226, 232, 240, 0.8);
+/* Glassmorphism Navigation Panel */
+.glass-header {
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid #ECECEC;
 }
 
-.fashion-gradient-bg {
-  background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%);
+/* Animated Nav Link Hover Underline */
+.nav-link-underline {
+  position: relative;
 }
 
-.brand-gradient-text {
-  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #ec4899 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+.nav-link-underline::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background-color: #B5123B;
+  border-radius: 9999px;
+  transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateX(-50%);
+}
+
+.nav-link-underline:hover::after,
+.nav-link-underline.active::after {
+  width: 80%;
+}
+
+/* Luxury Lift Shadow & Micro-Animations */
+.hover-lift-shadow {
+  transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 300ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hover-lift-shadow:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.07);
 }

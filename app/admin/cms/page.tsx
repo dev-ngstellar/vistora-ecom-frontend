@@ -405,10 +405,7 @@ export default function AdminCMSPage() {
                       label="Rich Text Article Content"
                       rules={[{ required: true, message: 'Page content is required' }]}
                     >
-                      <RichTextEditor
-                        value={form.getFieldValue('content')}
-                        onChange={(val) => form.setFieldValue('content', val)}
-                      />
+                      <RichTextEditor />
                     </Form.Item>
                   </div>
                 ),

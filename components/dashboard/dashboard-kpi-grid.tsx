@@ -2,7 +2,7 @@
 
 import React from 'react';
 import {
-  DollarSign,
+  IndianRupee,
   ShoppingBag,
   Users,
   Package,
@@ -31,15 +31,15 @@ export const DashboardKPIGrid: React.FC<DashboardKPIGridProps> = ({ metrics }) =
   const cards = [
     {
       title: 'Total Revenue',
-      value: `₹${(metrics?.totalRevenue || 128450).toLocaleString('en-IN')}`,
+      value: `₹${(metrics?.totalRevenue ?? 0).toLocaleString('en-IN')}`,
       change: '+14.2%',
       isPositive: true,
-      icon: DollarSign,
+      icon: IndianRupee,
       color: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 border-emerald-100 dark:border-emerald-900/50',
     },
     {
       title: 'Total Orders',
-      value: (metrics?.totalOrders || 1482).toLocaleString('en-IN'),
+      value: (metrics?.totalOrders ?? 0).toLocaleString('en-IN'),
       change: '+8.7%',
       isPositive: true,
       icon: ShoppingBag,
@@ -47,7 +47,7 @@ export const DashboardKPIGrid: React.FC<DashboardKPIGridProps> = ({ metrics }) =
     },
     {
       title: 'Total Customers',
-      value: (metrics?.totalCustomers || 894).toLocaleString('en-IN'),
+      value: (metrics?.totalCustomers ?? 0).toLocaleString('en-IN'),
       change: '+11.3%',
       isPositive: true,
       icon: Users,
@@ -55,7 +55,7 @@ export const DashboardKPIGrid: React.FC<DashboardKPIGridProps> = ({ metrics }) =
     },
     {
       title: 'Total Products',
-      value: `${metrics?.totalProducts || 342} SKUs`,
+      value: `${metrics?.totalProducts ?? 0} SKUs`,
       change: '+5.0%',
       isPositive: true,
       icon: Package,
@@ -63,28 +63,28 @@ export const DashboardKPIGrid: React.FC<DashboardKPIGridProps> = ({ metrics }) =
     },
     {
       title: 'Pending Fulfillment',
-      value: metrics?.pendingOrders || 18,
+      value: metrics?.pendingOrders ?? 0,
       subtitle: 'Requires dispatch action',
       icon: Clock,
       color: 'text-amber-600 bg-amber-50 dark:bg-amber-950/40 border-amber-100 dark:border-amber-900/50',
     },
     {
       title: 'Completed Orders',
-      value: metrics?.completedOrders || 1420,
+      value: metrics?.completedOrders ?? 0,
       subtitle: 'Successfully delivered',
       icon: CheckCircle,
       color: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 border-emerald-100 dark:border-emerald-900/50',
     },
     {
       title: 'Low Stock Products',
-      value: `${metrics?.lowStockCount || 5} SKUs`,
+      value: `${metrics?.lowStockCount ?? 0} SKUs`,
       subtitle: 'Restock required soon',
       icon: AlertTriangle,
       color: 'text-rose-600 bg-rose-50 dark:bg-rose-950/40 border-rose-100 dark:border-rose-900/50',
     },
     {
       title: 'Pending Reviews',
-      value: metrics?.pendingReviews || 3,
+      value: metrics?.pendingReviews ?? 0,
       subtitle: 'Awaiting moderation',
       icon: Star,
       color: 'text-yellow-600 bg-yellow-50 dark:bg-yellow-950/40 border-yellow-100 dark:border-yellow-900/50',

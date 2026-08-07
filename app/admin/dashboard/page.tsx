@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useDashboardAnalytics, useOrderReport, useProductReport, useReviewReport, useSalesReport } from '@/hooks/use-reports';
+import { useDashboardAnalytics } from '@/hooks/use-reports';
 import { DashboardKPIGrid } from '@/components/dashboard/dashboard-kpi-grid';
 import { SalesTrendChart } from '@/components/reports/sales-trend-chart';
 import { OrderStatusPieChart } from '@/components/reports/order-status-pie-chart';
@@ -17,19 +17,14 @@ import {
   Select,
   DatePicker,
   Tag,
-  Badge,
+  Empty,
 } from 'antd';
 import {
   LayoutDashboard,
-  Calendar,
-  ShoppingBag,
-  Package,
-  Users,
   AlertTriangle,
-  Bell,
   Eye,
   Award,
-  ExternalLink,
+  CheckCircle2,
 } from 'lucide-react';
 import dayjs from 'dayjs';
 
@@ -62,11 +57,7 @@ export default function AdminDashboardPage() {
     }
   };
 
-  const sampleRecentOrders = [
-    { id: 'ORD-2026-1001', customer: 'Aisha Sharma', amount: 27138.82, paymentStatus: 'PAID', orderStatus: 'DELIVERED', date: new Date().toISOString() },
-    { id: 'ORD-2026-1002', customer: 'Rohan Mehta', amount: 18450.00, paymentStatus: 'PAID', orderStatus: 'PROCESSING', date: new Date().toISOString() },
-    { id: 'ORD-2026-1003', customer: 'Vikramaditya Roy', amount: 34999.00, paymentStatus: 'PENDING', orderStatus: 'PENDING', date: new Date().toISOString() },
-  ];
+  const recentOrders = analytics?.orders?.recentOrders || [];
 
   return (
     <div className="space-y-6 pb-12">
@@ -106,14 +97,14 @@ export default function AdminDashboardPage() {
       {/* SECTION 1 — 8 EXECUTIVE KPI CARDS */}
       <DashboardKPIGrid
         metrics={{
-          totalRevenue: analytics?.sales?.totalRevenue || 128450,
-          totalOrders: analytics?.orders?.totalOrders || 1482,
-          totalCustomers: analytics?.customers?.totalCustomers || 894,
-          totalProducts: analytics?.inventory?.totalSkus || 342,
-          pendingOrders: analytics?.orders?.pending || 18,
-          completedOrders: analytics?.orders?.completed || 1420,
-          lowStockCount: analytics?.products?.lowStockCount || 5,
-          pendingReviews: analytics?.reviews?.pendingCount || 3,
+          totalRevenue: analytics?.sales?.totalRevenue ?? 0,
+          totalOrders: analytics?.orders?.totalOrders ?? 0,
+          totalCustomers: analytics?.customers?.totalCustomers ?? 0,
+          totalProducts: analytics?.inventory?.totalSkus ?? 0,
+          pendingOrders: analytics?.orders?.pending ?? 0,
+          completedOrders: analytics?.orders?.completed ?? 0,
+          lowStockCount: analytics?.products?.lowStockCount ?? 0,
+          pendingReviews: analytics?.reviews?.pendingCount ?? 0,
         }}
       />
 
@@ -133,35 +124,46 @@ export default function AdminDashboardPage() {
         <CategorySalesBarChart data={analytics?.products?.categoryDistribution} />
 
         {/* Top Customers LTV Table */}
-        <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h3 className="font-black text-slate-900 dark:text-white text-base">Top VIP Customers</h3>
-              <p className="text-xs text-slate-500 font-medium">Highest spending customer accounts</p>
-            </div>
-            <Award className="w-5 h-5 text-indigo-600" />
-          </div>
-
-          <div className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
-            {analytics?.customers?.topCustomers?.slice(0, 4).map((cust) => (
-              <div key={cust.id} className="py-3 flex items-center justify-between">
-                <div>
-                  <span className="font-bold text-slate-900 dark:text-white block">{cust.name}</span>
-                  <span className="text-[11px] text-slate-400">{cust.email}</span>
-                </div>
-                <div className="text-right">
-                  <span className="font-black text-indigo-600 dark:text-indigo-400 block">
-                    ₹{Number(cust.totalSpent).toLocaleString('en-IN')}
-                  </span>
-                  <span className="text-[10px] text-slate-400 font-semibold">{cust.ordersCount} orders</span>
-                </div>
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="font-black text-slate-900 dark:text-white text-base">Top VIP Customers</h3>
+                <p className="text-xs text-slate-500 font-medium">Highest spending customer accounts</p>
               </div>
-            ))}
+              <Award className="w-5 h-5 text-indigo-600" />
+            </div>
+
+            {(!analytics?.customers?.topCustomers || analytics.customers.topCustomers.length === 0) ? (
+              <div className="py-8 text-center text-xs text-slate-400">
+                No customer purchase history available for selected period.
+              </div>
+            ) : (
+              <div className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
+                {analytics.customers.topCustomers.slice(0, 4).map((cust) => (
+                  <div key={cust.id} className="py-3 flex items-center justify-between">
+                    <div>
+                      <span className="font-bold text-slate-900 dark:text-white block">{cust.name}</span>
+                      <span className="text-[11px] text-slate-400">{cust.email}</span>
+                    </div>
+                    <div className="text-right">
+                      <span className="font-black text-indigo-600 dark:text-indigo-400 block">
+                        ₹{Number(cust.totalSpent).toLocaleString('en-IN')}
+                      </span>
+                      <span className="text-[10px] text-slate-400 font-semibold">{cust.ordersCount} orders</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
+          <Button type="default" href="/admin/customers" className="mt-4 rounded-xl font-bold text-xs">
+            View All Customers
+          </Button>
         </div>
       </div>
 
-      {/* SECTION 5 — RECENT ORDERS TABLE */}
+      {/* SECTION 5 — RECENT CUSTOMER ORDERS TABLE */}
       <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-xs">
         <div className="flex items-center justify-between mb-4">
           <div>
@@ -174,9 +176,11 @@ export default function AdminDashboardPage() {
         </div>
 
         <Table
-          dataSource={sampleRecentOrders}
+          dataSource={recentOrders}
           rowKey="id"
+          loading={isLoading}
           pagination={false}
+          locale={{ emptyText: <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No recent customer orders found in live database" /> }}
           columns={[
             { title: 'Order ID', dataIndex: 'id', key: 'id', render: (val) => <span className="font-extrabold text-xs font-mono text-indigo-600">{val}</span> },
             { title: 'Customer', dataIndex: 'customer', key: 'customer', render: (val) => <span className="font-bold text-xs text-slate-900 dark:text-white">{val}</span> },
@@ -197,7 +201,7 @@ export default function AdminDashboardPage() {
 
       {/* SECTION 6 & 7 — REVIEWS MODERATION & INVENTORY RESTOCK ALERTS */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <DashboardReviewsModeration />
+        <DashboardReviewsModeration data={analytics?.reviews?.recentReviews} />
 
         {/* Section 7 Inventory Alerts */}
         <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col justify-between">
@@ -210,19 +214,27 @@ export default function AdminDashboardPage() {
               <AlertTriangle className="w-5 h-5 text-amber-500" />
             </div>
 
-            <div className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
-              {analytics?.products?.lowStockProducts?.map((item) => (
-                <div key={item.id} className="py-3 flex items-center justify-between">
-                  <div>
-                    <span className="font-bold text-slate-900 dark:text-white block">{item.name}</span>
-                    <span className="text-[11px] text-slate-400 font-mono">SKU: {item.sku}</span>
+            {(!analytics?.products?.lowStockProducts || analytics.products.lowStockProducts.length === 0) ? (
+              <div className="py-8 text-center bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800">
+                <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto mb-2 opacity-80" />
+                <p className="text-xs font-bold text-slate-700 dark:text-slate-300">All catalog inventory healthy</p>
+                <p className="text-[11px] text-slate-400 mt-0.5">No SKUs below minimum stock threshold</p>
+              </div>
+            ) : (
+              <div className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
+                {analytics.products.lowStockProducts.map((item) => (
+                  <div key={item.id} className="py-3 flex items-center justify-between">
+                    <div>
+                      <span className="font-bold text-slate-900 dark:text-white block">{item.name}</span>
+                      <span className="text-[11px] text-slate-400 font-mono">SKU: {item.sku}</span>
+                    </div>
+                    <Tag color={item.stock === 0 ? 'red' : 'orange'} className="font-bold rounded-lg text-xs">
+                      {item.stock === 0 ? 'Out of Stock' : `${item.stock} units left`}
+                    </Tag>
                   </div>
-                  <Tag color={item.stock === 0 ? 'red' : 'orange'} className="font-bold rounded-lg text-xs">
-                    {item.stock === 0 ? 'Out of Stock' : `${item.stock} units left`}
-                  </Tag>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <Button type="primary" href="/admin/products" className="mt-4 bg-slate-900 font-bold rounded-2xl">
@@ -234,7 +246,7 @@ export default function AdminDashboardPage() {
       {/* SECTION 9 & 10 — SYSTEM HEALTH DIAGNOSTICS & LIVE ACTIVITY STREAM */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <SystemHealthWidget />
-        <DashboardActivityTimeline />
+        <DashboardActivityTimeline analytics={analytics} />
       </div>
     </div>
   );

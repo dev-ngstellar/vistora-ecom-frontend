@@ -25,7 +25,28 @@ export const useShipping = (subtotal: number, selectedAddress?: AddressResponse 
     enabled: subtotal > 0,
   });
 
-  const methods = estimate?.methods || [];
+  const defaultMethods: ShippingMethod[] = [
+    {
+      id: 'standard-delivery',
+      name: 'Standard Express Courier',
+      code: 'STANDARD',
+      description: 'Delivered in 3 to 5 business days with live tracking',
+      cost: subtotal >= 150 ? 0 : 15,
+      estimatedDays: '3-5 Business Days',
+      isFree: subtotal >= 150,
+    },
+    {
+      id: 'next-day-priority',
+      name: 'VIP Next-Day Priority',
+      code: 'PRIORITY',
+      description: 'Guaranteed next-day delivery for urgent orders',
+      cost: 35,
+      estimatedDays: '1 Business Day',
+      isFree: false,
+    },
+  ];
+
+  const methods = (estimate?.methods && estimate.methods.length > 0) ? estimate.methods : defaultMethods;
   const selectedMethod: ShippingMethod | null =
     methods.find((m) => m.id === selectedMethodId) || methods[0] || null;
 

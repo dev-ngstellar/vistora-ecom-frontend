@@ -93,6 +93,34 @@ export const collectionService = {
   },
 };
 
+export const uploadService = {
+  uploadSingle: async (file: File): Promise<{ url: string; filename: string }> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await apiClient.post<ApiEnvelope<{ url: string; filename: string }>>(
+      '/upload',
+      formData,
+      {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      }
+    );
+    return res.data.data;
+  },
+
+  uploadMultiple: async (files: File[]): Promise<{ url: string; filename: string }[]> => {
+    const formData = new FormData();
+    files.forEach((f) => formData.append('files', f));
+    const res = await apiClient.post<ApiEnvelope<{ url: string; filename: string }[]>>(
+      '/upload/multiple',
+      formData,
+      {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      }
+    );
+    return res.data.data;
+  },
+};
+
 export const productService = {
   list: async (
     filters?: ProductQueryFilters,
@@ -164,6 +192,65 @@ export const productService = {
     };
 
     const res = await apiClient.post<ApiEnvelope<Product>>('/products', duplicateData);
+    return res.data.data;
+  },
+
+  bulkAction: async (
+    action: string,
+    productIds: string[],
+    targetId?: string,
+  ): Promise<{ affectedCount: number }> => {
+    const res = await apiClient.post<ApiEnvelope<{ affectedCount: number }>>(
+      '/products/bulk-action',
+      {
+        action,
+        productIds,
+        targetId,
+      },
+    );
+    return res.data.data;
+  },
+};
+
+export interface InventoryItem {
+  id: string;
+  productId: string;
+  productName: string;
+  variantId: string | null;
+  variantName: string;
+  sku: string;
+  categoryName: string;
+  brandName: string;
+  price: number;
+  availableStock: number;
+  reservedStock: number;
+  soldStock: number;
+  lowStockThreshold: number;
+  stockStatus: 'IN_STOCK' | 'LOW_STOCK' | 'OUT_OF_STOCK';
+  updatedAt: string;
+  stockMovements?: any[];
+}
+
+export const inventoryService = {
+  list: async (filters?: { q?: string; stockStatus?: string }): Promise<InventoryItem[]> => {
+    const params = new URLSearchParams();
+    if (filters?.q) params.append('q', filters.q);
+    if (filters?.stockStatus) params.append('stockStatus', filters.stockStatus);
+    const queryString = params.toString();
+    const url = queryString ? `/inventory?${queryString}` : '/inventory';
+    const res = await apiClient.get<ApiEnvelope<InventoryItem[]>>(url);
+    return res.data.data;
+  },
+
+  adjustStock: async (data: {
+    inventoryId: string;
+    action: 'ADD' | 'REMOVE' | 'SET';
+    quantity: number;
+    reason: string;
+    lowStockThreshold?: number;
+    remarks?: string;
+  }): Promise<any> => {
+    const res = await apiClient.post<ApiEnvelope<any>>('/inventory/adjust', data);
     return res.data.data;
   },
 };

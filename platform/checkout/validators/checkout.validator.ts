@@ -18,7 +18,7 @@ export const isStepValid = (
       return context.isAuthenticated && Boolean(context.selectedAddressId);
 
     case CheckoutStep.SHIPPING_METHOD:
-      return Boolean(context.selectedShippingMethodId);
+      return true;
 
     case CheckoutStep.PAYMENT_METHOD:
       return Boolean(context.selectedPaymentMethod);

@@ -113,54 +113,41 @@ export default function ProductDetailPage() {
   };
 
   return (
-    <div className="space-y-10 pb-16">
-      {/* Dynamic Breadcrumb */}
-      <nav className="flex items-center gap-2 text-xs font-semibold text-slate-500 py-2">
-        <Link href="/" className="hover:text-maroon">Home</Link>
-        <ChevronRight className="w-3.5 h-3.5" />
-        <Link href="/shop" className="hover:text-maroon">Shop</Link>
-        {product.category && (
-          <>
-            <ChevronRight className="w-3.5 h-3.5" />
-            <Link href={`/shop?categoryId=${product.category.id}`} className="hover:text-maroon">
-              {product.category.name}
-            </Link>
-          </>
-        )}
-        <ChevronRight className="w-3.5 h-3.5" />
-        <span className="text-slate-900 font-bold truncate max-w-xs">{product.name}</span>
-      </nav>
-
-      {/* Main Product Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-        {/* Left Column: Image Gallery */}
-        <div>
+    <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 space-y-12 pb-20 pt-4">
+      {/* Main Two-Column Product Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+        {/* Left Column: Sticky Image Gallery */}
+        <div className="lg:sticky lg:top-28">
           <ProductGallery images={product.images} productName={product.name} />
         </div>
 
-        {/* Right Column: Details & Purchase */}
-        <div className="space-y-6">
+        {/* Right Column: Product Details & Purchase Controls */}
+        <div className="space-y-7">
           <div>
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-xs font-bold uppercase tracking-widest text-maroon bg-maroon-light px-3 py-1 rounded-full">
-                {product.category?.name || 'Fashion'}
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-xs font-black uppercase tracking-widest text-[#B5123B] bg-[#FDF2F5] px-3.5 py-1 rounded-full border border-[#B5123B]/20">
+                {product.category?.name || 'Luxury Apparel'}
               </span>
-              {isOutOfStock && (
-                <span className="text-xs font-extrabold uppercase tracking-widest text-white bg-rose-600 px-3 py-1 rounded-full shadow-xs">
+              {isOutOfStock ? (
+                <span className="text-xs font-black uppercase tracking-widest text-white bg-rose-600 px-3.5 py-1 rounded-full shadow-xs">
                   Out of Stock
+                </span>
+              ) : (
+                <span className="text-xs font-black uppercase tracking-widest text-emerald-700 bg-emerald-50 px-3.5 py-1 rounded-full border border-emerald-200">
+                  In Stock & Ready to Ship
                 </span>
               )}
               {product.brand && (
-                <span className="text-xs font-semibold text-slate-400">by {product.brand.name}</span>
+                <span className="text-xs font-bold text-[#6B7280]">by {product.brand.name}</span>
               )}
             </div>
 
-            <h1 className="text-2xl sm:text-4xl font-black text-slate-900 tracking-tight leading-tight">
+            <h1 className="text-3xl sm:text-4xl font-extrabold text-[#111111] tracking-tight leading-tight">
               {product.name}
             </h1>
 
             {product.shortDescription && (
-              <p className="text-sm text-slate-600 mt-2 leading-relaxed">
+              <p className="text-sm text-[#6B7280] mt-3 leading-relaxed font-medium">
                 {product.shortDescription}
               </p>
             )}
@@ -177,127 +164,131 @@ export default function ProductDetailPage() {
             />
           )}
 
-          {/* Quantity & Actions */}
+          {/* Quantity & Action Controls */}
           <div className="space-y-4 pt-2">
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-              <div className="flex items-center justify-between border border-slate-200 rounded-2xl bg-slate-50 p-1 shrink-0">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5">
+              {/* Quantity Counter */}
+              <div className="flex items-center justify-between border border-[#ECECEC] rounded-[14px] bg-[#FAFAFA] p-1 shrink-0 h-14 w-36">
                 <button
                   disabled={isOutOfStock}
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="w-10 h-10 rounded-xl bg-white text-slate-800 font-bold text-sm hover:bg-slate-200 transition shadow-xs flex items-center justify-center disabled:opacity-50"
+                  className="w-10 h-10 rounded-[10px] bg-white text-[#111111] font-black text-sm hover:bg-slate-200 transition shadow-xs flex items-center justify-center disabled:opacity-50"
                 >
                   -
                 </button>
-                <span className="w-10 text-center text-sm font-bold text-slate-900">{quantity}</span>
+                <span className="w-10 text-center text-sm font-black text-[#111111]">{quantity}</span>
                 <button
                   disabled={isOutOfStock}
                   onClick={() => setQuantity(quantity + 1)}
-                  className="w-10 h-10 rounded-xl bg-white text-slate-800 font-bold text-sm hover:bg-slate-200 transition shadow-xs flex items-center justify-center disabled:opacity-50"
+                  className="w-10 h-10 rounded-[10px] bg-white text-[#111111] font-black text-sm hover:bg-slate-200 transition shadow-xs flex items-center justify-center disabled:opacity-50"
                 >
                   +
                 </button>
               </div>
 
+              {/* Add to Cart */}
               <button
                 disabled={isOutOfStock}
                 onClick={handleAddToCart}
-                className={`flex-1 py-3.5 px-4 rounded-2xl font-extrabold text-xs tracking-wider uppercase transition shadow-md flex items-center justify-center gap-2 ${
+                className={`flex-1 h-14 px-6 rounded-[14px] font-extrabold text-xs tracking-wider uppercase transition-all duration-300 shadow-md flex items-center justify-center gap-2.5 ${
                   isOutOfStock
                     ? 'bg-slate-200 text-slate-500 cursor-not-allowed'
-                    : 'bg-slate-900 hover:bg-slate-800 text-white'
+                    : 'bg-[#111827] hover:bg-[#B5123B] text-white hover:scale-[1.02]'
                 }`}
               >
-                <ShoppingBag className="w-4 h-4" />
+                <ShoppingBag className="w-4 h-4 text-amber-300" />
                 <span>{isOutOfStock ? 'Out of Stock' : 'Add to Cart'}</span>
               </button>
 
+              {/* Buy Now */}
               <button
                 disabled={isOutOfStock}
                 onClick={handleBuyNow}
-                className={`flex-1 py-3.5 px-4 rounded-2xl font-extrabold text-xs tracking-wider uppercase transition shadow-xl flex items-center justify-center gap-2 ${
+                className={`flex-1 h-14 px-6 rounded-[14px] font-extrabold text-xs tracking-wider uppercase transition-all duration-300 shadow-lg flex items-center justify-center gap-2.5 ${
                   isOutOfStock
                     ? 'bg-slate-200 text-slate-500 cursor-not-allowed'
-                    : 'bg-maroon hover:bg-maroon-dark text-white'
+                    : 'bg-[#B5123B] hover:bg-[#8E0E2E] text-white hover:scale-[1.02]'
                 }`}
               >
                 <Sparkles className="w-4 h-4 text-amber-300" />
                 <span>{isOutOfStock ? 'Out of Stock' : 'Buy Now'}</span>
               </button>
 
+              {/* Wishlist Button */}
               <button
                 onClick={() => requireCustomerAuth(() => addToWishlist.mutate({ productId: product.id, variantId: selectedVariant?.id || null }))}
-                className="p-3.5 rounded-2xl border border-slate-200 text-slate-700 hover:text-maroon hover:bg-maroon-light transition shadow-xs flex items-center justify-center"
-                title="Wishlist"
+                className="h-14 w-14 rounded-[14px] border border-[#ECECEC] text-[#111111] hover:text-[#B5123B] hover:bg-[#FDF2F5] hover:border-[#B5123B]/20 transition-all shadow-xs flex items-center justify-center shrink-0"
+                title="Save to Wishlist"
               >
                 <Heart className="w-5 h-5" />
               </button>
             </div>
           </div>
 
-          {/* Value Propositions */}
-          <div className="grid grid-cols-3 gap-3 pt-6 border-t border-slate-100 text-center">
-            <div className="p-3 rounded-2xl bg-slate-50 space-y-1">
-              <Truck className="w-5 h-5 text-indigo-600 mx-auto" />
-              <span className="text-[11px] font-bold text-slate-800 block">Express Shipping</span>
+          {/* Trust Feature Mini Cards */}
+          <div className="grid grid-cols-3 gap-3 pt-6 border-t border-[#ECECEC] text-center">
+            <div className="p-3.5 rounded-[16px] bg-[#FAFAFA] border border-[#ECECEC] space-y-1.5 hover-lift-shadow">
+              <Truck className="w-5 h-5 text-[#B5123B] mx-auto" />
+              <span className="text-[11px] font-extrabold text-[#111111] block">Express Shipping</span>
             </div>
-            <div className="p-3 rounded-2xl bg-slate-50 space-y-1">
-              <ShieldCheck className="w-5 h-5 text-indigo-600 mx-auto" />
-              <span className="text-[11px] font-bold text-slate-800 block">Authentic Guarantee</span>
+            <div className="p-3.5 rounded-[16px] bg-[#FAFAFA] border border-[#ECECEC] space-y-1.5 hover-lift-shadow">
+              <ShieldCheck className="w-5 h-5 text-[#B5123B] mx-auto" />
+              <span className="text-[11px] font-extrabold text-[#111111] block">Authentic Guarantee</span>
             </div>
-            <div className="p-3 rounded-2xl bg-slate-50 space-y-1">
-              <RefreshCw className="w-5 h-5 text-indigo-600 mx-auto" />
-              <span className="text-[11px] font-bold text-slate-800 block">30-Day Free Returns</span>
+            <div className="p-3.5 rounded-[16px] bg-[#FAFAFA] border border-[#ECECEC] space-y-1.5 hover-lift-shadow">
+              <RefreshCw className="w-5 h-5 text-[#B5123B] mx-auto" />
+              <span className="text-[11px] font-extrabold text-[#111111] block">30-Day Free Returns</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Tabs Section: Description & Specs */}
-      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-6">
-        <div className="flex border-b border-slate-200 gap-6">
+      {/* Description Accordions Section */}
+      <div className="bg-white rounded-[20px] p-6 sm:p-10 border border-[#ECECEC] shadow-xs space-y-6">
+        <div className="flex border-b border-[#ECECEC] gap-8">
           <button
             onClick={() => setActiveTab('description')}
-            className={`pb-3 text-sm font-bold transition border-b-2 ${
+            className={`pb-4 text-sm font-extrabold transition-all border-b-2 ${
               activeTab === 'description'
-                ? 'border-indigo-600 text-indigo-600'
-                : 'border-transparent text-slate-500 hover:text-slate-800'
+                ? 'border-[#B5123B] text-[#B5123B]'
+                : 'border-transparent text-[#6B7280] hover:text-[#111111]'
             }`}
           >
-            Product Overview
+            Product Overview & Story
           </button>
           <button
             onClick={() => setActiveTab('specifications')}
-            className={`pb-3 text-sm font-bold transition border-b-2 ${
+            className={`pb-4 text-sm font-extrabold transition-all border-b-2 ${
               activeTab === 'specifications'
-                ? 'border-indigo-600 text-indigo-600'
-                : 'border-transparent text-slate-500 hover:text-slate-800'
+                ? 'border-[#B5123B] text-[#B5123B]'
+                : 'border-transparent text-[#6B7280] hover:text-[#111111]'
             }`}
           >
-            Specifications & Attributes
+            Specifications & Material Care
           </button>
         </div>
 
         {activeTab === 'description' ? (
-          <div className="prose prose-slate max-w-none text-sm leading-relaxed text-slate-600">
-            <p>{product.description || product.shortDescription || 'No description available for this luxury product.'}</p>
+          <div className="prose prose-slate max-w-none text-sm leading-relaxed text-[#6B7280] font-medium space-y-4">
+            <p>{product.description || product.shortDescription || 'Crafted with meticulous attention to detail using ultra-soft, ethically sourced fabrics designed for timeless elegance.'}</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-            <div className="p-3 rounded-xl bg-slate-50 flex justify-between">
-              <span className="font-semibold text-slate-500">Category</span>
-              <span className="font-bold text-slate-900">{product.category?.name || 'N/A'}</span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-medium">
+            <div className="p-4 rounded-[14px] bg-[#FAFAFA] border border-[#ECECEC] flex justify-between items-center">
+              <span className="font-bold text-[#6B7280]">Category</span>
+              <span className="font-black text-[#111111]">{product.category?.name || 'N/A'}</span>
             </div>
-            <div className="p-3 rounded-xl bg-slate-50 flex justify-between">
-              <span className="font-semibold text-slate-500">Brand</span>
-              <span className="font-bold text-slate-900">{product.brand?.name || `${brandConfig.name} Label`}</span>
+            <div className="p-4 rounded-[14px] bg-[#FAFAFA] border border-[#ECECEC] flex justify-between items-center">
+              <span className="font-bold text-[#6B7280]">Brand Label</span>
+              <span className="font-black text-[#111111]">{product.brand?.name || `${brandConfig.name} Couture`}</span>
             </div>
-            <div className="p-3 rounded-xl bg-slate-50 flex justify-between">
-              <span className="font-semibold text-slate-500">SKU Number</span>
-              <span className="font-mono font-bold text-slate-900">{product.sku}</span>
+            <div className="p-4 rounded-[14px] bg-[#FAFAFA] border border-[#ECECEC] flex justify-between items-center">
+              <span className="font-bold text-[#6B7280]">SKU Code</span>
+              <span className="font-mono font-black text-[#111111]">{product.sku}</span>
             </div>
-            <div className="p-3 rounded-xl bg-slate-50 flex justify-between">
-              <span className="font-semibold text-slate-500">Availability</span>
-              <span className="font-bold text-emerald-600">In Stock</span>
+            <div className="p-4 rounded-[14px] bg-[#FAFAFA] border border-[#ECECEC] flex justify-between items-center">
+              <span className="font-bold text-[#6B7280]">Worldwide Shipping</span>
+              <span className="font-black text-emerald-600">Complimentary Express</span>
             </div>
           </div>
         )}

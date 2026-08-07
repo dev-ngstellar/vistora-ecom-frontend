@@ -13,12 +13,15 @@ export interface Category {
   slug: string;
   description: string | null;
   imageUrl: string | null;
+  metaTitle: string | null;
+  metaDescription: string | null;
   status: CategoryStatus;
   sortOrder: number;
   createdAt: string;
   updatedAt: string;
   parent?: Category | null;
   children?: Category[];
+  _count?: { products?: number };
 }
 
 export interface CategoryTreeItem extends Category {
@@ -32,6 +35,7 @@ export interface Brand {
   logoUrl: string | null;
   description: string | null;
   website: string | null;
+  featured?: boolean;
   status: BrandStatus;
   createdAt: string;
   updatedAt: string;
@@ -120,6 +124,7 @@ export interface Product {
 
 export interface ProductQueryFilters {
   q?: string;
+  search?: string;
   categoryId?: string;
   brandId?: string;
   collectionId?: string;

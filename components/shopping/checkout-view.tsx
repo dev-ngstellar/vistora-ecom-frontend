@@ -431,54 +431,23 @@ export const CheckoutView: React.FC = () => {
                   Select Payment Option
                 </h2>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedPaymentMethod('COD');
-                      setSelectedGateway('COD');
-                    }}
-                    className={`p-4 rounded-2xl border text-left transition ${
-                      selectedPaymentMethod === 'COD'
-                        ? 'border-maroon bg-maroon-light/50 ring-2 ring-maroon/20'
-                        : 'border-slate-200 bg-slate-50/50'
-                    }`}
+                <div className="space-y-3">
+                  <div
+                    className="p-5 rounded-2xl border border-emerald-300 bg-emerald-50/50 ring-2 ring-emerald-500/20 text-left transition flex items-center justify-between"
                   >
-                    <div className="text-xs font-bold text-slate-900">Cash on Delivery</div>
-                    <div className="text-[10px] text-slate-500">Pay cash upon delivery</div>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedPaymentMethod('RAZORPAY');
-                      setSelectedGateway('RAZORPAY');
-                    }}
-                    className={`p-4 rounded-2xl border text-left transition ${
-                      selectedPaymentMethod === 'RAZORPAY'
-                        ? 'border-maroon bg-maroon-light/50 ring-2 ring-maroon/20'
-                        : 'border-slate-200 bg-slate-50/50'
-                    }`}
-                  >
-                    <div className="text-xs font-bold text-slate-900">Razorpay</div>
-                    <div className="text-[10px] text-slate-500">Cards, UPI, Netbanking</div>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedPaymentMethod('STRIPE');
-                      setSelectedGateway('STRIPE');
-                    }}
-                    className={`p-4 rounded-2xl border text-left transition ${
-                      selectedPaymentMethod === 'STRIPE'
-                        ? 'border-maroon bg-maroon-light/50 ring-2 ring-maroon/20'
-                        : 'border-slate-200 bg-slate-50/50'
-                    }`}
-                  >
-                    <div className="text-xs font-bold text-slate-900">Stripe Payment</div>
-                    <div className="text-[10px] text-slate-500">Credit / Debit Card</div>
-                  </button>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-bold text-slate-900">Cash on Delivery (COD)</span>
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-600 text-white uppercase">
+                          Enabled for Testing
+                        </span>
+                      </div>
+                      <div className="text-xs text-slate-600 mt-1 font-medium">
+                        Pay cash directly upon delivery at your doorstep. No online payment gateway required.
+                      </div>
+                    </div>
+                    <CheckCircle2 className="w-6 h-6 text-emerald-600 shrink-0" />
+                  </div>
                 </div>
 
                 {/* Order Notes Input */}
@@ -502,11 +471,11 @@ export const CheckoutView: React.FC = () => {
                   </button>
                   <button
                     onClick={handleFinalOrder}
-                    disabled={isSubmittingOrder || isProcessing}
-                    className="px-8 py-3.5 rounded-2xl bg-maroon hover:bg-maroon-dark text-white font-extrabold text-xs transition shadow-lg flex items-center gap-2"
+                    disabled={isSubmittingOrder}
+                    className="px-8 py-3.5 rounded-2xl bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold text-xs transition shadow-lg flex items-center gap-2"
                   >
-                    {(isSubmittingOrder || isProcessing) && <Loader2 className="w-4 h-4 animate-spin" />}
-                    <span>Complete & Pay {brandConfig.currency.symbol}{summary.grandTotal.toFixed(2)}</span>
+                    {isSubmittingOrder && <Loader2 className="w-4 h-4 animate-spin" />}
+                    <span>Place Order via COD ({brandConfig.currency.symbol}{summary.grandTotal.toFixed(2)})</span>
                   </button>
                 </div>
               </div>
