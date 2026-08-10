@@ -2,50 +2,38 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { useBanners } from '@/hooks/use-content';
-import { ArrowRight, Crown } from 'lucide-react';
+import { ArrowRight, Sparkles } from 'lucide-react';
 
 export const PromoBanner: React.FC = () => {
-  const { data: bannersData } = useBanners({ position: 'PROMO_GRID', isActive: true });
-  const banner = bannersData?.banners?.[0] || {
-    title: 'Bespoke Executive Suits & Italian Tailoring',
-    subtitle: 'Engineered with hand-finished lapels and pure virgin wool for timeless elegance.',
-    imageUrl: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=1920&auto=format&fit=crop',
-    buttonText: 'Explore Italian Tailoring',
-    buttonLink: '/shop?category=men',
-  };
-
   return (
-    <section className="relative overflow-hidden rounded-3xl bg-slate-950 text-white my-10 h-[320px] sm:h-[380px] flex items-center shadow-xl group border border-slate-800">
+    <section className="relative overflow-hidden rounded-2xl bg-[#111827] text-white my-6 min-h-[220px] sm:min-h-[260px] flex items-center shadow-xs border border-[#E5E7EB] group">
       <img
-        src={banner.imageUrl}
-        alt={banner.title}
-        className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-1000 ease-out"
+        src="https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=1600&auto=format&fit=crop&q=80"
+        alt="Vistora Brand Story"
+        className="absolute inset-0 w-full h-full object-cover opacity-45 group-hover:scale-105 transition-transform duration-700 ease-out"
       />
-      <div className="absolute inset-0 bg-gradient-to-r from-maroon-dark/95 via-slate-950/85 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-r from-[#A50025]/95 via-[#111827]/80 to-transparent" />
 
-      <div className="relative z-10 max-w-xl p-8 sm:p-14 space-y-4">
-        <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-orange text-white shadow-md">
-          <Crown className="w-4 h-4 text-amber-300 fill-amber-300" /> Featured Editorial Spotlight
+      <div className="relative z-10 max-w-xl p-6 sm:p-12 space-y-3">
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-[#E66001] text-white shadow-xs">
+          <Sparkles className="w-3.5 h-3.5" /> About Vistora Marketplace
         </span>
 
-        <h2 className="text-3xl sm:text-5xl font-black text-white leading-tight drop-shadow-sm">
-          {banner.title}
+        <h2 className="text-2xl sm:text-4xl font-black text-white leading-tight">
+          More Than Shopping. It's Vistora.
         </h2>
 
-        {banner.subtitle && (
-          <p className="text-xs sm:text-base text-slate-200 font-medium leading-relaxed line-clamp-2 drop-shadow-xs">
-            {banner.subtitle}
-          </p>
-        )}
+        <p className="text-xs sm:text-sm text-slate-200 font-medium leading-relaxed max-w-md">
+          Discover thoughtfully curated products from trusted sellers, all in one seamless shopping destination.
+        </p>
 
         <div className="pt-2">
           <Link
-            href={banner.buttonLink || '/shop'}
-            className="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-2xl bg-white text-slate-950 text-xs font-black hover:bg-amber-300 hover:scale-102 transition-all shadow-lg"
+            href="/shop"
+            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-white text-[#111827] text-xs font-extrabold hover:bg-[#FFF0F3] hover:text-[#A50025] transition-all shadow-sm"
           >
-            <span>{banner.buttonText || 'Explore Now'}</span>
-            <ArrowRight className="w-4 h-4 text-slate-950" />
+            <span>Explore Vistora</span>
+            <ArrowRight className="w-4 h-4 text-[#A50025]" />
           </Link>
         </div>
       </div>

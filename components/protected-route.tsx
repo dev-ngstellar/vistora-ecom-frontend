@@ -30,10 +30,12 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowe
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50">
+      <div className="flex min-h-screen items-center justify-center bg-[#F7F8FA] p-6 text-center">
         <div className="flex flex-col items-center gap-3">
-          <Loader2 className="h-10 w-10 animate-spin text-maroon" />
-          <p className="text-sm font-medium text-slate-600">Verifying session...</p>
+          <div className="relative w-48 h-1.5 bg-[#E5E7EB] rounded-full overflow-hidden shadow-inner">
+            <div className="absolute inset-y-0 bg-gradient-to-r from-[#A50025] via-[#E66001] to-[#A50025] w-full rounded-full animate-progress-glow" />
+          </div>
+          <p className="text-xs font-extrabold uppercase tracking-wider text-[#A50025]">Verifying Session...</p>
         </div>
       </div>
     );

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { ProductVariant } from '@/types/catalogue.types';
-import { Check, Info } from 'lucide-react';
+import { Check } from 'lucide-react';
 
 interface VariantSelectorProps {
   variants?: ProductVariant[];
@@ -58,39 +58,39 @@ export const VariantSelector: React.FC<VariantSelectorProps> = ({
   };
 
   return (
-    <div className="space-y-5 py-4 border-y border-slate-200/80">
+    <div className="space-y-4 py-3 border-b border-[#E5E7EB]">
       {/* Color Selector */}
       {colors.length > 0 && (
-        <div className="space-y-2.5">
+        <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+            <span className="text-xs font-bold text-[#111827] uppercase tracking-wider">
               Color:{' '}
-              <span className="text-indigo-600 font-extrabold">{selectedColor}</span>
+              <span className="text-[#A50025] font-black">{selectedColor}</span>
             </span>
           </div>
-          <div className="flex flex-wrap gap-2.5">
+          <div className="flex flex-wrap gap-2">
             {colors.map((color) => {
               const isSelected = selectedColor === color;
               const matchingVar = variants.find((v) => v.color === color);
-              const hex = matchingVar?.colorHex || '#1A1A1A';
+              const hex = matchingVar?.colorHex || '#111827';
 
               return (
                 <button
                   key={color}
                   type="button"
                   onClick={() => handleColorChange(color)}
-                  className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all duration-200 flex items-center gap-2 border ${
+                  className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all duration-200 flex items-center gap-2 border ${
                     isSelected
-                      ? 'bg-slate-900 text-white border-slate-900 shadow-xs scale-105'
-                      : 'bg-white text-slate-700 border-slate-200 hover:border-slate-400'
+                      ? 'bg-[#A50025] text-white border-[#A50025] shadow-xs'
+                      : 'bg-white text-[#111827] border-[#E5E7EB] hover:border-slate-400'
                   }`}
                 >
                   <span
-                    className="w-3.5 h-3.5 rounded-full border border-slate-300 inline-block shadow-xs"
+                    className="w-3.5 h-3.5 rounded-full border border-white/40 inline-block shadow-xs shrink-0"
                     style={{ backgroundColor: hex }}
                   />
                   <span>{color}</span>
-                  {isSelected && <Check className="w-3.5 h-3.5 text-amber-400" />}
+                  {isSelected && <Check className="w-3.5 h-3.5 text-[#E66001]" />}
                 </button>
               );
             })}
@@ -100,34 +100,26 @@ export const VariantSelector: React.FC<VariantSelectorProps> = ({
 
       {/* Size Selector */}
       {sizes.length > 0 && (
-        <div className="space-y-2.5">
+        <div className="space-y-2 pt-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+            <span className="text-xs font-bold text-[#111827] uppercase tracking-wider">
               Size:{' '}
-              <span className="text-indigo-600 font-extrabold">{selectedSize}</span>
+              <span className="text-[#A50025] font-black">{selectedSize}</span>
             </span>
           </div>
           <div className="flex flex-wrap gap-2">
             {sizes.map((size) => {
               const isSelected = selectedSize === size;
-              // Check stock availability for this size
-              const matchingVariant = variants.find(
-                (v) => v.size === size && (!selectedColor || v.color === selectedColor),
-              );
-              const isOutOfStock = matchingVariant ? matchingVariant.stock <= 0 : false;
 
               return (
                 <button
                   key={size}
                   type="button"
-                  disabled={isOutOfStock}
                   onClick={() => handleSizeChange(size)}
-                  className={`w-12 h-10 rounded-xl text-xs font-bold transition-all duration-200 flex items-center justify-center border ${
-                    isOutOfStock
-                      ? 'bg-slate-100 text-slate-300 border-slate-200 cursor-not-allowed line-through'
-                      : isSelected
-                        ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs scale-105'
-                        : 'bg-white text-slate-800 border-slate-200 hover:border-slate-400'
+                  className={`px-4 py-1.5 rounded-xl text-xs font-extrabold transition-all duration-200 border ${
+                    isSelected
+                      ? 'bg-[#A50025] text-white border-[#A50025] shadow-xs'
+                      : 'bg-white text-[#111827] border-[#E5E7EB] hover:border-slate-400'
                   }`}
                 >
                   {size}

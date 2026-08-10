@@ -737,47 +737,70 @@ export default function AdminProductsPage() {
                       </div>
                     ) : (
                       <div className="space-y-3">
+                        {/* Table Column Headers */}
+                        <div className="grid grid-cols-[1fr_1fr_1.4fr_1fr_1fr_40px] gap-2.5 px-4 py-2 bg-[#F7F8FA] border border-[#E5E7EB] rounded-xl text-[11px] font-black uppercase tracking-wider text-[#111827]">
+                          <span>Color / Shade</span>
+                          <span>Size / Volume</span>
+                          <span>Variant SKU</span>
+                          <span>Price ({brandConfig.currency.symbol})</span>
+                          <span>Stock Qty</span>
+                          <span className="text-center">Remove</span>
+                        </div>
+
                         {variants.map((v, idx) => (
-                          <Card key={idx} size="small" className="rounded-2xl border-slate-200 shadow-2xs">
-                            <div className="grid grid-cols-6 gap-2 items-center">
-                              <Input
-                                placeholder="Color"
-                                value={v.color || ''}
-                                onChange={(e) => handleUpdateVariant(idx, 'color', e.target.value)}
-                                className="text-xs"
-                              />
-                              <Input
-                                placeholder="Size"
-                                value={v.size || ''}
-                                onChange={(e) => handleUpdateVariant(idx, 'size', e.target.value)}
-                                className="text-xs"
-                              />
-                              <Input
-                                placeholder="SKU"
-                                value={v.sku || ''}
-                                onChange={(e) => handleUpdateVariant(idx, 'sku', e.target.value)}
-                                className="text-xs font-mono"
-                              />
-                              <InputNumber
-                                placeholder="Price"
-                                value={v.price}
-                                onChange={(val) => handleUpdateVariant(idx, 'price', val)}
-                                className="w-full text-xs"
-                              />
-                              <InputNumber
-                                placeholder="Stock"
-                                value={v.stock}
-                                onChange={(val) => handleUpdateVariant(idx, 'stock', val)}
-                                className="w-full text-xs"
-                              />
-                              <Button
-                                danger
-                                type="text"
-                                icon={<Trash2 className="w-4 h-4" />}
-                                onClick={() => handleRemoveVariant(idx)}
-                              />
+                          <div key={idx} className="p-3 rounded-2xl bg-white border border-[#E5E7EB] shadow-2xs">
+                            <div className="grid grid-cols-[1fr_1fr_1.4fr_1fr_1fr_40px] gap-2.5 items-center">
+                              <div>
+                                <Input
+                                  placeholder="e.g. Red / Black"
+                                  value={v.color || ''}
+                                  onChange={(e) => handleUpdateVariant(idx, 'color', e.target.value)}
+                                  className="text-xs rounded-xl"
+                                />
+                              </div>
+                              <div>
+                                <Input
+                                  placeholder="e.g. 5ml / Free Size"
+                                  value={v.size || ''}
+                                  onChange={(e) => handleUpdateVariant(idx, 'size', e.target.value)}
+                                  className="text-xs rounded-xl"
+                                />
+                              </div>
+                              <div>
+                                <Input
+                                  placeholder="e.g. SKU-001"
+                                  value={v.sku || ''}
+                                  onChange={(e) => handleUpdateVariant(idx, 'sku', e.target.value)}
+                                  className="text-xs font-mono rounded-xl"
+                                />
+                              </div>
+                              <div>
+                                <InputNumber
+                                  placeholder="0.00"
+                                  value={v.price}
+                                  onChange={(val) => handleUpdateVariant(idx, 'price', val)}
+                                  className="w-full text-xs rounded-xl"
+                                  prefix={brandConfig.currency.symbol}
+                                />
+                              </div>
+                              <div>
+                                <InputNumber
+                                  placeholder="0"
+                                  value={v.stock}
+                                  onChange={(val) => handleUpdateVariant(idx, 'stock', val)}
+                                  className="w-full text-xs rounded-xl"
+                                />
+                              </div>
+                              <div className="flex justify-center">
+                                <Button
+                                  type="text"
+                                  danger
+                                  icon={<Trash2 className="w-4 h-4" />}
+                                  onClick={() => handleRemoveVariant(idx)}
+                                />
+                              </div>
                             </div>
-                          </Card>
+                          </div>
                         ))}
                       </div>
                     )}

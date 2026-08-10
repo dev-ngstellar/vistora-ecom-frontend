@@ -147,7 +147,7 @@ export const MobileCustomerNav: React.FC = () => {
 
             return (
               <Link
-                key={item.href}
+                key={item.label}
                 href={item.href}
                 onClick={() => setIsOpen(false)}
                 className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition ${

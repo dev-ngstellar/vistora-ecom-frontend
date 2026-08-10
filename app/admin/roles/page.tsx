@@ -97,13 +97,14 @@ export default function AdminRolesPage() {
   const getRoleBadge = (roleName: string) => {
     switch (roleName) {
       case 'SUPER_ADMIN':
-        return <Tag color="purple" className="font-extrabold text-xs rounded-lg px-2.5 py-0.5">Super Admin</Tag>;
       case 'ADMIN':
-        return <Tag color="indigo" className="font-extrabold text-xs rounded-lg px-2.5 py-0.5">Store Admin</Tag>;
+        return <Tag className="font-extrabold text-xs rounded-lg px-2.5 py-0.5 bg-[#A50025] text-white border-none">Administrator</Tag>;
       case 'MANAGER':
-        return <Tag color="blue" className="font-extrabold text-xs rounded-lg px-2.5 py-0.5">Store Manager</Tag>;
+        return <Tag className="font-extrabold text-xs rounded-lg px-2.5 py-0.5 bg-[#E66001] text-white border-none">Store Manager</Tag>;
+      case 'CUSTOMER':
+        return <Tag className="font-extrabold text-xs rounded-lg px-2.5 py-0.5 bg-slate-900 text-white border-none">Customer</Tag>;
       default:
-        return <Tag color="default" className="font-bold text-xs rounded-lg px-2.5 py-0.5">{roleName}</Tag>;
+        return <Tag className="font-bold text-xs rounded-lg px-2.5 py-0.5 bg-slate-200 text-slate-800 border-none">{roleName}</Tag>;
     }
   };
 

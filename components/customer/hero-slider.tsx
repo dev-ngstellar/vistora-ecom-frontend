@@ -14,37 +14,37 @@ export const HeroSlider: React.FC = () => {
   const fallbackBanners = [
     {
       id: 'fb-1',
-      title: 'Monochrome Tailored Suits & Runway Couture 2026',
-      subtitle: 'Handcrafted Italian wool, silk gowns, and bespoke seasonal outerwear.',
-      imageUrl: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1920&auto=format&fit=crop',
-      mobileImageUrl: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=800&auto=format&fit=crop',
-      buttonText: 'Explore Collection',
-      buttonLink: '/shop?category=women',
-      badge: 'Haute Couture 2026',
+      title: 'Discover Vistora',
+      subtitle: 'One destination. Endless choices across beauty, cosmetics, and handloom couture.',
+      imageUrl: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=1920&auto=format&fit=crop&q=80',
+      mobileImageUrl: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=800&auto=format&fit=crop&q=80',
+      buttonText: 'Shop Now',
+      buttonLink: '/shop',
+      badge: 'Vistora Marketplace',
     },
     {
       id: 'fb-2',
-      title: 'Bespoke Executive Suits & Italian Craftsmanship',
-      subtitle: 'Precision stitching engineered for timeless executive confidence and comfort.',
-      imageUrl: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=1920&auto=format&fit=crop',
-      mobileImageUrl: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=800&auto=format&fit=crop',
-      buttonText: 'Shop Executive Wear',
-      buttonLink: '/shop?category=men',
-      badge: 'Bespoke Tailoring',
+      title: 'Celebrate Indian Handloom',
+      subtitle: 'Discover traditional South Indian sarees, zari borders, and handcrafted collections.',
+      imageUrl: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=1920&auto=format&fit=crop&q=80',
+      mobileImageUrl: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800&auto=format&fit=crop&q=80',
+      buttonText: 'Explore Handlooms',
+      buttonLink: '/shop?category=sarees-handloom',
+      badge: 'Handcrafted Heritage',
     },
     {
       id: 'fb-3',
-      title: 'Swiss Timepieces & Designer Leather Accessories',
-      subtitle: 'Refined craftsmanship designed to accent luxury wardrobes with perfection.',
-      imageUrl: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=1920&auto=format&fit=crop',
-      mobileImageUrl: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=800&auto=format&fit=crop',
-      buttonText: 'Discover Accessories',
-      buttonLink: '/shop?category=accessories',
-      badge: 'Luxury Timepieces',
+      title: 'Beauty Essentials',
+      subtitle: 'Rich lip colors, Ayurvedic kajal, under-eye care, and non-sticky lip glosses.',
+      imageUrl: 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=1920&auto=format&fit=crop&q=80',
+      mobileImageUrl: 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=800&auto=format&fit=crop&q=80',
+      buttonText: 'Shop Beauty',
+      buttonLink: '/shop?category=lipsticks',
+      badge: 'Botanical & Beauty',
     },
   ];
 
-  const banners = dbBanners.length > 0 ? dbBanners : fallbackBanners;
+  const banners = fallbackBanners; // Prefer clean Vistora catalog banners
 
   useEffect(() => {
     if (banners.length <= 1) return;
@@ -56,8 +56,8 @@ export const HeroSlider: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="w-full h-[400px] sm:h-[460px] rounded-3xl bg-slate-900 overflow-hidden flex items-center justify-center p-8 border border-slate-800">
-        <Skeleton active paragraph={{ rows: 4 }} className="max-w-xl" />
+      <div className="w-full h-[320px] sm:h-[380px] rounded-2xl bg-slate-900 overflow-hidden flex items-center justify-center p-8 border border-slate-800">
+        <Skeleton active paragraph={{ rows: 3 }} className="max-w-xl" />
       </div>
     );
   }
@@ -65,7 +65,7 @@ export const HeroSlider: React.FC = () => {
   const current = banners[currentIndex] || banners[0];
 
   return (
-    <section className="relative overflow-hidden rounded-3xl bg-slate-950 text-white my-4 shadow-xl group h-[360px] sm:h-[440px] lg:h-[480px] flex items-center border border-slate-800">
+    <section className="relative overflow-hidden rounded-2xl bg-[#111827] text-white my-3 shadow-md group h-[320px] sm:h-[380px] lg:h-[420px] flex items-center border border-[#E5E7EB]">
       {/* Background Media */}
       <picture className="absolute inset-0 w-full h-full">
         {current.mobileImageUrl && (
@@ -74,27 +74,26 @@ export const HeroSlider: React.FC = () => {
         <img
           src={current.imageUrl}
           alt={current.title}
-          className="w-full h-full object-cover opacity-65 group-hover:scale-105 transition-transform duration-1000 ease-out"
+          className="w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-700 ease-out"
         />
       </picture>
 
       {/* Dynamic Gradient Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/70 to-transparent" />
-      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-r from-[#111827]/95 via-[#111827]/75 to-transparent" />
 
       {/* Content Box */}
-      <div className="relative z-10 max-w-3xl px-6 sm:px-12 lg:px-16 py-10 space-y-4">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-black bg-maroon/90 text-white backdrop-blur-md border border-white/20 shadow-md">
-          <Sparkles className="w-4 h-4 text-amber-300 animate-pulse" />
-          <span>{(current as any).badge || 'Limited Edition Drop'}</span>
+      <div className="relative z-10 max-w-2xl px-6 sm:px-12 lg:px-16 py-8 space-y-3.5">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider bg-[#A50025] text-white shadow-xs">
+          <Sparkles className="w-3.5 h-3.5 text-[#E66001] fill-[#E66001]" />
+          <span>{current.badge}</span>
         </div>
 
-        <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white leading-tight drop-shadow-sm">
+        <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white leading-tight">
           {current.title}
         </h1>
 
         {current.subtitle && (
-          <p className="text-xs sm:text-base text-slate-200 max-w-xl font-medium leading-relaxed line-clamp-2 drop-shadow-xs">
+          <p className="text-xs sm:text-sm text-slate-200 max-w-lg font-medium leading-relaxed line-clamp-2">
             {current.subtitle}
           </p>
         )}
@@ -102,10 +101,10 @@ export const HeroSlider: React.FC = () => {
         <div className="pt-2 flex items-center gap-3">
           <Link
             href={current.buttonLink || '/shop'}
-            className="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-2xl bg-maroon hover:bg-maroon-dark text-white font-black text-xs shadow-lg hover:shadow-maroon/30 transition-all hover:scale-102"
+            className="inline-flex items-center gap-2 px-6 py-2.5 sm:px-7 sm:py-3 rounded-xl bg-[#A50025] hover:bg-[#7D001C] text-white font-extrabold text-xs uppercase tracking-wider shadow-md hover:scale-102 transition-all duration-200"
           >
-            <span>{current.buttonText || 'Shop Collection'}</span>
-            <ArrowRight className="w-4 h-4 text-amber-300" />
+            <span>{current.buttonText || 'Shop Now'}</span>
+            <ArrowRight className="w-4 h-4 text-white" />
           </Link>
         </div>
       </div>
@@ -115,27 +114,27 @@ export const HeroSlider: React.FC = () => {
         <>
           <button
             onClick={() => setCurrentIndex((prev) => (prev === 0 ? banners.length - 1 : prev - 1))}
-            className="absolute left-4 z-20 p-3 rounded-full bg-slate-950/60 hover:bg-maroon text-white backdrop-blur-md border border-white/15 transition-all opacity-0 group-hover:opacity-100 hover:scale-110 shadow-lg"
+            className="absolute left-3 z-20 p-2.5 rounded-full bg-[#111827]/60 hover:bg-[#A50025] text-white backdrop-blur-md border border-white/20 transition-all opacity-0 group-hover:opacity-100 hover:scale-110"
             aria-label="Previous Slide"
           >
-            <ChevronLeft className="w-5 h-5" />
+            <ChevronLeft className="w-4 h-4" />
           </button>
           <button
             onClick={() => setCurrentIndex((prev) => (prev + 1) % banners.length)}
-            className="absolute right-4 z-20 p-3 rounded-full bg-slate-950/60 hover:bg-maroon text-white backdrop-blur-md border border-white/15 transition-all opacity-0 group-hover:opacity-100 hover:scale-110 shadow-lg"
+            className="absolute right-3 z-20 p-2.5 rounded-full bg-[#111827]/60 hover:bg-[#A50025] text-white backdrop-blur-md border border-white/20 transition-all opacity-0 group-hover:opacity-100 hover:scale-110"
             aria-label="Next Slide"
           >
-            <ChevronRight className="w-5 h-5" />
+            <ChevronRight className="w-4 h-4" />
           </button>
 
           {/* Dots Indicator */}
-          <div className="absolute bottom-6 inset-x-0 z-20 flex items-center justify-center gap-2.5">
+          <div className="absolute bottom-5 inset-x-0 z-20 flex items-center justify-center gap-2">
             {banners.map((_, idx) => (
               <button
                 key={idx}
                 onClick={() => setCurrentIndex(idx)}
-                className={`h-2 rounded-full transition-all duration-300 ${
-                  currentIndex === idx ? 'w-10 bg-amber-400' : 'w-2.5 bg-white/40 hover:bg-white/70'
+                className={`h-1.5 rounded-full transition-all duration-300 ${
+                  currentIndex === idx ? 'w-8 bg-[#E66001]' : 'w-2 bg-white/40 hover:bg-white/70'
                 }`}
                 aria-label={`Go to slide ${idx + 1}`}
               />

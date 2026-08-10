@@ -14,10 +14,11 @@ export default function ShopPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  // Parse filters from URL search params
+  const categoryParam = searchParams.get('category') || searchParams.get('categoryId');
+
   const [filters, setFilters] = useState<ProductQueryFilters>({
     q: searchParams.get('q') || undefined,
-    categoryId: searchParams.get('categoryId') || undefined,
+    categoryId: undefined,
     brandId: searchParams.get('brandId') || undefined,
     collectionId: searchParams.get('collectionId') || undefined,
     minPrice: searchParams.get('minPrice') ? Number(searchParams.get('minPrice')) : undefined,
@@ -33,6 +34,20 @@ export default function ShopPage() {
   const { data: categories } = useCategories();
   const { data: brands } = useBrands();
   const { data: collections } = useCollections();
+
+  // Resolve category slug or ID from URL searchParams
+  useEffect(() => {
+    if (categoryParam && categories && categories.length > 0) {
+      const matched = categories.find(
+        (c) => c.id === categoryParam || c.slug === categoryParam
+      );
+      if (matched && filters.categoryId !== matched.id) {
+        setFilters((prev) => ({ ...prev, categoryId: matched.id }));
+      }
+    } else if (!categoryParam && filters.categoryId) {
+      setFilters((prev) => ({ ...prev, categoryId: undefined }));
+    }
+  }, [categoryParam, categories]);
 
   const { data: productsData, isLoading } = useProducts(filters);
   const products = productsData?.items || [];

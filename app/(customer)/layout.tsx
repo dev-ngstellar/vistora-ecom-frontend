@@ -1,5 +1,3 @@
-'use client';
-
 import React from 'react';
 import { CustomerHeader } from '@/components/layout/customer-header';
 import { CustomerFooter } from '@/components/layout/customer-footer';

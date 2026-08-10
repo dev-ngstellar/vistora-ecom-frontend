@@ -11,10 +11,10 @@ interface SearchBarProps {
   className?: string;
 }
 
-const POPULAR_SEARCH_TAGS = ['Double-Breasted Suit', 'Silk Evening Gown', 'Swiss Watch', 'Leather Tote', 'Luxury Footwear'];
+const POPULAR_SEARCH_TAGS = ['Lipsticks', 'Lip Gloss', 'Kajal Stick', 'Under Eye Cream', 'Handloom Saree'];
 
 export const SearchBar: React.FC<SearchBarProps> = ({
-  placeholder = 'Search luxury apparel, watches, leather goods...',
+  placeholder = 'Search products, categories & items...',
   className = '',
 }) => {
   const [query, setQuery] = useState('');

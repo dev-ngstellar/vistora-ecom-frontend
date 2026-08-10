@@ -8,7 +8,6 @@ import {
   Home, 
   ShoppingBag, 
   Grid, 
-  Zap, 
   Flame, 
   ChevronDown, 
   ArrowRight,
@@ -17,9 +16,9 @@ import {
 
 export const customerNavItems = [
   { label: 'Home', href: '/', icon: Home },
-  { label: 'Shop All', href: '/shop', icon: ShoppingBag },
-  { label: 'New Drops', href: '/shop?sort=newest', icon: Zap },
-  { label: 'Flash Deals', href: '/shop?onSale=true', icon: Flame },
+  { label: 'Shop', href: '/shop', icon: ShoppingBag },
+  { label: 'Categories', href: '/shop?view=categories', icon: Grid },
+  { label: 'Deals', href: '/shop?onSale=true', icon: Flame },
 ];
 
 export const CustomerNav: React.FC = () => {
@@ -42,58 +41,55 @@ export const CustomerNav: React.FC = () => {
   const isShopActive = pathname === '/shop';
 
   return (
-    <nav className="hidden lg:flex items-center space-x-2">
+    <nav className="hidden lg:flex items-center space-x-1 sm:space-x-2">
       {/* Home */}
       <Link
         href="/"
-        className={`nav-link-underline inline-flex items-center gap-1.5 px-3.5 py-2.5 text-xs font-bold transition-all duration-200 ${
+        className={`px-3 py-2 text-xs font-extrabold transition-all duration-200 ${
           isHomeActive
-            ? 'active text-[#B5123B] font-extrabold'
-            : 'text-[#111111] hover:text-[#B5123B]'
+            ? 'text-[#A50025] font-black border-b-2 border-[#A50025]'
+            : 'text-[#111827] hover:text-[#A50025]'
         }`}
       >
-        <Home className={`w-4 h-4 ${isHomeActive ? 'text-[#B5123B]' : 'text-slate-400'}`} />
-        <span>Home</span>
+        Home
       </Link>
 
-      {/* Shop All */}
+      {/* Shop */}
       <Link
         href="/shop"
-        className={`nav-link-underline inline-flex items-center gap-1.5 px-3.5 py-2.5 text-xs font-bold transition-all duration-200 ${
+        className={`px-3 py-2 text-xs font-extrabold transition-all duration-200 ${
           isShopActive && !pathname.includes('?')
-            ? 'active text-[#B5123B] font-extrabold'
-            : 'text-[#111111] hover:text-[#B5123B]'
+            ? 'text-[#A50025] font-black border-b-2 border-[#A50025]'
+            : 'text-[#111827] hover:text-[#A50025]'
         }`}
       >
-        <ShoppingBag className={`w-4 h-4 ${isShopActive && !pathname.includes('?') ? 'text-[#B5123B]' : 'text-slate-400'}`} />
-        <span>Shop All</span>
+        Shop
       </Link>
 
-      {/* Departments Dropdown */}
+      {/* Categories Dropdown */}
       <div className="relative" ref={dropdownRef}>
         <button
           onClick={() => setIsDeptOpen(!isDeptOpen)}
           onMouseEnter={() => setIsDeptOpen(true)}
-          className={`nav-link-underline inline-flex items-center gap-1.5 px-3.5 py-2.5 text-xs font-bold transition-all duration-200 ${
+          className={`inline-flex items-center gap-1 px-3 py-2 text-xs font-extrabold transition-all duration-200 ${
             isDeptOpen
-              ? 'active text-[#B5123B] font-extrabold'
-              : 'text-[#111111] hover:text-[#B5123B]'
+              ? 'text-[#A50025] font-black'
+              : 'text-[#111827] hover:text-[#A50025]'
           }`}
         >
-          <Grid className={`w-4 h-4 ${isDeptOpen ? 'text-[#B5123B]' : 'text-slate-400'}`} />
-          <span>Departments</span>
-          <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isDeptOpen ? 'rotate-180 text-[#B5123B]' : 'text-slate-400'}`} />
+          <span>Categories</span>
+          <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isDeptOpen ? 'rotate-180 text-[#A50025]' : 'text-slate-400'}`} />
         </button>
 
-        {/* Categories Mega Dropdown */}
+        {/* Categories Popover Dropdown */}
         {isDeptOpen && (
           <div
             onMouseLeave={() => setIsDeptOpen(false)}
-            className="absolute top-full left-0 mt-2 w-72 rounded-[20px] bg-white shadow-2xl border border-[#ECECEC] p-3 z-50 animate-in fade-in slide-in-from-top-2 duration-200 space-y-1.5"
+            className="absolute top-full left-0 mt-1.5 w-64 rounded-2xl bg-white shadow-xl border border-[#E5E7EB] p-2.5 z-50 animate-in fade-in slide-in-from-top-2 duration-200 space-y-1"
           >
-            <div className="px-3 py-2 border-b border-[#ECECEC] flex items-center justify-between mb-1">
-              <span className="text-[10px] font-black uppercase tracking-widest text-[#B5123B] flex items-center gap-1.5">
-                <Layers className="w-3.5 h-3.5 text-[#F59E0B]" /> Luxury Departments
+            <div className="px-3 py-1.5 border-b border-[#E5E7EB] flex items-center justify-between mb-1">
+              <span className="text-[10px] font-black uppercase tracking-widest text-[#A50025] flex items-center gap-1.5">
+                <Layers className="w-3.5 h-3.5 text-[#E66001]" /> Departments
               </span>
             </div>
 
@@ -103,46 +99,62 @@ export const CustomerNav: React.FC = () => {
                   key={cat.id}
                   href={`/shop?categoryId=${cat.id}`}
                   onClick={() => setIsDeptOpen(false)}
-                  className="flex items-center justify-between px-3 py-2.5 rounded-[12px] text-xs font-bold text-[#111111] hover:bg-[#FDF2F5] hover:text-[#B5123B] transition-all group"
+                  className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-extrabold text-[#111827] hover:bg-[#FFF0F3] hover:text-[#A50025] transition-all group"
                 >
                   <span>{cat.name}</span>
-                  <ArrowRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-[#B5123B] group-hover:translate-x-1 transition-all duration-200" />
+                  <ArrowRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-[#A50025] group-hover:translate-x-1 transition-all duration-200" />
                 </Link>
               ))
             ) : (
               <>
                 <Link
-                  href="/shop?category=men"
+                  href="/shop?category=lipsticks"
                   onClick={() => setIsDeptOpen(false)}
-                  className="flex items-center justify-between px-3 py-2.5 rounded-[12px] text-xs font-bold text-[#111111] hover:bg-[#FDF2F5] hover:text-[#B5123B] transition-all group"
+                  className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-extrabold text-[#111827] hover:bg-[#FFF0F3] hover:text-[#A50025] transition-all group"
                 >
-                  <span>Men's Apparel</span>
-                  <ArrowRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-[#B5123B] group-hover:translate-x-1 transition-all" />
+                  <span>Lipsticks & Lip Colors</span>
+                  <ArrowRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-[#A50025] group-hover:translate-x-1 transition-all" />
                 </Link>
                 <Link
-                  href="/shop?category=women"
+                  href="/shop?category=lip-gloss"
                   onClick={() => setIsDeptOpen(false)}
-                  className="flex items-center justify-between px-3 py-2.5 rounded-[12px] text-xs font-bold text-[#111111] hover:bg-[#FDF2F5] hover:text-[#B5123B] transition-all group"
+                  className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-extrabold text-[#111827] hover:bg-[#FFF0F3] hover:text-[#A50025] transition-all group"
                 >
-                  <span>Women's Couture</span>
-                  <ArrowRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-[#B5123B] group-hover:translate-x-1 transition-all" />
+                  <span>Lip Gloss & Shimmer</span>
+                  <ArrowRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-[#A50025] group-hover:translate-x-1 transition-all" />
                 </Link>
                 <Link
-                  href="/shop?category=watches"
+                  href="/shop?category=kajal-eyeliner"
                   onClick={() => setIsDeptOpen(false)}
-                  className="flex items-center justify-between px-3 py-2.5 rounded-[12px] text-xs font-bold text-[#111111] hover:bg-[#FDF2F5] hover:text-[#B5123B] transition-all group"
+                  className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-extrabold text-[#111827] hover:bg-[#FFF0F3] hover:text-[#A50025] transition-all group"
                 >
-                  <span>Luxury Timepieces</span>
-                  <ArrowRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-[#B5123B] group-hover:translate-x-1 transition-all" />
+                  <span>Kajal & Eyeliners</span>
+                  <ArrowRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-[#A50025] group-hover:translate-x-1 transition-all" />
+                </Link>
+                <Link
+                  href="/shop?category=skincare"
+                  onClick={() => setIsDeptOpen(false)}
+                  className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-extrabold text-[#111827] hover:bg-[#FFF0F3] hover:text-[#A50025] transition-all group"
+                >
+                  <span>Skincare & Eye Care</span>
+                  <ArrowRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-[#A50025] group-hover:translate-x-1 transition-all" />
+                </Link>
+                <Link
+                  href="/shop?category=sarees-handloom"
+                  onClick={() => setIsDeptOpen(false)}
+                  className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-extrabold text-[#111827] hover:bg-[#FFF0F3] hover:text-[#A50025] transition-all group"
+                >
+                  <span>Sarees & Handloom</span>
+                  <ArrowRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-[#A50025] group-hover:translate-x-1 transition-all" />
                 </Link>
               </>
             )}
 
-            <div className="pt-2 border-t border-[#ECECEC] mt-1">
+            <div className="pt-2 border-t border-[#E5E7EB] mt-1">
               <Link
                 href="/shop"
                 onClick={() => setIsDeptOpen(false)}
-                className="flex items-center justify-center gap-1.5 py-2 text-xs font-black text-[#B5123B] hover:text-[#D97706] transition-colors"
+                className="flex items-center justify-center gap-1.5 py-1.5 text-xs font-black text-[#A50025] hover:text-[#E66001] transition-colors"
               >
                 <span>Browse All Categories</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -152,22 +164,13 @@ export const CustomerNav: React.FC = () => {
         )}
       </div>
 
-      {/* New Drops */}
-      <Link
-        href="/shop?sort=newest"
-        className="nav-link-underline inline-flex items-center gap-1.5 px-3.5 py-2.5 text-xs font-bold text-[#111111] hover:text-[#B5123B] transition-all duration-200"
-      >
-        <Zap className="w-4 h-4 text-[#F59E0B]" />
-        <span>New Drops</span>
-      </Link>
-
-      {/* Flash Deals */}
+      {/* Deals */}
       <Link
         href="/shop?onSale=true"
-        className="nav-link-underline inline-flex items-center gap-1.5 px-3.5 py-2.5 text-xs font-bold text-[#111111] hover:text-[#B5123B] transition-all duration-200"
+        className="inline-flex items-center gap-1 px-3 py-2 text-xs font-extrabold text-[#E66001] hover:text-[#A50025] transition-all duration-200"
       >
-        <Flame className="w-4 h-4 text-rose-500 fill-rose-500 animate-pulse" />
-        <span>Flash Deals</span>
+        <Flame className="w-3.5 h-3.5 text-[#E66001] fill-[#E66001]" />
+        <span>Deals</span>
       </Link>
     </nav>
   );

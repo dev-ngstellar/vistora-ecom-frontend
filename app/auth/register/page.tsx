@@ -7,12 +7,13 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
-import { Eye, EyeOff, Lock, Mail, Phone, ShoppingBag, User } from 'lucide-react';
+import { Eye, EyeOff, Lock, Mail, Phone, User } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/context/auth-context';
 import { RegisterInput, registerSchema } from '@/lib/validations/auth.validation';
 import { authService } from '@/services/auth.service';
 import { ApiEnvelope } from '@/types/auth.types';
+import { brandConfig } from '@/config';
 
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -46,121 +47,139 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center fashion-gradient-bg px-4 py-12 sm:px-6 lg:px-8">
-      <div className="w-full max-w-lg space-y-8 rounded-3xl glass-panel p-8 shadow-2xl sm:p-10">
-        <div className="text-center">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-600/10 text-indigo-600 border border-indigo-200">
-            <ShoppingBag className="h-7 w-7 text-indigo-600" />
-          </div>
-          <h2 className="mt-4 text-3xl font-extrabold tracking-tight text-slate-900">
+    <div className="flex min-h-screen items-center justify-center bg-[#F7F8FA] px-4 py-12 sm:px-6 lg:px-8">
+      <div className="w-full max-w-lg space-y-8 rounded-3xl bg-white p-8 sm:p-10 border border-[#E5E7EB] shadow-xl">
+        <div className="text-center space-y-3">
+          <Link href="/" className="inline-block">
+            <img
+              src={brandConfig.logoUrl}
+              alt={brandConfig.name}
+              className="h-12 w-auto mx-auto object-contain"
+            />
+          </Link>
+          <h2 className="text-2xl sm:text-3xl font-black text-[#111827] tracking-tight">
             Create Account
           </h2>
-          <p className="mt-2 text-sm text-slate-600">Join Vistora Commerce for exclusive couture</p>
+          <p className="text-xs text-[#64748B] font-medium">
+            Join Vistora Commerce for exclusive shopping
+          </p>
         </div>
 
-        <form className="mt-8 space-y-5" onSubmit={handleSubmit(onSubmit)}>
+        <form className="mt-8 space-y-4" onSubmit={handleSubmit(onSubmit)}>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700">
+              <label className="block text-[11px] font-extrabold uppercase tracking-wider text-[#111827] mb-1.5">
                 First Name
               </label>
-              <div className="relative mt-1.5 rounded-xl shadow-sm">
+              <div className="relative rounded-xl shadow-xs">
                 <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
-                  <User className="h-5 w-5 text-slate-400" />
+                  <User className="h-4 w-4 text-slate-400" />
                 </div>
                 <input
                   {...register('firstName')}
                   type="text"
                   placeholder="John"
-                  className={`block w-full rounded-xl border pl-11 pr-4 py-3 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 transition ${
-                    errors.firstName ? 'border-rose-400 focus:ring-rose-400' : 'border-slate-200 focus:ring-indigo-600'
+                  className={`block w-full rounded-xl border pl-10 pr-4 py-2.5 text-xs text-[#111827] placeholder-slate-400 focus:outline-none focus:ring-2 transition ${
+                    errors.firstName
+                      ? 'border-rose-500 focus:ring-rose-500/20'
+                      : 'border-[#E5E7EB] focus:border-[#A50025] focus:ring-[#A50025]/20'
                   }`}
                 />
               </div>
               {errors.firstName && (
-                <p className="mt-1 text-xs text-rose-500 font-medium">{errors.firstName.message}</p>
+                <p className="mt-1 text-xs text-rose-600 font-medium">{errors.firstName.message}</p>
               )}
             </div>
 
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700">
+              <label className="block text-[11px] font-extrabold uppercase tracking-wider text-[#111827] mb-1.5">
                 Last Name
               </label>
-              <div className="relative mt-1.5 rounded-xl shadow-sm">
+              <div className="relative rounded-xl shadow-xs">
                 <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
-                  <User className="h-5 w-5 text-slate-400" />
+                  <User className="h-4 w-4 text-slate-400" />
                 </div>
                 <input
                   {...register('lastName')}
                   type="text"
                   placeholder="Doe"
-                  className={`block w-full rounded-xl border pl-11 pr-4 py-3 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 transition ${
-                    errors.lastName ? 'border-rose-400 focus:ring-rose-400' : 'border-slate-200 focus:ring-indigo-600'
+                  className={`block w-full rounded-xl border pl-10 pr-4 py-2.5 text-xs text-[#111827] placeholder-slate-400 focus:outline-none focus:ring-2 transition ${
+                    errors.lastName
+                      ? 'border-rose-500 focus:ring-rose-500/20'
+                      : 'border-[#E5E7EB] focus:border-[#A50025] focus:ring-[#A50025]/20'
                   }`}
                 />
               </div>
               {errors.lastName && (
-                <p className="mt-1 text-xs text-rose-500 font-medium">{errors.lastName.message}</p>
+                <p className="mt-1 text-xs text-rose-600 font-medium">{errors.lastName.message}</p>
               )}
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700">
+            <label className="block text-[11px] font-extrabold uppercase tracking-wider text-[#111827] mb-1.5">
               Email Address
             </label>
-            <div className="relative mt-1.5 rounded-xl shadow-sm">
+            <div className="relative rounded-xl shadow-xs">
               <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
-                <Mail className="h-5 w-5 text-slate-400" />
+                <Mail className="h-4 w-4 text-slate-400" />
               </div>
               <input
                 {...register('email')}
                 type="email"
-                placeholder="john.doe@example.com"
-                className={`block w-full rounded-xl border pl-11 pr-4 py-3 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 transition ${
-                  errors.email ? 'border-rose-400 focus:ring-rose-400' : 'border-slate-200 focus:ring-indigo-600'
+                placeholder="name@example.com"
+                className={`block w-full rounded-xl border pl-10 pr-4 py-2.5 text-xs text-[#111827] placeholder-slate-400 focus:outline-none focus:ring-2 transition ${
+                  errors.email
+                    ? 'border-rose-500 focus:ring-rose-500/20'
+                    : 'border-[#E5E7EB] focus:border-[#A50025] focus:ring-[#A50025]/20'
                 }`}
               />
             </div>
             {errors.email && (
-              <p className="mt-1 text-xs text-rose-500 font-medium">{errors.email.message}</p>
+              <p className="mt-1 text-xs text-rose-600 font-medium">{errors.email.message}</p>
             )}
           </div>
 
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700">
+            <label className="block text-[11px] font-extrabold uppercase tracking-wider text-[#111827] mb-1.5">
               Phone Number (Optional)
             </label>
-            <div className="relative mt-1.5 rounded-xl shadow-sm">
+            <div className="relative rounded-xl shadow-xs">
               <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
-                <Phone className="h-5 w-5 text-slate-400" />
+                <Phone className="h-4 w-4 text-slate-400" />
               </div>
               <input
                 {...register('phone')}
                 type="tel"
-                placeholder="9876543210"
-                className="block w-full rounded-xl border border-slate-200 pl-11 pr-4 py-3 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 transition"
+                placeholder="+91 98765 43210"
+                className={`block w-full rounded-xl border pl-10 pr-4 py-2.5 text-xs text-[#111827] placeholder-slate-400 focus:outline-none focus:ring-2 transition ${
+                  errors.phone
+                    ? 'border-rose-500 focus:ring-rose-500/20'
+                    : 'border-[#E5E7EB] focus:border-[#A50025] focus:ring-[#A50025]/20'
+                }`}
               />
             </div>
             {errors.phone && (
-              <p className="mt-1 text-xs text-rose-500 font-medium">{errors.phone.message}</p>
+              <p className="mt-1 text-xs text-rose-600 font-medium">{errors.phone.message}</p>
             )}
           </div>
 
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700">
+            <label className="block text-[11px] font-extrabold uppercase tracking-wider text-[#111827] mb-1.5">
               Password
             </label>
-            <div className="relative mt-1.5 rounded-xl shadow-sm">
+            <div className="relative rounded-xl shadow-xs">
               <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
-                <Lock className="h-5 w-5 text-slate-400" />
+                <Lock className="h-4 w-4 text-slate-400" />
               </div>
               <input
                 {...register('password')}
                 type={showPassword ? 'text' : 'password'}
-                placeholder="Password@123"
-                className={`block w-full rounded-xl border pl-11 pr-11 py-3 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 transition ${
-                  errors.password ? 'border-rose-400 focus:ring-rose-400' : 'border-slate-200 focus:ring-indigo-600'
+                placeholder="••••••••"
+                className={`block w-full rounded-xl border pl-10 pr-10 py-2.5 text-xs text-[#111827] placeholder-slate-400 focus:outline-none focus:ring-2 transition ${
+                  errors.password
+                    ? 'border-rose-500 focus:ring-rose-500/20'
+                    : 'border-[#E5E7EB] focus:border-[#A50025] focus:ring-[#A50025]/20'
                 }`}
               />
               <button
@@ -168,48 +187,24 @@ export default function RegisterPage() {
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 hover:text-slate-600"
               >
-                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
             {errors.password && (
-              <p className="mt-1 text-xs text-rose-500 font-medium">{errors.password.message}</p>
+              <p className="mt-1 text-xs text-rose-600 font-medium">{errors.password.message}</p>
             )}
           </div>
 
-          <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700">
-              Confirm Password
-            </label>
-            <div className="relative mt-1.5 rounded-xl shadow-sm">
-              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
-                <Lock className="h-5 w-5 text-slate-400" />
-              </div>
-              <input
-                {...register('confirmPassword')}
-                type={showPassword ? 'text' : 'password'}
-                placeholder="Confirm password"
-                className={`block w-full rounded-xl border pl-11 pr-4 py-3 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 transition ${
-                  errors.confirmPassword ? 'border-rose-400 focus:ring-rose-400' : 'border-slate-200 focus:ring-indigo-600'
-                }`}
-              />
-            </div>
-            {errors.confirmPassword && (
-              <p className="mt-1 text-xs text-rose-500 font-medium">
-                {errors.confirmPassword.message}
-              </p>
-            )}
-          </div>
-
-          <div>
+          <div className="pt-2">
             <button
               type="submit"
               disabled={registerMutation.isPending}
-              className="group relative flex w-full justify-center rounded-xl bg-indigo-600 py-3.5 px-4 text-sm font-semibold text-white shadow-lg shadow-indigo-600/30 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-70 transition duration-150"
+              className="group relative flex w-full justify-center rounded-xl bg-[#A50025] hover:bg-[#7D001C] py-3 px-4 text-xs font-black uppercase tracking-wider text-white shadow-md hover:scale-[1.01] disabled:opacity-70 transition duration-150"
             >
               {registerMutation.isPending ? (
                 <span className="flex items-center gap-2">
                   <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                  Creating Account...
+                  Creating account...
                 </span>
               ) : (
                 'Create Account'
@@ -217,11 +212,11 @@ export default function RegisterPage() {
             </button>
           </div>
 
-          <div className="text-center text-sm text-slate-600">
+          <div className="text-center text-xs text-[#64748B] font-medium pt-1">
             Already have an account?{' '}
             <Link
               href="/auth/login"
-              className="font-semibold text-indigo-600 hover:text-indigo-500 transition"
+              className="font-extrabold text-[#A50025] hover:text-[#E66001] transition"
             >
               Sign In
             </Link>

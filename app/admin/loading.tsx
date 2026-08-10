@@ -1,14 +1,21 @@
+'use client';
+
 import React from 'react';
-import { Loader2, Shield } from 'lucide-react';
 
 export default function AdminLoading() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-[50vh] p-6 text-center">
-      <div className="p-3 rounded-2xl bg-indigo-50 text-indigo-600 mb-4 animate-pulse">
-        <Shield className="w-8 h-8" />
+    <div className="flex flex-col items-center justify-center min-h-[55vh] p-6 text-center space-y-5">
+      {/* Sleek Minimal Progress Line Loader - NO LOGO */}
+      <div className="relative w-56 h-1.5 bg-[#E5E7EB] rounded-full overflow-hidden shadow-inner">
+        <div className="absolute inset-y-0 bg-gradient-to-r from-[#A50025] via-[#E66001] to-[#A50025] w-full rounded-full animate-progress-glow" />
       </div>
-      <div className="w-10 h-10 rounded-full border-3 border-indigo-200 border-t-indigo-600 animate-spin" />
-      <p className="mt-4 text-xs font-semibold text-slate-700">Loading Admin Portal Data...</p>
+
+      <div className="flex items-center gap-2">
+        <span className="w-2 h-2 rounded-full bg-[#A50025] animate-ping" />
+        <p className="text-xs font-black uppercase tracking-widest text-[#A50025]">
+          Loading Data...
+        </p>
+      </div>
     </div>
   );
 }

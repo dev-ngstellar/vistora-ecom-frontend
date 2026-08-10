@@ -26,11 +26,9 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
 }) => {
   const [openSections, setOpenSections] = useState({
     categories: true,
-    brands: true,
     collections: true,
     price: true,
     sizes: true,
-    colors: true,
   });
 
   const toggleSection = (section: keyof typeof openSections) => {
@@ -108,48 +106,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
         </div>
       )}
 
-      {/* Brands Accordion Filter */}
-      {brands.length > 0 && (
-        <div className="border-b border-[#ECECEC] pb-5 space-y-3">
-          <button
-            onClick={() => toggleSection('brands')}
-            className="w-full flex items-center justify-between text-xs font-extrabold text-[#111111] uppercase tracking-wider text-left focus:outline-none"
-          >
-            <span>Brands</span>
-            <ChevronDown className={`w-4 h-4 text-[#6B7280] transition-transform duration-200 ${openSections.brands ? 'rotate-180 text-[#B5123B]' : ''}`} />
-          </button>
 
-          {openSections.brands && (
-            <div className="space-y-1 pt-1 max-h-48 overflow-y-auto pr-1">
-              <button
-                onClick={() => onFilterChange({ brandId: undefined })}
-                className={`w-full text-left px-3.5 py-2 rounded-[10px] text-xs transition-all flex items-center justify-between ${
-                  !filters.brandId
-                    ? 'bg-[#FDF2F5] text-[#B5123B] font-extrabold'
-                    : 'text-[#6B7280] hover:bg-[#FAFAFA] hover:text-[#111111] font-semibold'
-                }`}
-              >
-                <span>All Brands</span>
-                {!filters.brandId && <Check className="w-3.5 h-3.5 text-[#B5123B]" />}
-              </button>
-              {brands.map((b) => (
-                <button
-                  key={b.id}
-                  onClick={() => onFilterChange({ brandId: b.id })}
-                  className={`w-full text-left px-3.5 py-2 rounded-[10px] text-xs transition-all flex items-center justify-between ${
-                    filters.brandId === b.id
-                      ? 'bg-[#FDF2F5] text-[#B5123B] font-extrabold'
-                      : 'text-[#6B7280] hover:bg-[#FAFAFA] hover:text-[#111111] font-semibold'
-                  }`}
-                >
-                  <span className="truncate">{b.name}</span>
-                  {filters.brandId === b.id && <Check className="w-3.5 h-3.5 text-[#B5123B]" />}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
 
       {/* Collections Accordion Filter */}
       {collections.length > 0 && (
@@ -258,40 +215,6 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
               >
                 {sz}
               </button>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Color Swatches Filter */}
-      <div className="space-y-3">
-        <button
-          onClick={() => toggleSection('colors')}
-          className="w-full flex items-center justify-between text-xs font-extrabold text-[#111111] uppercase tracking-wider text-left focus:outline-none"
-        >
-          <span>Color Palette</span>
-          <ChevronDown className={`w-4 h-4 text-[#6B7280] transition-transform duration-200 ${openSections.colors ? 'rotate-180 text-[#B5123B]' : ''}`} />
-        </button>
-
-        {openSections.colors && (
-          <div className="flex items-center gap-2.5 flex-wrap pt-1">
-            {[
-              { name: 'Camel', hex: '#C19A6B' },
-              { name: 'Black', hex: '#111111' },
-              { name: 'Crimson', hex: '#B5123B' },
-              { name: 'Emerald', hex: '#0E5D3E' },
-              { name: 'Off-White', hex: '#F5F5F0' },
-            ].map((c) => (
-              <button
-                key={c.name}
-                type="button"
-                title={c.name}
-                onClick={() => onFilterChange({ q: filters.q === c.name ? undefined : c.name })}
-                className={`w-7 h-7 rounded-full border-2 transition-all duration-200 ${
-                  filters.q === c.name ? 'border-[#B5123B] scale-110 ring-2 ring-[#B5123B]/30' : 'border-[#ECECEC] hover:scale-105'
-                }`}
-                style={{ backgroundColor: c.hex }}
-              />
             ))}
           </div>
         )}

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Mail, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Mail, CheckCircle2 } from 'lucide-react';
 import { message } from 'antd';
 
 export const NewsletterSection: React.FC = () => {
@@ -16,53 +16,44 @@ export const NewsletterSection: React.FC = () => {
     }
 
     setSubscribed(true);
-    message.success('Thank you for subscribing to Vistora VIP Gazette!');
+    message.success('Thank you for subscribing to Vistora!');
     setEmail('');
   };
 
   return (
-    <section className="bg-gradient-to-br from-maroon-dark via-maroon to-slate-950 text-white rounded-3xl p-8 sm:p-14 border border-white/10 shadow-2xl relative overflow-hidden my-12">
-      {/* Accent Glowing Blurs */}
-      <div className="absolute -right-20 -top-20 w-80 h-80 rounded-full bg-orange/25 blur-3xl" />
-      <div className="absolute -left-20 -bottom-20 w-80 h-80 rounded-full bg-amber-500/15 blur-3xl" />
-
-      <div className="relative z-10 max-w-2xl mx-auto text-center space-y-4">
-        <span className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-amber-300 bg-white/15 px-3.5 py-1 rounded-full border border-white/20 backdrop-blur-md shadow-xs">
-          VIP Catalog & Editorial Gazette
-        </span>
-
-        <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-white leading-tight">
-          Subscribe for Exclusive Offers
+    <section className="bg-[#A50025] text-white rounded-2xl p-6 sm:p-8 border border-[#7D001C] shadow-xs my-6">
+      <div className="max-w-xl mx-auto text-center space-y-3">
+        <h2 className="text-xl sm:text-3xl font-black tracking-tight text-white">
+          Get the latest from Vistora
         </h2>
 
-        <p className="text-xs sm:text-sm text-slate-200 font-medium leading-relaxed max-w-lg mx-auto">
-          Be the first to receive runway lookbooks, flash sales, private coupon drops, and luxury invitations directly in your inbox.
+        <p className="text-xs sm:text-sm text-slate-100 font-medium">
+          New arrivals, offers and exclusive deals.
         </p>
 
         {subscribed ? (
-          <div className="p-4 bg-emerald-900/80 border border-emerald-500 text-emerald-100 rounded-2xl flex items-center justify-center gap-2.5 text-xs font-black shadow-lg">
-            <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-            <span>Thank you! You have officially joined the Vistora VIP Directory.</span>
+          <div className="p-3 bg-white/10 border border-white/20 text-white rounded-xl flex items-center justify-center gap-2 text-xs font-extrabold">
+            <CheckCircle2 className="w-4 h-4 text-[#E66001]" />
+            <span>Thank you! You are now subscribed to Vistora updates.</span>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row items-center gap-3 max-w-md mx-auto pt-2">
+          <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row items-center gap-2.5 max-w-md mx-auto pt-1">
             <div className="relative w-full">
-              <Mail className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
+              <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="email"
-                placeholder="Enter your email address..."
+                placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-11 pr-4 py-3 bg-white/95 backdrop-blur-md border border-white/20 rounded-2xl text-xs font-bold text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 transition-all shadow-inner"
+                className="w-full pl-10 pr-4 py-2.5 bg-white text-[#111827] placeholder-slate-400 rounded-xl text-xs font-bold border border-transparent focus:outline-none focus:ring-2 focus:ring-[#E66001] transition-all"
               />
             </div>
 
             <button
               type="submit"
-              className="w-full sm:w-auto px-7 py-3 rounded-2xl bg-orange hover:bg-orange-dark text-white font-black text-xs uppercase tracking-wider transition-all hover:scale-102 whitespace-nowrap flex items-center justify-center gap-2 shadow-lg"
+              className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-[#E66001] hover:bg-[#B84D01] text-white text-xs font-extrabold transition-all shadow-xs shrink-0"
             >
-              <span>Join VIP</span>
-              <ArrowRight className="w-4 h-4 text-amber-200" />
+              Subscribe
             </button>
           </form>
         )}
