@@ -62,9 +62,12 @@ export default function HomePage() {
           <CategoryGridSkeleton count={5} />
         ) : categories && categories.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 overflow-x-auto pb-1">
-            {categories.slice(0, 5).map((cat) => (
-              <CategoryCard key={cat.id} category={cat} />
-            ))}
+            {categories
+              .filter((c) => !c.parentId)
+              .slice(0, 5)
+              .map((cat) => (
+                <CategoryCard key={cat.id} category={cat} />
+              ))}
           </div>
         ) : (
           <div className="p-6 rounded-2xl bg-[#F7F8FA] text-center text-[#64748B] text-xs font-bold border border-[#E5E7EB]">

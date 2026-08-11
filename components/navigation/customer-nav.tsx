@@ -17,8 +17,8 @@ import {
 export const customerNavItems = [
   { label: 'Home', href: '/', icon: Home },
   { label: 'Shop', href: '/shop', icon: ShoppingBag },
-  { label: 'Categories', href: '/shop?view=categories', icon: Grid },
-  { label: 'Deals', href: '/shop?onSale=true', icon: Flame },
+  { label: 'Categories', href: '/shop', icon: Grid },
+  { label: 'Deals', href: '/shop?featured=true', icon: Flame },
 ];
 
 export const CustomerNav: React.FC = () => {
@@ -94,10 +94,12 @@ export const CustomerNav: React.FC = () => {
             </div>
 
             {categories.length > 0 ? (
-              categories.map((cat) => (
-                <Link
-                  key={cat.id}
-                  href={`/shop?categoryId=${cat.id}`}
+              categories
+                .filter((c) => !c.parentId)
+                .map((cat) => (
+                  <Link
+                    key={cat.id}
+                    href={`/shop?category=${cat.slug}`}
                   onClick={() => setIsDeptOpen(false)}
                   className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-extrabold text-[#111827] hover:bg-[#FFF0F3] hover:text-[#A50025] transition-all group"
                 >

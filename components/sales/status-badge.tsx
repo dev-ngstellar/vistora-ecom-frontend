@@ -10,26 +10,31 @@ interface StatusBadgeProps {
 
 export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, category }) => {
   const getBadgeConfig = () => {
-    const s = status.toUpperCase();
+    const s = (status || '').toUpperCase();
 
     if (category === 'order') {
       switch (s) {
         case 'DELIVERED':
           return { color: 'green', label: 'Delivered' };
-        case 'SHIPPED':
         case 'OUT_FOR_DELIVERY':
-          return { color: 'blue', label: 'In Transit' };
-        case 'CONFIRMED':
-        case 'PROCESSING':
+          return { color: 'orange', label: 'Out for Delivery' };
+        case 'SHIPPED':
+        case 'IN_TRANSIT':
+          return { color: 'blue', label: 'Shipped' };
         case 'PACKED':
-          return { color: 'cyan', label: s };
+          return { color: 'purple', label: 'Packed' };
+        case 'PROCESSING':
+          return { color: 'cyan', label: 'Processing' };
+        case 'CONFIRMED':
+          return { color: 'geekblue', label: 'Confirmed' };
         case 'PENDING':
           return { color: 'gold', label: 'Pending' };
         case 'CANCELLED':
           return { color: 'red', label: 'Cancelled' };
         case 'RETURNED':
+          return { color: 'magenta', label: 'Returned' };
         case 'REFUNDED':
-          return { color: 'purple', label: s };
+          return { color: 'purple', label: 'Refunded' };
         default:
           return { color: 'default', label: status };
       }
@@ -57,13 +62,16 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, category }) =>
       switch (s) {
         case 'DELIVERED':
           return { color: 'green', label: 'Delivered' };
+        case 'OUT_FOR_DELIVERY':
+          return { color: 'orange', label: 'Out for Delivery' };
         case 'SHIPPED':
         case 'IN_TRANSIT':
-        case 'OUT_FOR_DELIVERY':
-          return { color: 'processing', label: 'Shipped' };
+          return { color: 'blue', label: 'Shipped' };
+        case 'PACKED':
         case 'READY_TO_SHIP':
+          return { color: 'purple', label: 'Packed' };
         case 'PENDING':
-          return { color: 'warning', label: 'Pending' };
+          return { color: 'gold', label: 'Pending' };
         case 'FAILED':
         case 'RETURNED':
           return { color: 'error', label: s };
@@ -103,10 +111,11 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, category }) =>
 
     if (category === 'review') {
       switch (s) {
+        case 'PUBLISHED':
         case 'APPROVED':
-          return { color: 'green', label: 'Approved' };
+          return { color: 'green', label: 'Published' };
         case 'PENDING':
-          return { color: 'gold', label: 'Pending' };
+          return { color: 'gold', label: 'Pending Review' };
         case 'REJECTED':
           return { color: 'red', label: 'Rejected' };
         default:
@@ -117,11 +126,11 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, category }) =>
     return { color: 'default', label: status };
   };
 
-  const config = getBadgeConfig();
+  const { color, label } = getBadgeConfig();
 
   return (
-    <Tag color={config.color} className="font-semibold px-2.5 py-0.5 rounded-lg border-0 text-xs">
-      {config.label}
+    <Tag color={color} className="font-semibold text-xs rounded-full px-2.5 py-0.5 border-0 shadow-2xs">
+      {label}
     </Tag>
   );
 };

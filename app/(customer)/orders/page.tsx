@@ -30,11 +30,18 @@ export default function OrdersPage() {
   });
 
   const getStatusBadge = (status: string) => {
-    switch (status) {
+    const s = (status || '').toUpperCase();
+    switch (s) {
       case 'DELIVERED':
         return (
           <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
             <CheckCircle2 className="w-3.5 h-3.5" /> Delivered
+          </span>
+        );
+      case 'OUT_FOR_DELIVERY':
+        return (
+          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-orange-100 text-orange-800 border border-orange-200">
+            <Truck className="w-3.5 h-3.5" /> Out for Delivery
           </span>
         );
       case 'SHIPPED':
@@ -43,10 +50,22 @@ export default function OrdersPage() {
             <Truck className="w-3.5 h-3.5" /> Shipped
           </span>
         );
+      case 'PACKED':
+        return (
+          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-800 border border-purple-200">
+            <Clock className="w-3.5 h-3.5" /> Packed
+          </span>
+        );
       case 'PROCESSING':
         return (
-          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">
+          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-cyan-100 text-cyan-800 border border-cyan-200">
             <Clock className="w-3.5 h-3.5" /> Processing
+          </span>
+        );
+      case 'CONFIRMED':
+        return (
+          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-indigo-100 text-indigo-800 border border-indigo-200">
+            <CheckCircle2 className="w-3.5 h-3.5" /> Confirmed
           </span>
         );
       case 'CANCELLED':
@@ -58,7 +77,7 @@ export default function OrdersPage() {
       default:
         return (
           <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-800 border border-slate-200">
-            <Clock className="w-3.5 h-3.5" /> Pending
+            <Clock className="w-3.5 h-3.5" /> {status}
           </span>
         );
     }

@@ -75,32 +75,107 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
           </button>
 
           {openSections.categories && (
-            <div className="space-y-1 pt-1 max-h-56 overflow-y-auto pr-1">
+            <div className="space-y-1 pt-1 max-h-72 overflow-y-auto pr-1">
               <button
                 onClick={() => onFilterChange({ categoryId: undefined })}
                 className={`w-full text-left px-3.5 py-2 rounded-[10px] text-xs transition-all flex items-center justify-between ${
                   !filters.categoryId
-                    ? 'bg-[#FDF2F5] text-[#B5123B] font-extrabold'
+                    ? 'bg-[#FDF2F5] text-[#A50025] font-extrabold'
                     : 'text-[#6B7280] hover:bg-[#FAFAFA] hover:text-[#111111] font-semibold'
                 }`}
               >
                 <span>All Categories</span>
-                {!filters.categoryId && <Check className="w-3.5 h-3.5 text-[#B5123B]" />}
+                {!filters.categoryId && <Check className="w-3.5 h-3.5 text-[#A50025]" />}
               </button>
-              {categories.map((cat) => (
-                <button
-                  key={cat.id}
-                  onClick={() => onFilterChange({ categoryId: cat.id })}
-                  className={`w-full text-left px-3.5 py-2 rounded-[10px] text-xs transition-all flex items-center justify-between ${
-                    filters.categoryId === cat.id
-                      ? 'bg-[#FDF2F5] text-[#B5123B] font-extrabold'
-                      : 'text-[#6B7280] hover:bg-[#FAFAFA] hover:text-[#111111] font-semibold'
-                  }`}
-                >
-                  <span className="truncate">{cat.name}</span>
-                  {filters.categoryId === cat.id && <Check className="w-3.5 h-3.5 text-[#B5123B]" />}
-                </button>
-              ))}
+
+              {(() => {
+                const parents = categories.filter((c) => !c.parentId);
+                const orphanSubs = categories.filter(
+                  (c) => c.parentId && !parents.some((p) => p.id === c.parentId)
+                );
+
+                return (
+                  <>
+                    {parents.map((parent) => {
+                      const children = categories.filter((c) => c.parentId === parent.id);
+                      const isParentActive = filters.categoryId === parent.id;
+                      const hasActiveChild = children.some((c) => c.id === filters.categoryId);
+
+                      return (
+                        <div key={parent.id} className="space-y-0.5">
+                          {/* Main / Parent Category */}
+                          <button
+                            onClick={() => onFilterChange({ categoryId: parent.id })}
+                            className={`w-full text-left px-3.5 py-2 rounded-[10px] text-xs transition-all flex items-center justify-between ${
+                              isParentActive
+                                ? 'bg-[#FDF2F5] text-[#A50025] font-extrabold'
+                                : hasActiveChild
+                                ? 'text-[#A50025] font-extrabold bg-[#FFF0F3]/50'
+                                : 'text-[#111827] hover:bg-[#FAFAFA] font-bold'
+                            }`}
+                          >
+                            <span className="truncate">{parent.name}</span>
+                            {isParentActive && <Check className="w-3.5 h-3.5 text-[#A50025]" />}
+                          </button>
+
+                          {/* Sub-Categories (Indented List) */}
+                          {children.length > 0 && (
+                            <div className="ml-3 pl-2.5 border-l-2 border-[#F3F4F6] space-y-0.5 py-0.5">
+                              {children.map((sub) => {
+                                const isSubActive = filters.categoryId === sub.id;
+
+                                return (
+                                  <button
+                                    key={sub.id}
+                                    onClick={() => onFilterChange({ categoryId: sub.id })}
+                                    className={`w-full text-left px-3 py-1.5 rounded-[8px] text-[11px] transition-all flex items-center justify-between ${
+                                      isSubActive
+                                        ? 'bg-[#FDF2F5] text-[#A50025] font-extrabold'
+                                        : 'text-[#64748B] hover:bg-[#FAFAFA] hover:text-[#111827] font-semibold'
+                                    }`}
+                                  >
+                                    <div className="flex items-center gap-1.5 truncate">
+                                      <span className="w-1.5 h-1.5 rounded-full bg-[#CBD5E1] shrink-0" />
+                                      <span className="truncate">{sub.name}</span>
+                                    </div>
+                                    {isSubActive && <Check className="w-3 h-3 text-[#A50025] shrink-0" />}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+
+                    {/* Orphan Subcategories (if any) */}
+                    {orphanSubs.length > 0 && (
+                      <div className="pt-2 border-t border-[#ECECEC] space-y-0.5">
+                        <span className="px-3.5 text-[10px] font-black uppercase text-[#94A3B8] tracking-wider">
+                          Sub-Categories
+                        </span>
+                        {orphanSubs.map((sub) => {
+                          const isSubActive = filters.categoryId === sub.id;
+                          return (
+                            <button
+                              key={sub.id}
+                              onClick={() => onFilterChange({ categoryId: sub.id })}
+                              className={`w-full text-left px-3.5 py-1.5 rounded-[8px] text-[11px] transition-all flex items-center justify-between ${
+                                isSubActive
+                                  ? 'bg-[#FDF2F5] text-[#A50025] font-extrabold'
+                                  : 'text-[#64748B] hover:bg-[#FAFAFA] hover:text-[#111827] font-semibold'
+                              }`}
+                            >
+                              <span className="truncate">{sub.name}</span>
+                              {isSubActive && <Check className="w-3 h-3 text-[#A50025]" />}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
             </div>
           )}
         </div>

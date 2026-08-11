@@ -2,10 +2,11 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Product } from '@/types/catalogue.types';
 import { QuickViewModal } from './quick-view-modal';
-import { Heart, Eye, Sparkles, Star, ShoppingCart } from 'lucide-react';
-import { useWishlistMutations, useCartMutations } from '@/hooks/use-shopping';
+import { Heart, Eye, Sparkles, Star, ShoppingCart, Check } from 'lucide-react';
+import { useCart, useWishlist, useWishlistMutations, useCartMutations } from '@/hooks/use-shopping';
 import { useAuth } from '@/context/auth-context';
 import { brandConfig } from '@/config';
 
@@ -14,11 +15,21 @@ interface ProductCardProps {
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
+  const router = useRouter();
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-  const { addToWishlist } = useWishlistMutations();
+  
+  const { data: cartData } = useCart();
+  const { data: wishlistData } = useWishlist();
+  const { addToWishlist, removeFromWishlist } = useWishlistMutations();
   const { addToCart } = useCartMutations();
   const { requireCustomerAuth } = useAuth();
+
+  const wishlistItem = wishlistData?.items?.find((item) => item.productId === product.id);
+  const isInWishlist = Boolean(wishlistItem);
+
+  const cartItem = cartData?.items?.find((item) => item.productId === product.id);
+  const isInCart = Boolean(cartItem);
 
   const primaryImage =
     product.images?.find((img) => img.isPrimary)?.imageUrl ||
@@ -41,6 +52,36 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       : null;
 
   const isOutOfStock = product.status === 'OUT_OF_STOCK' || product.status === 'INACTIVE';
+
+  const handleWishlistClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    requireCustomerAuth(() => {
+      if (isInWishlist && wishlistItem) {
+        removeFromWishlist.mutate(wishlistItem.id);
+      } else {
+        addToWishlist.mutate({ productId: product.id });
+      }
+    });
+  };
+
+  const handleCartClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (isOutOfStock) return;
+    if (isInCart) {
+      router.push('/cart');
+      return;
+    }
+    addToCart.mutate({
+      productId: product.id,
+      quantity: 1,
+      productName: product.name,
+      productSlug: product.slug,
+      price: priceNum,
+      imageUrl: primaryImage,
+    });
+  };
 
   return (
     <>
@@ -84,16 +125,16 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           {/* Action Icons */}
           <div className="absolute top-2.5 right-2.5 flex flex-col gap-1.5 z-10">
             <button
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                requireCustomerAuth(() => addToWishlist.mutate({ productId: product.id }));
-              }}
-              className="p-2 rounded-full bg-white/90 backdrop-blur-md text-[#111827] hover:text-[#A50025] hover:bg-white shadow-xs transition-all hover:scale-110"
-              aria-label="Add to Wishlist"
-              title="Add to Wishlist"
+              onClick={handleWishlistClick}
+              className={`p-2 rounded-full backdrop-blur-md shadow-xs transition-all hover:scale-110 flex items-center justify-center ${
+                isInWishlist
+                  ? 'bg-[#FFF0F3] text-[#A50025] border border-[#A50025]/40'
+                  : 'bg-white/90 text-[#111827] hover:text-[#A50025] hover:bg-white'
+              }`}
+              aria-label={isInWishlist ? 'Remove from Wishlist' : 'Add to Wishlist'}
+              title={isInWishlist ? 'In Wishlist (Click to remove)' : 'Add to Wishlist'}
             >
-              <Heart className="w-3.5 h-3.5" />
+              <Heart className={`w-3.5 h-3.5 ${isInWishlist ? 'fill-[#A50025] text-[#A50025]' : ''}`} />
             </button>
 
             <button
@@ -102,7 +143,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                 e.stopPropagation();
                 setIsQuickViewOpen(true);
               }}
-              className="p-2 rounded-full bg-white/90 backdrop-blur-md text-[#111827] hover:text-[#A50025] hover:bg-white shadow-xs transition-all opacity-0 group-hover:opacity-100 hover:scale-110"
+              className="p-2 rounded-full bg-white/90 backdrop-blur-md text-[#111827] hover:text-[#A50025] hover:bg-white shadow-xs transition-all hover:scale-110"
               aria-label="Quick View"
               title="Quick View"
             >
@@ -111,61 +152,65 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </div>
         </Link>
 
-        {/* Product Meta Details */}
-        <div className="flex-1 flex flex-col justify-between space-y-2">
+        {/* Product Details */}
+        <div className="space-y-2 flex-1 flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between gap-1 mb-1 text-[11px]">
-              <span className="font-extrabold text-[#A50025] uppercase tracking-wider truncate">
-                {product.category?.name || 'Vistora Selection'}
+            <div className="flex items-center justify-between gap-1 text-[11px] font-bold text-[#A50025] mb-1">
+              <span className="uppercase tracking-wider truncate">
+                {product.category?.name || 'Vistora Collection'}
               </span>
-              <div className="inline-flex items-center gap-1 text-amber-600 font-extrabold text-[11px]">
+              <div className="flex items-center gap-0.5 text-amber-600 font-extrabold text-[11px] shrink-0">
                 <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
                 <span>4.8</span>
               </div>
             </div>
 
-            <Link href={`/product/${product.slug}`} className="block group-hover:text-[#A50025] transition-colors">
-              <h3 className="text-xs sm:text-sm font-extrabold text-[#111827] line-clamp-2 leading-snug">
-                {product.name}
-              </h3>
+            <Link
+              href={`/product/${product.slug}`}
+              className="font-extrabold text-xs text-[#111827] hover:text-[#A50025] transition-colors line-clamp-2 leading-snug block mb-1"
+            >
+              {product.name}
             </Link>
           </div>
 
-          {/* Price & Add Button */}
+          {/* Pricing & Add to Cart */}
           <div className="pt-2 border-t border-[#E5E7EB] flex items-center justify-between gap-2">
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-sm sm:text-base font-black text-[#111827]">
-                {brandConfig.currency.symbol}{priceNum.toLocaleString('en-IN', { minimumFractionDigits: 0 })}
-              </span>
-              {compareAtPriceNum && compareAtPriceNum > priceNum && (
-                <span className="text-[11px] font-semibold text-[#64748B] line-through">
-                  {brandConfig.currency.symbol}{compareAtPriceNum.toLocaleString('en-IN', { minimumFractionDigits: 0 })}
+            <div>
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-sm font-black text-[#111827]">
+                  {brandConfig.currency.symbol}{priceNum.toLocaleString('en-IN', { minimumFractionDigits: 0 })}
                 </span>
-              )}
+                {compareAtPriceNum && compareAtPriceNum > priceNum && (
+                  <span className="text-[11px] font-semibold text-[#64748B] line-through">
+                    {brandConfig.currency.symbol}{compareAtPriceNum.toLocaleString('en-IN', { minimumFractionDigits: 0 })}
+                  </span>
+                )}
+              </div>
             </div>
 
             <button
-              onClick={() =>
-                !isOutOfStock &&
-                addToCart.mutate({
-                  productId: product.id,
-                  quantity: 1,
-                  productName: product.name,
-                  productSlug: product.slug,
-                  price: priceNum,
-                  imageUrl: primaryImage,
-                })
-              }
-              disabled={isOutOfStock || addToCart.isPending}
-              className={`px-3 py-1.5 rounded-xl font-extrabold text-xs flex items-center gap-1 transition-all shadow-xs ${
+              disabled={isOutOfStock}
+              onClick={handleCartClick}
+              className={`p-2 rounded-xl transition-all duration-200 shadow-xs flex items-center justify-center ${
                 isOutOfStock
-                  ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                  : 'bg-[#111827] hover:bg-[#A50025] text-white hover:scale-102'
+                  ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                  : isInCart
+                  ? 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-emerald-600/20'
+                  : 'bg-[#111827] hover:bg-[#A50025] text-white hover:scale-105'
               }`}
-              title={isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
+              title={
+                isOutOfStock
+                  ? 'Out of Stock'
+                  : isInCart
+                  ? 'Already in Cart (Click to view Bag)'
+                  : 'Add to Cart'
+              }
             >
-              <ShoppingCart className="w-3.5 h-3.5 text-[#E66001]" />
-              <span>{isOutOfStock ? 'Sold Out' : 'Add'}</span>
+              {isInCart ? (
+                <Check className="w-4 h-4 text-white" />
+              ) : (
+                <ShoppingCart className="w-4 h-4 text-[#E66001]" />
+              )}
             </button>
           </div>
         </div>

@@ -14,7 +14,9 @@ export default function ShopPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const categoryParam = searchParams.get('category') || searchParams.get('categoryId');
+  const { data: categories } = useCategories();
+  const { data: brands } = useBrands();
+  const { data: collections } = useCollections();
 
   const [filters, setFilters] = useState<ProductQueryFilters>({
     q: searchParams.get('q') || undefined,
@@ -23,6 +25,7 @@ export default function ShopPage() {
     collectionId: searchParams.get('collectionId') || undefined,
     minPrice: searchParams.get('minPrice') ? Number(searchParams.get('minPrice')) : undefined,
     maxPrice: searchParams.get('maxPrice') ? Number(searchParams.get('maxPrice')) : undefined,
+    featured: searchParams.get('featured') === 'true' || searchParams.get('onSale') === 'true' ? true : undefined,
     page: searchParams.get('page') ? Number(searchParams.get('page')) : 1,
     limit: 12,
     sort: searchParams.get('sort') || 'created_at_desc',
@@ -31,23 +34,44 @@ export default function ShopPage() {
   const [searchInput, setSearchInput] = useState<string>(filters.q || '');
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState<boolean>(false);
 
-  const { data: categories } = useCategories();
-  const { data: brands } = useBrands();
-  const { data: collections } = useCollections();
-
-  // Resolve category slug or ID from URL searchParams
+  // Re-sync filters from URL searchParams dynamically on navigation
   useEffect(() => {
-    if (categoryParam && categories && categories.length > 0) {
-      const matched = categories.find(
-        (c) => c.id === categoryParam || c.slug === categoryParam
-      );
-      if (matched && filters.categoryId !== matched.id) {
-        setFilters((prev) => ({ ...prev, categoryId: matched.id }));
+    const catVal = searchParams.get('category') || searchParams.get('categoryId');
+    const featuredVal = searchParams.get('featured') || searchParams.get('onSale') || searchParams.get('deals');
+    const brandVal = searchParams.get('brandId');
+    const collectionVal = searchParams.get('collectionId');
+    const qVal = searchParams.get('q');
+    const minVal = searchParams.get('minPrice');
+    const maxVal = searchParams.get('maxPrice');
+    const sortVal = searchParams.get('sort') || 'created_at_desc';
+    const pageVal = searchParams.get('page');
+
+    let matchedCatId: string | undefined = undefined;
+    if (catVal) {
+      if (categories && categories.length > 0) {
+        const matched = categories.find((c) => c.id === catVal || c.slug === catVal);
+        matchedCatId = matched ? matched.id : catVal;
+      } else {
+        matchedCatId = catVal;
       }
-    } else if (!categoryParam && filters.categoryId) {
-      setFilters((prev) => ({ ...prev, categoryId: undefined }));
     }
-  }, [categoryParam, categories]);
+
+    setFilters({
+      q: qVal || undefined,
+      categoryId: matchedCatId,
+      brandId: brandVal || undefined,
+      collectionId: collectionVal || undefined,
+      minPrice: minVal ? Number(minVal) : undefined,
+      maxPrice: maxVal ? Number(maxVal) : undefined,
+      featured: featuredVal === 'true' ? true : undefined,
+      page: pageVal ? Number(pageVal) : 1,
+      limit: 12,
+      sort: sortVal,
+    });
+    if (qVal !== searchInput) {
+      setSearchInput(qVal || '');
+    }
+  }, [searchParams, categories]);
 
   const { data: productsData, isLoading } = useProducts(filters);
   const products = productsData?.items || [];
@@ -55,7 +79,8 @@ export default function ShopPage() {
 
   // Sync state changes to URL search params
   const handleFilterChange = (newFilters: Partial<ProductQueryFilters>) => {
-    const updated = { ...filters, ...newFilters, page: 1 };
+    const targetPage = newFilters.page !== undefined ? newFilters.page : 1;
+    const updated = { ...filters, ...newFilters, page: targetPage };
     setFilters(updated);
     updateUrlParams(updated);
   };
@@ -75,11 +100,15 @@ export default function ShopPage() {
   const updateUrlParams = (updatedFilters: ProductQueryFilters) => {
     const params = new URLSearchParams();
     if (updatedFilters.q) params.set('q', updatedFilters.q);
-    if (updatedFilters.categoryId) params.set('categoryId', updatedFilters.categoryId);
+    if (updatedFilters.categoryId) {
+      const cat = categories?.find((c) => c.id === updatedFilters.categoryId);
+      params.set('category', cat?.slug || updatedFilters.categoryId);
+    }
     if (updatedFilters.brandId) params.set('brandId', updatedFilters.brandId);
     if (updatedFilters.collectionId) params.set('collectionId', updatedFilters.collectionId);
     if (updatedFilters.minPrice !== undefined) params.set('minPrice', String(updatedFilters.minPrice));
     if (updatedFilters.maxPrice !== undefined) params.set('maxPrice', String(updatedFilters.maxPrice));
+    if (updatedFilters.featured) params.set('featured', 'true');
     if (updatedFilters.sort) params.set('sort', updatedFilters.sort);
     if (updatedFilters.page && updatedFilters.page > 1) params.set('page', String(updatedFilters.page));
 
@@ -98,85 +127,70 @@ export default function ShopPage() {
 
         {/* Content */}
         <div className="relative z-10 space-y-4 max-w-xl text-white">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-widest bg-[#B5123B] text-white shadow-xs">
-            Official Store Catalog
-          </span>
-          <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white leading-tight">
-            Discover Luxury Essentials
-          </h1>
-          <p className="text-sm sm:text-base text-slate-300 font-medium leading-relaxed">
-            Explore our curated catalog of high-end apparel, fine timepieces, and hand-crafted seasonal leather goods.
-          </p>
-          <div className="pt-2">
-            <button
-              onClick={() => handleFilterChange({ sort: 'created_at_desc' })}
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-[14px] bg-[#B5123B] hover:bg-[#8E0E2E] text-white font-extrabold text-xs uppercase tracking-wider transition-all duration-300 shadow-md hover:scale-102"
-            >
-              <span>Explore New Arrivals</span>
-            </button>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs font-semibold tracking-wider text-amber-300">
+            <span>✨ VISTORA CURATED CATALOGUE</span>
           </div>
+
+          <h1 className="text-3xl sm:text-5xl font-black tracking-tight leading-tight">
+            Discover Signature Beauty & Luxury.
+          </h1>
+
+          <p className="text-sm text-slate-300 font-normal leading-relaxed">
+            Explore our handcrafted luxury lipsticks, herbal kajals, under eye treatments, and authentic South Indian silk sarees.
+          </p>
         </div>
       </div>
 
-      {/* Main Layout Grid */}
+      {/* Main Two-Column Shop Section */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        {/* Desktop Filter Sidebar */}
-        <div className="hidden lg:block lg:col-span-1">
+        
+        {/* Left Desktop Sidebar Filter / Mobile Drawer */}
+        <div className="hidden lg:block">
           <FilterSidebar
-            categories={categories}
-            brands={brands}
-            collections={collections}
+            categories={categories || []}
+            brands={brands || []}
+            collections={collections || []}
             filters={filters}
             onFilterChange={handleFilterChange}
             onClearFilters={handleClearFilters}
           />
         </div>
 
-        {/* Products Listing Column */}
-        <div className="lg:col-span-3 space-y-8">
-          {/* Controls Bar: Search & Sort */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-white p-4 rounded-[20px] border border-[#ECECEC] shadow-xs">
-            {/* Search Input */}
-            <form onSubmit={handleSearchSubmit} className="relative flex-1">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B7280]" />
+        {/* Right Content Column */}
+        <div className="lg:col-span-3 space-y-6">
+          
+          {/* Top Control Bar */}
+          <div className="bg-white rounded-[16px] p-4 border border-[#ECECEC] shadow-2xs flex flex-col sm:flex-row items-center justify-between gap-4">
+            
+            {/* Search Input Bar inside Shop */}
+            <form onSubmit={handleSearchSubmit} className="relative w-full sm:w-80">
               <input
                 type="text"
-                placeholder="Search products by keyword or SKU..."
+                placeholder="Search products..."
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
-                className="w-full pl-11 pr-10 py-3 rounded-[14px] text-xs bg-[#FAFAFA] border border-[#ECECEC] focus:outline-none focus:border-[#B5123B] focus:ring-2 focus:ring-[#B5123B]/10 text-[#111111] font-bold"
+                className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#A50025] focus:bg-white transition-all"
               />
-              {searchInput && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSearchInput('');
-                    handleFilterChange({ q: undefined });
-                  }}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#6B7280] hover:text-[#111111]"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              )}
+              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
             </form>
 
-            <div className="flex items-center gap-3">
-              {/* Mobile Filter Button */}
+            <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-3">
+              {/* Mobile Filter Toggle Button */}
               <button
                 onClick={() => setIsMobileFilterOpen(true)}
-                className="lg:hidden px-4 py-3 rounded-[14px] bg-[#FAFAFA] border border-[#ECECEC] text-[#111111] text-xs font-extrabold flex items-center gap-2 hover:bg-slate-100 transition"
+                className="lg:hidden flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 text-slate-800 text-xs font-bold hover:bg-slate-200 transition"
               >
-                <SlidersHorizontal className="w-4 h-4 text-[#B5123B]" />
+                <SlidersHorizontal className="w-4 h-4" />
                 <span>Filters</span>
               </button>
 
-              {/* Sort Selector */}
-              <div className="flex items-center gap-2 border border-[#ECECEC] rounded-[14px] px-3.5 py-2.5 bg-[#FAFAFA]">
-                <ArrowUpDown className="w-4 h-4 text-[#B5123B]" />
+              {/* Sorting Selector */}
+              <div className="flex items-center gap-2">
+                <ArrowUpDown className="w-4 h-4 text-slate-400 shrink-0" />
                 <select
                   value={filters.sort || 'created_at_desc'}
                   onChange={(e) => handleFilterChange({ sort: e.target.value })}
-                  className="bg-transparent text-xs font-extrabold text-[#111111] focus:outline-none cursor-pointer"
+                  className="bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#A50025]"
                 >
                   <option value="created_at_desc">Newest Arrivals</option>
                   <option value="price_asc">Price: Low to High</option>
@@ -187,80 +201,105 @@ export default function ShopPage() {
             </div>
           </div>
 
-          {/* Active Filter Chips */}
-          {(filters.q || filters.categoryId || filters.brandId || filters.collectionId || filters.minPrice !== undefined || filters.maxPrice !== undefined) && (
-            <div className="flex flex-wrap items-center gap-2.5 bg-white p-3.5 rounded-[16px] border border-[#ECECEC]">
-              <span className="text-xs font-extrabold text-[#6B7280] uppercase tracking-wider">Active Filters:</span>
+          {/* Active Filter Tags Bar */}
+          {(filters.categoryId || filters.brandId || filters.collectionId || filters.q || filters.featured) && (
+            <div className="flex items-center gap-2 flex-wrap bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs">
+              <span className="font-bold text-slate-500">Active Filters:</span>
+              
               {filters.q && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#FDF2F5] text-[#B5123B] border border-[#B5123B]/20">
-                  Query: {filters.q}
-                  <X className="w-3.5 h-3.5 cursor-pointer hover:scale-110" onClick={() => handleFilterChange({ q: undefined })} />
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-slate-300 font-semibold text-slate-800">
+                  Search: "{filters.q}"
+                  <X className="w-3.5 h-3.5 cursor-pointer text-slate-400 hover:text-slate-700" onClick={() => handleFilterChange({ q: undefined })} />
                 </span>
               )}
+
               {filters.categoryId && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#FDF2F5] text-[#B5123B] border border-[#B5123B]/20">
-                  Category Filter
-                  <X className="w-3.5 h-3.5 cursor-pointer hover:scale-110" onClick={() => handleFilterChange({ categoryId: undefined })} />
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-slate-300 font-semibold text-slate-800">
+                  Category: {categories?.find(c => c.id === filters.categoryId)?.name}
+                  <X className="w-3.5 h-3.5 cursor-pointer text-slate-400 hover:text-slate-700" onClick={() => handleFilterChange({ categoryId: undefined })} />
                 </span>
               )}
-              {filters.brandId && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#FDF2F5] text-[#B5123B] border border-[#B5123B]/20">
-                  Brand Filter
-                  <X className="w-3.5 h-3.5 cursor-pointer hover:scale-110" onClick={() => handleFilterChange({ brandId: undefined })} />
+
+              {filters.featured && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E66001] text-white font-semibold">
+                  Featured Deals
+                  <X className="w-3.5 h-3.5 cursor-pointer text-white/80 hover:text-white" onClick={() => handleFilterChange({ featured: undefined })} />
                 </span>
               )}
+
               <button
                 onClick={handleClearFilters}
-                className="text-xs font-extrabold text-rose-600 hover:underline ml-2"
+                className="text-[#A50025] font-extrabold hover:underline ml-auto"
               >
                 Clear All
               </button>
             </div>
           )}
 
-          {/* Product Grid (4 cols desktop, 3 cols tablet, 2 cols mobile, 32px gaps) */}
+          {/* Products Grid */}
           {isLoading ? (
-            <ProductGridSkeleton count={8} />
+            <ProductGridSkeleton />
           ) : products.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-5">
               {products.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
             </div>
           ) : (
-            <div className="bg-white rounded-[20px] p-12 text-center border border-[#ECECEC] space-y-4">
-              <p className="text-base font-extrabold text-[#111111]">No products matched your criteria.</p>
-              <p className="text-xs text-[#6B7280]">Try adjusting your keyword query, price sliders, or category selections.</p>
+            <div className="py-20 text-center space-y-4 bg-white rounded-[20px] border border-[#ECECEC]">
+              <div className="w-16 h-16 rounded-full bg-slate-100 text-slate-400 mx-auto flex items-center justify-center">
+                <Search className="w-8 h-8" />
+              </div>
+              <h3 className="text-lg font-bold text-slate-800">No Products Found</h3>
+              <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                We couldn't find any products matching your filter criteria. Try clearing some filters.
+              </p>
               <button
                 onClick={handleClearFilters}
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-[14px] bg-[#111827] text-white text-xs font-bold hover:bg-[#B5123B] transition-all duration-300 shadow-sm"
+                className="px-6 py-2.5 rounded-xl bg-[#A50025] text-white font-bold text-xs hover:bg-[#7D001C] transition"
               >
-                Reset Filters
+                Clear All Filters
               </button>
             </div>
           )}
 
-          {/* Pagination Controls */}
-          <CataloguePagination
-            page={meta.page}
-            totalPages={meta.totalPages}
-            onPageChange={(page) => handleFilterChange({ page })}
-          />
+          {/* Pagination */}
+          {!isLoading && meta.totalPages > 1 && (
+            <div className="pt-6">
+              <CataloguePagination
+                page={meta.page}
+                totalPages={meta.totalPages}
+                onPageChange={(page) => handleFilterChange({ page })}
+              />
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Mobile Filter Drawer Overlay */}
+      {/* Mobile Drawer Filter */}
       {isMobileFilterOpen && (
-        <div className="fixed inset-0 z-50 bg-[#111827]/70 backdrop-blur-xs flex justify-end lg:hidden">
-          <div className="w-full max-w-xs bg-white h-full overflow-y-auto p-4">
+        <div className="fixed inset-0 z-50 lg:hidden flex">
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs" onClick={() => setIsMobileFilterOpen(false)} />
+          <div className="relative ml-auto w-full max-w-xs bg-white h-full p-6 overflow-y-auto shadow-2xl space-y-6">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+              <h3 className="font-bold text-base text-slate-900">Filter Catalogue</h3>
+              <button onClick={() => setIsMobileFilterOpen(false)} className="p-1 rounded-lg text-slate-400 hover:text-slate-700">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
             <FilterSidebar
-              categories={categories}
-              brands={brands}
-              collections={collections}
+              categories={categories || []}
+              brands={brands || []}
+              collections={collections || []}
               filters={filters}
-              onFilterChange={handleFilterChange}
-              onClearFilters={handleClearFilters}
-              onCloseMobile={() => setIsMobileFilterOpen(false)}
+              onFilterChange={(f) => {
+                handleFilterChange(f);
+                setIsMobileFilterOpen(false);
+              }}
+              onClearFilters={() => {
+                handleClearFilters();
+                setIsMobileFilterOpen(false);
+              }}
             />
           </div>
         </div>
