@@ -49,7 +49,7 @@ export const adminNavGroups: AdminNavGroup[] = [
     items: [
       { label: 'Products', href: '/admin/products', icon: Package },
       { label: 'Categories', href: '/admin/categories', icon: FolderTree },
-      { label: 'Brands', href: '/admin/brands', icon: Award },
+      { label: 'Retailers', href: '/admin/brands', icon: Award },
       { label: 'Collections', href: '/admin/collections', icon: Layers },
       { label: 'Inventory', href: '/admin/inventory', icon: Boxes },
     ],
@@ -199,7 +199,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
       {/* Desktop Sidebar */}
       <aside
         className={`hidden md:block fixed top-0 bottom-0 left-0 z-30 transition-all duration-300 ${
-          collapsed ? 'w-20' : 'w-64'
+          collapsed ? 'w-20' : 'w-60'
         }`}
       >
         {sidebarContent}
@@ -215,7 +215,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
 
       {/* Mobile Drawer */}
       <aside
-        className={`md:hidden fixed top-0 bottom-0 left-0 w-64 z-50 transition-transform duration-300 ${
+        className={`md:hidden fixed top-0 bottom-0 left-0 w-60 z-50 transition-transform duration-300 ${
           mobileOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >

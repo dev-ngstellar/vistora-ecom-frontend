@@ -71,6 +71,8 @@ export interface OrderItem {
     slug: string;
     sku: string;
     images: Array<{ imageUrl: string; altText?: string | null }>;
+    brand?: { id: string; name: string; logoUrl?: string | null } | null;
+    category?: { id: string; name: string } | null;
   };
   variant?: {
     id: string;

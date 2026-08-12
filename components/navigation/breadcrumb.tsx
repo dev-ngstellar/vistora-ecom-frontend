@@ -79,24 +79,24 @@ export const DynamicBreadcrumb: React.FC<DynamicBreadcrumbProps> = ({
   return (
     <nav
       aria-label="Breadcrumb"
-      className={`flex items-center text-xs font-bold text-[#64748B] py-2 mb-2 ${className}`}
+      className={`flex items-center text-[11px] font-semibold text-[#64748B] h-8 sm:h-9 overflow-x-auto whitespace-nowrap scrollbar-none py-1 mb-1 ${className}`}
     >
-      <ol className="flex items-center flex-wrap gap-1.5">
+      <ol className="flex items-center gap-1.5 shrink-0">
         <li>
           <Link
             href={admin ? '/admin/dashboard' : '/'}
             className="flex items-center gap-1 text-[#64748B] hover:text-[#A50025] transition-colors"
           >
             {admin ? <LayoutDashboard className="w-3.5 h-3.5" /> : <Home className="w-3.5 h-3.5" />}
-            <span className="sr-only sm:not-sr-only sm:inline">{admin ? 'Admin' : 'Home'}</span>
+            <span className="inline">{admin ? 'Admin' : 'Home'}</span>
           </Link>
         </li>
 
         {breadcrumbs.map((crumb, idx) => (
-          <li key={idx} className="flex items-center gap-1.5">
-            <ChevronRight className="w-3.5 h-3.5 text-slate-300 shrink-0" />
+          <li key={idx} className="flex items-center gap-1.5 shrink-0">
+            <span className="text-slate-300 text-[10px]">›</span>
             {crumb.isLast ? (
-              <span className="font-extrabold text-[#111827] truncate max-w-[200px] sm:max-w-xs">
+              <span className="font-bold text-[#111827] truncate max-w-[220px] sm:max-w-sm">
                 {crumb.name}
               </span>
             ) : (

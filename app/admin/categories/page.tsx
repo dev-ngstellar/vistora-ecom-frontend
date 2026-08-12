@@ -27,9 +27,10 @@ import {
   RefreshCw,
   Layers,
   Sparkles,
-  Search,
-  Image as ImageIcon,
 } from 'lucide-react';
+import { PageHeader } from '@/components/admin/page-header';
+import { AdminCard } from '@/components/admin/admin-card';
+import { TableToolbar } from '@/components/admin/table-toolbar';
 
 export default function AdminCategoriesPage() {
   const { data: categories = [], isLoading, refetch } = useCategories();
@@ -214,64 +215,50 @@ export default function AdminCategoriesPage() {
   ];
 
   return (
-    <div className="space-y-6 pb-16">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs">
-        <div>
-          <div className="flex items-center gap-2 text-indigo-600 text-xs font-bold uppercase tracking-wider mb-1">
-            <Layers className="w-4 h-4" />
-            <span>Catalogue Organization</span>
+    <div className="space-y-5 pb-8">
+      {/* Page Header */}
+      <PageHeader
+        title="Categories"
+        subtitle="Organize catalog products into hierarchical parent and sub-categories."
+        action={
+          <div className="flex items-center gap-2">
+            <Button
+              icon={<FolderTree className="w-4 h-4" />}
+              onClick={() => setIsTreeDrawerOpen(true)}
+              className="rounded-lg font-bold text-xs h-9"
+            >
+              Tree Hierarchy View
+            </Button>
+            <Button
+              type="primary"
+              icon={<Plus className="w-4 h-4" />}
+              onClick={() => handleOpenDrawer()}
+              className="rounded-lg font-bold bg-[#A50025] hover:bg-[#7D001C] text-white h-9 px-4 text-xs"
+            >
+              Create Category
+            </Button>
           </div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Categories Management</h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Organize catalog products into hierarchical parent and child categories with custom imagery & SEO.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Button
-            icon={<FolderTree className="w-4 h-4" />}
-            onClick={() => setIsTreeDrawerOpen(true)}
-            className="rounded-2xl font-bold text-xs h-11 px-4"
-          >
-            Tree Hierarchy View
-          </Button>
-
-          <Button
-            type="primary"
-            icon={<Plus className="w-4 h-4" />}
-            onClick={() => handleOpenDrawer()}
-            className="rounded-2xl font-bold bg-slate-900 hover:bg-indigo-600 h-11 px-5"
-          >
-            Create Category
-          </Button>
-        </div>
-      </div>
-
-      {/* Filter Bar */}
-      <div className="bg-white p-4 rounded-3xl border border-slate-200/80 shadow-xs flex items-center gap-4">
-        <div className="relative flex-1">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search category name or slug..."
-            className="w-full pl-10 pr-4 py-2 rounded-2xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-600"
+        }
+        toolbar={
+          <TableToolbar
+            searchValue={searchTerm}
+            onSearchChange={(val) => setSearchTerm(val)}
+            searchPlaceholder="Search category name or slug..."
+            onReset={() => setSearchTerm('')}
           />
-        </div>
-      </div>
+        }
+      />
 
       {/* Categories Table */}
-      <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden">
+      <AdminCard headerBorder={false} className="p-0">
         <Table
           columns={columns}
           dataSource={filteredCategories}
           rowKey="id"
           loading={isLoading}
-          pagination={{ pageSize: 10 }}
+          pagination={{ pageSize: 12 }}
         />
-      </div>
+      </AdminCard>
 
       {/* Category Create / Edit Drawer */}
       <Drawer

@@ -50,12 +50,15 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({
     };
   }, [isZoomOpen]);
 
+  const currentIndex = defaultImages.findIndex((img) => img.imageUrl === selectedImage);
+  const activeIndex = currentIndex >= 0 ? currentIndex + 1 : 1;
+
   return (
-    <div className="flex flex-col sm:flex-row gap-3 items-start max-w-[400px] mx-auto">
-      {/* Vertical Thumbnails Column (Amazon Style) */}
+    <div className="flex flex-col sm:flex-row gap-2.5 items-start w-full">
+      {/* Vertical Thumbnails Column (Amazon/Flipkart Style) */}
       {defaultImages.length > 1 && (
-        <div className="flex sm:flex-col items-center gap-2 overflow-x-auto sm:overflow-y-auto max-h-[350px] w-full sm:w-14 shrink-0 order-2 sm:order-1 scrollbar-none pb-1 sm:pb-0">
-          {defaultImages.map((img) => (
+        <div className="flex sm:flex-col items-center gap-2 overflow-x-auto sm:overflow-y-auto max-h-[380px] w-full sm:w-14 shrink-0 order-2 sm:order-1 scrollbar-none pb-1 sm:pb-0">
+          {defaultImages.map((img, idx) => (
             <button
               key={img.id}
               onClick={() => setSelectedImage(img.imageUrl)}
@@ -67,10 +70,10 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({
             >
               <Image
                 src={img.imageUrl}
-                alt={img.altText || productName}
+                alt={img.altText || `${productName} thumbnail ${idx + 1}`}
                 fill
                 sizes="60px"
-                className="object-contain"
+                className="object-contain p-0.5"
               />
             </button>
           ))}
@@ -78,16 +81,23 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({
       )}
 
       {/* Main Compact Product Image Box */}
-      <div className="relative flex-1 w-full h-[300px] sm:h-[350px] max-w-[340px] rounded-2xl overflow-hidden bg-[#F7F8FA] border border-[#E5E7EB] shadow-xs group flex items-center justify-center order-1 sm:order-2 mx-auto">
+      <div className="relative flex-1 w-full h-[320px] sm:h-[380px] rounded-2xl overflow-hidden bg-[#F7F8FA] border border-[#E5E7EB] shadow-2xs group flex items-center justify-center order-1 sm:order-2">
         <Image
           src={selectedImage}
           alt={productName}
           fill
           priority
           sizes="(max-width: 1024px) 100vw, 35vw"
-          className="object-contain p-2.5 transition-all duration-500 group-hover:scale-105 cursor-pointer"
+          className="object-contain p-3 transition-all duration-500 group-hover:scale-105 cursor-pointer"
           onClick={() => setIsZoomOpen(true)}
         />
+
+        {/* Image Counter Badge */}
+        {defaultImages.length > 1 && (
+          <div className="absolute top-2.5 left-2.5 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md text-white text-[10px] font-bold tracking-wider z-10">
+            {activeIndex} / {defaultImages.length}
+          </div>
+        )}
 
         {/* Zoom Trigger Button */}
         <button

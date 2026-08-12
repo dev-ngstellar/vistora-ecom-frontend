@@ -35,7 +35,7 @@ export const DashboardKPIGrid: React.FC<DashboardKPIGridProps> = ({ metrics }) =
       change: '+14.2%',
       isPositive: true,
       icon: IndianRupee,
-      color: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 border-emerald-100 dark:border-emerald-900/50',
+      color: 'text-[#A50025] bg-[#FFF0F3] border-[#A50025]/20',
     },
     {
       title: 'Total Orders',
@@ -43,7 +43,7 @@ export const DashboardKPIGrid: React.FC<DashboardKPIGridProps> = ({ metrics }) =
       change: '+8.7%',
       isPositive: true,
       icon: ShoppingBag,
-      color: 'text-indigo-600 bg-indigo-50 dark:bg-indigo-950/40 border-indigo-100 dark:border-indigo-900/50',
+      color: 'text-[#E66001] bg-[#FFFBEB] border-[#E66001]/20',
     },
     {
       title: 'Total Customers',
@@ -51,83 +51,68 @@ export const DashboardKPIGrid: React.FC<DashboardKPIGridProps> = ({ metrics }) =
       change: '+11.3%',
       isPositive: true,
       icon: Users,
-      color: 'text-purple-600 bg-purple-50 dark:bg-purple-950/40 border-purple-100 dark:border-purple-900/50',
+      color: 'text-indigo-600 bg-indigo-50 border-indigo-100',
     },
     {
       title: 'Total Products',
-      value: `${metrics?.totalProducts ?? 0} SKUs`,
-      change: '+5.0%',
+      value: `${metrics?.totalProducts ?? 0}`,
+      change: '+6.0%',
       isPositive: true,
       icon: Package,
-      color: 'text-blue-600 bg-blue-50 dark:bg-blue-950/40 border-blue-100 dark:border-blue-900/50',
+      color: 'text-blue-600 bg-blue-50 border-blue-100',
     },
     {
-      title: 'Pending Fulfillment',
-      value: metrics?.pendingOrders ?? 0,
-      subtitle: 'Requires dispatch action',
-      icon: Clock,
-      color: 'text-amber-600 bg-amber-50 dark:bg-amber-950/40 border-amber-100 dark:border-amber-900/50',
-    },
-    {
-      title: 'Completed Orders',
-      value: metrics?.completedOrders ?? 0,
-      subtitle: 'Successfully delivered',
-      icon: CheckCircle,
-      color: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 border-emerald-100 dark:border-emerald-900/50',
-    },
-    {
-      title: 'Low Stock Products',
-      value: `${metrics?.lowStockCount ?? 0} SKUs`,
-      subtitle: 'Restock required soon',
+      title: 'Low Stock',
+      value: metrics?.lowStockCount ?? 0,
+      subtitle: 'Requires attention',
       icon: AlertTriangle,
-      color: 'text-rose-600 bg-rose-50 dark:bg-rose-950/40 border-rose-100 dark:border-rose-900/50',
+      color: 'text-amber-600 bg-amber-50 border-amber-100',
     },
     {
       title: 'Pending Reviews',
       value: metrics?.pendingReviews ?? 0,
       subtitle: 'Awaiting moderation',
       icon: Star,
-      color: 'text-yellow-600 bg-yellow-50 dark:bg-yellow-950/40 border-yellow-100 dark:border-yellow-900/50',
+      color: 'text-purple-600 bg-purple-50 border-purple-100',
     },
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
       {cards.map((card, idx) => {
         const Icon = card.icon;
         return (
           <div
             key={idx}
-            className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md transition-all flex flex-col justify-between"
+            className="bg-white p-3.5 sm:p-4 rounded-xl border border-[#E5E7EB] shadow-2xs hover:border-[#A50025]/30 transition-all flex flex-col justify-between"
           >
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+            <div className="flex items-center justify-between gap-1">
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#64748B] truncate">
                 {card.title}
               </span>
-              <div className={`p-2.5 rounded-2xl border ${card.color}`}>
-                <Icon className="w-5 h-5" />
+              <div className={`p-1.5 rounded-lg border ${card.color} shrink-0`}>
+                <Icon className="w-3.5 h-3.5" />
               </div>
             </div>
 
-            <div className="mt-3">
-              <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+            <div className="mt-2">
+              <h3 className="text-lg sm:text-xl font-black text-[#111827] tracking-tight">
                 {card.value}
               </h3>
 
-              <div className="flex items-center justify-between mt-1 text-[11px]">
+              <div className="flex items-center justify-between mt-0.5 text-[10px]">
                 {card.change ? (
                   <div
-                    className={`flex items-center gap-1 font-extrabold ${
-                      card.isPositive ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600'
+                    className={`flex items-center gap-0.5 font-bold ${
+                      card.isPositive ? 'text-emerald-700' : 'text-rose-600'
                     }`}
                   >
-                    {card.isPositive ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
-                    <span>{card.change} vs last period</span>
+                    {card.isPositive ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                    <span>{card.change} vs 7d</span>
                   </div>
                 ) : (
-                  <span className="text-slate-500 font-medium">{card.subtitle}</span>
+                  <span className="text-[#64748B] font-medium truncate">{card.subtitle}</span>
                 )}
-                <span className="text-slate-400 text-[10px]">Live</span>
               </div>
             </div>
           </div>

@@ -32,8 +32,10 @@ import {
   TrendingUp,
   CheckCircle2,
   PackageCheck,
-  ShieldAlert,
 } from 'lucide-react';
+import { PageHeader } from '@/components/admin/page-header';
+import { AdminCard } from '@/components/admin/admin-card';
+import { TableToolbar } from '@/components/admin/table-toolbar';
 
 export default function AdminInventoryPage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -203,111 +205,100 @@ export default function AdminInventoryPage() {
   ];
 
   return (
-    <div className="space-y-6 pb-16">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs">
-        <div>
-          <div className="flex items-center gap-2 text-indigo-600 text-xs font-bold uppercase tracking-wider mb-1">
-            <Boxes className="w-4 h-4" />
-            <span>Warehouse Control</span>
-          </div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">
-            Inventory & Stock Control
-          </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Real-time warehouse stock tracking, available vs reserved stock, low stock thresholds, and movement audit logs.
-          </p>
-        </div>
-
-        <Button
-          icon={<RefreshCw className="w-4 h-4" />}
-          onClick={() => refetch()}
-          className="rounded-2xl font-bold text-xs"
-        >
-          Refresh Stock
-        </Button>
-      </div>
+    <div className="space-y-5 pb-8">
+      {/* Page Header */}
+      <PageHeader
+        title="Inventory & Stock Control"
+        subtitle="Real-time warehouse stock tracking, available vs reserved stock, low stock thresholds, and movement audit logs."
+        action={
+          <Button
+            icon={<RefreshCw className="w-4 h-4" />}
+            onClick={() => refetch()}
+            className="rounded-lg font-bold text-xs h-9"
+          >
+            Refresh Stock
+          </Button>
+        }
+        toolbar={
+          <TableToolbar
+            searchValue={searchTerm}
+            onSearchChange={(val) => setSearchTerm(val)}
+            searchPlaceholder="Search product name, variant, or SKU..."
+            onReset={() => {
+              setSearchTerm('');
+              setStockStatusFilter(undefined);
+            }}
+            filters={
+              <Select
+                allowClear
+                placeholder="Stock Status"
+                value={stockStatusFilter}
+                onChange={(val) => setStockStatusFilter(val)}
+                className="w-44 text-xs"
+                options={[
+                  { label: 'In Stock', value: 'IN_STOCK' },
+                  { label: 'Low Stock Warning', value: 'LOW_STOCK' },
+                  { label: 'Out of Stock', value: 'OUT_OF_STOCK' },
+                ]}
+              />
+            }
+          />
+        }
+      />
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <div className="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-xs flex items-center gap-4">
-          <div className="p-3 rounded-2xl bg-indigo-50 text-indigo-600">
-            <PackageCheck className="w-6 h-6" />
-          </div>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="bg-white p-4 rounded-xl border border-[#E5E7EB] shadow-2xs flex items-center justify-between">
           <div>
-            <span className="text-[11px] font-bold text-slate-400 block uppercase tracking-wider">Available Stock</span>
-            <span className="text-2xl font-black text-slate-900">{totalAvailable}</span>
+            <span className="text-[10px] font-extrabold text-[#64748B] block uppercase tracking-wider">Available Stock</span>
+            <span className="text-xl font-black text-[#111827] mt-0.5 block">{totalAvailable}</span>
+          </div>
+          <div className="p-2 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-100">
+            <PackageCheck className="w-4 h-4" />
           </div>
         </div>
 
-        <div className="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-xs flex items-center gap-4">
-          <div className="p-3 rounded-2xl bg-purple-50 text-purple-600">
-            <Boxes className="w-6 h-6" />
-          </div>
+        <div className="bg-white p-4 rounded-xl border border-[#E5E7EB] shadow-2xs flex items-center justify-between">
           <div>
-            <span className="text-[11px] font-bold text-slate-400 block uppercase tracking-wider">Reserved Orders</span>
-            <span className="text-2xl font-black text-purple-900">{totalReserved}</span>
+            <span className="text-[10px] font-extrabold text-[#64748B] block uppercase tracking-wider">Reserved Orders</span>
+            <span className="text-xl font-black text-indigo-700 mt-0.5 block">{totalReserved}</span>
+          </div>
+          <div className="p-2 rounded-lg bg-indigo-50 text-indigo-600 border border-indigo-100">
+            <Boxes className="w-4 h-4" />
           </div>
         </div>
 
-        <div className="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-xs flex items-center gap-4">
-          <div className="p-3 rounded-2xl bg-amber-50 text-amber-600">
-            <AlertTriangle className="w-6 h-6" />
-          </div>
+        <div className="bg-white p-4 rounded-xl border border-[#E5E7EB] shadow-2xs flex items-center justify-between">
           <div>
-            <span className="text-[11px] font-bold text-slate-400 block uppercase tracking-wider">Low Stock Alert</span>
-            <span className="text-2xl font-black text-amber-600">{lowStockCount}</span>
+            <span className="text-[10px] font-extrabold text-[#64748B] block uppercase tracking-wider">Low Stock Alert</span>
+            <span className="text-xl font-black text-amber-600 mt-0.5 block">{lowStockCount}</span>
+          </div>
+          <div className="p-2 rounded-lg bg-amber-50 text-amber-600 border border-amber-100">
+            <AlertTriangle className="w-4 h-4" />
           </div>
         </div>
 
-        <div className="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-xs flex items-center gap-4">
-          <div className="p-3 rounded-2xl bg-red-50 text-red-600">
-            <PackageX className="w-6 h-6" />
-          </div>
+        <div className="bg-white p-4 rounded-xl border border-[#E5E7EB] shadow-2xs flex items-center justify-between">
           <div>
-            <span className="text-[11px] font-bold text-slate-400 block uppercase tracking-wider">Out of Stock</span>
-            <span className="text-2xl font-black text-red-600">{outOfStockCount}</span>
+            <span className="text-[10px] font-extrabold text-[#64748B] block uppercase tracking-wider">Out of Stock</span>
+            <span className="text-xl font-black text-rose-600 mt-0.5 block">{outOfStockCount}</span>
+          </div>
+          <div className="p-2 rounded-lg bg-rose-50 text-rose-600 border border-rose-100">
+            <PackageX className="w-4 h-4" />
           </div>
         </div>
       </div>
 
-      {/* Filter Bar */}
-      <div className="bg-white p-4 rounded-3xl border border-slate-200/80 shadow-xs flex flex-wrap items-center gap-3">
-        <div className="relative flex-1 min-w-[240px]">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search by product name, variant, or SKU..."
-            className="w-full pl-10 pr-4 py-2 rounded-2xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-600"
-          />
-        </div>
-
-        <Select
-          allowClear
-          placeholder="Filter Stock Status"
-          value={stockStatusFilter}
-          onChange={(val) => setStockStatusFilter(val)}
-          className="w-48"
-          options={[
-            { label: 'In Stock', value: 'IN_STOCK' },
-            { label: 'Low Stock Warning', value: 'LOW_STOCK' },
-            { label: 'Out of Stock', value: 'OUT_OF_STOCK' },
-          ]}
-        />
-      </div>
-
-      {/* Table Container */}
-      <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden">
+      {/* Main Table */}
+      <AdminCard headerBorder={false} className="p-0">
         <Table
           columns={columns}
           dataSource={inventoryItems}
           rowKey="id"
           loading={isLoading}
-          pagination={{ pageSize: 10 }}
+          pagination={{ pageSize: 12 }}
         />
-      </div>
+      </AdminCard>
 
       {/* Stock Adjustment Modal */}
       <Modal

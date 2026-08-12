@@ -46,6 +46,9 @@ import {
   Layers,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { PageHeader } from '@/components/admin/page-header';
+import { AdminCard } from '@/components/admin/admin-card';
+import { TableToolbar } from '@/components/admin/table-toolbar';
 
 export default function AdminProductsPage() {
   // Query Filters & Pagination State
@@ -304,13 +307,13 @@ export default function AdminProductsPage() {
       },
     },
     {
-      title: 'Brand & Category',
+      title: 'Retailer & Category',
       key: 'brand_category',
       render: (_: any, record: Product) => (
         <div className="space-y-0.5 text-xs">
           <div className="font-bold text-slate-800 flex items-center gap-1">
             <Award className="w-3.5 h-3.5 text-indigo-600" />
-            <span>{record.brand?.name || 'Unbranded'}</span>
+            <span>{record.brand?.name || 'Unassigned Retailer'}</span>
           </div>
           <div className="text-slate-500 font-semibold flex items-center gap-1">
             <Layers className="w-3.5 h-3.5 text-slate-400" />
@@ -411,132 +414,114 @@ export default function AdminProductsPage() {
   ];
 
   return (
-    <div className="space-y-6 pb-12">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs">
-        <div>
-          <div className="flex items-center gap-2 text-indigo-600 text-xs font-bold uppercase tracking-wider mb-1">
-            <ShoppingBag className="w-4 h-4" />
-            <span>Catalogue & Product Suite</span>
+    <div className="space-y-5 pb-8">
+      {/* Page Header with Action Button */}
+      <PageHeader
+        title="Products"
+        subtitle="Manage your product catalog, pricing, variants, and stock availability."
+        action={
+          <Button
+            type="primary"
+            icon={<Plus className="w-4 h-4" />}
+            onClick={() => handleOpenDrawer()}
+            className="rounded-lg font-bold bg-[#A50025] hover:bg-[#7D001C] text-white h-9 px-4 text-xs"
+          >
+            Create Product
+          </Button>
+        }
+        toolbar={
+          <TableToolbar
+            searchValue={query.q || ''}
+            onSearchChange={(val) => setQuery((prev) => ({ ...prev, q: val, page: 1 }))}
+            searchPlaceholder="Search product name, SKU, barcode..."
+            onReset={() => setQuery({ page: 1 })}
+            filters={
+              <div className="flex items-center gap-2 flex-wrap">
+                <Select
+                  allowClear
+                  placeholder="Category"
+                  value={query.categoryId}
+                  onChange={(val) => setQuery((prev) => ({ ...prev, categoryId: val, page: 1 }))}
+                  className="w-36 text-xs"
+                  options={categories?.map((c) => ({ label: c.name, value: c.id }))}
+                />
+                <Select
+                  allowClear
+                  placeholder="Retailer"
+                  value={query.brandId}
+                  onChange={(val) => setQuery((prev) => ({ ...prev, brandId: val, page: 1 }))}
+                  className="w-36 text-xs"
+                  options={brands?.map((b) => ({ label: b.name, value: b.id }))}
+                />
+                <Select
+                  allowClear
+                  placeholder="Status"
+                  value={query.status}
+                  onChange={(val) => setQuery((prev) => ({ ...prev, status: val, page: 1 }))}
+                  className="w-32 text-xs"
+                  options={[
+                    { label: 'ACTIVE', value: 'ACTIVE' },
+                    { label: 'DRAFT', value: 'DRAFT' },
+                    { label: 'OUT_OF_STOCK', value: 'OUT_OF_STOCK' },
+                    { label: 'INACTIVE', value: 'INACTIVE' },
+                    { label: 'ARCHIVED', value: 'ARCHIVED' },
+                  ]}
+                />
+              </div>
+            }
+          />
+        }
+      />
+
+      {/* Bulk Action Bar */}
+      {selectedRowKeys.length > 0 && (
+        <div className="bg-[#FFF0F3] border border-[#A50025]/30 p-3 rounded-xl flex items-center justify-between gap-4">
+          <span className="text-xs font-bold text-[#A50025]">
+            {selectedRowKeys.length} product(s) selected
+          </span>
+          <div className="flex items-center gap-2">
+            <Button
+              size="small"
+              onClick={() => handleExecuteBulk('ACTIVATE')}
+              icon={<CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />}
+            >
+              Activate
+            </Button>
+            <Button
+              size="small"
+              onClick={() => handleExecuteBulk('DEACTIVATE')}
+              icon={<XCircle className="w-3.5 h-3.5 text-amber-600" />}
+            >
+              Deactivate
+            </Button>
+            <Button
+              size="small"
+              onClick={() => handleExecuteBulk('ASSIGN_CATEGORY')}
+              icon={<FolderPlus className="w-3.5 h-3.5 text-indigo-600" />}
+            >
+              Assign Category
+            </Button>
+            <Button
+              size="small"
+              onClick={() => handleExecuteBulk('ASSIGN_BRAND')}
+              icon={<Award className="w-3.5 h-3.5 text-purple-600" />}
+            >
+              Assign Retailer
+            </Button>
+            <Button
+              size="small"
+              danger
+              onClick={() => handleExecuteBulk('DELETE')}
+              icon={<Trash2 className="w-3.5 h-3.5" />}
+            >
+              Delete Selected
+            </Button>
           </div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Products Management</h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Manage your master product catalog, media gallery, pricing, SEO metadata, and product variants.
-          </p>
         </div>
-
-        <Button
-          type="primary"
-          icon={<Plus className="w-4 h-4" />}
-          onClick={() => handleOpenDrawer()}
-          className="rounded-2xl font-bold bg-slate-900 hover:bg-indigo-600 h-11 px-5"
-        >
-          Create Product
-        </Button>
-      </div>
-
-      {/* Filter & Search Bar */}
-      <div className="bg-white p-4 rounded-3xl border border-slate-200/80 shadow-xs space-y-4">
-        <div className="flex flex-wrap items-center gap-3">
-          {/* Keyword Search */}
-          <div className="relative flex-1 min-w-[220px]">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              value={query.q || ''}
-              onChange={(e) => setQuery((prev) => ({ ...prev, q: e.target.value, page: 1 }))}
-              placeholder="Search product name, SKU, barcode..."
-              className="w-full pl-10 pr-4 py-2 rounded-2xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-600"
-            />
-          </div>
-
-          {/* Category Filter */}
-          <Select
-            allowClear
-            placeholder="Filter by Category"
-            value={query.categoryId}
-            onChange={(val) => setQuery((prev) => ({ ...prev, categoryId: val, page: 1 }))}
-            className="w-44"
-            options={categories?.map((c) => ({ label: c.name, value: c.id }))}
-          />
-
-          {/* Brand Filter */}
-          <Select
-            allowClear
-            placeholder="Filter by Brand"
-            value={query.brandId}
-            onChange={(val) => setQuery((prev) => ({ ...prev, brandId: val, page: 1 }))}
-            className="w-44"
-            options={brands?.map((b) => ({ label: b.name, value: b.id }))}
-          />
-
-          {/* Status Filter */}
-          <Select
-            allowClear
-            placeholder="Filter by Status"
-            value={query.status}
-            onChange={(val) => setQuery((prev) => ({ ...prev, status: val, page: 1 }))}
-            className="w-40"
-            options={[
-              { label: 'ACTIVE', value: 'ACTIVE' },
-              { label: 'DRAFT', value: 'DRAFT' },
-              { label: 'OUT_OF_STOCK', value: 'OUT_OF_STOCK' },
-              { label: 'INACTIVE', value: 'INACTIVE' },
-              { label: 'ARCHIVED', value: 'ARCHIVED' },
-            ]}
-          />
-        </div>
-
-        {/* Bulk Toolbar */}
-        {selectedRowKeys.length > 0 && (
-          <div className="bg-indigo-50 border border-indigo-200 p-3 rounded-2xl flex items-center justify-between gap-4">
-            <span className="text-xs font-bold text-indigo-900">
-              {selectedRowKeys.length} product(s) selected
-            </span>
-            <div className="flex items-center gap-2">
-              <Button
-                size="small"
-                onClick={() => handleExecuteBulk('ACTIVATE')}
-                icon={<CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />}
-              >
-                Activate
-              </Button>
-              <Button
-                size="small"
-                onClick={() => handleExecuteBulk('DEACTIVATE')}
-                icon={<XCircle className="w-3.5 h-3.5 text-amber-600" />}
-              >
-                Deactivate
-              </Button>
-              <Button
-                size="small"
-                onClick={() => handleExecuteBulk('ASSIGN_CATEGORY')}
-                icon={<FolderPlus className="w-3.5 h-3.5 text-indigo-600" />}
-              >
-                Assign Category
-              </Button>
-              <Button
-                size="small"
-                onClick={() => handleExecuteBulk('ASSIGN_BRAND')}
-                icon={<Award className="w-3.5 h-3.5 text-purple-600" />}
-              >
-                Assign Brand
-              </Button>
-              <Button
-                size="small"
-                danger
-                onClick={() => handleExecuteBulk('DELETE')}
-                icon={<Trash2 className="w-3.5 h-3.5" />}
-              >
-                Delete Selected
-              </Button>
-            </div>
-          </div>
-        )}
-      </div>
+      )}
 
       {/* Main Table */}
-      <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden">
+      <AdminCard headerBorder={false} className="p-0">
         <Table
           rowSelection={{
             selectedRowKeys,
@@ -553,7 +538,7 @@ export default function AdminProductsPage() {
             onChange: (page) => setQuery((prev) => ({ ...prev, page })),
           }}
         />
-      </div>
+      </AdminCard>
 
       {/* Product Create / Edit Drawer */}
       <Drawer
@@ -639,10 +624,10 @@ export default function AdminProductsPage() {
                         />
                       </Form.Item>
 
-                      <Form.Item name="brandId" label={<span className="font-bold text-xs">Brand</span>}>
+                      <Form.Item name="brandId" label={<span className="font-bold text-xs">Retailer</span>}>
                         <Select
                           allowClear
-                          placeholder="Select Brand"
+                          placeholder="Select Retailer"
                           options={brands?.map((b) => ({ label: b.name, value: b.id }))}
                         />
                       </Form.Item>
@@ -833,14 +818,14 @@ export default function AdminProductsPage() {
 
       {/* Bulk Target Assignment Modal */}
       <Modal
-        title={`Bulk Assign ${bulkAssignModal.type === 'CATEGORY' ? 'Category' : 'Brand'}`}
+        title={`Bulk Assign ${bulkAssignModal.type === 'CATEGORY' ? 'Category' : 'Retailer'}`}
         open={bulkAssignModal.open}
         onOk={handleConfirmBulkAssign}
         onCancel={() => setBulkAssignModal({ open: false, type: 'CATEGORY' })}
       >
         <div className="py-4 space-y-3">
           <p className="text-xs text-slate-600 font-semibold">
-            Select target {bulkAssignModal.type.toLowerCase()} to assign to all {selectedRowKeys.length} selected products:
+            Select target {bulkAssignModal.type === 'CATEGORY' ? 'category' : 'retailer'} to assign to all {selectedRowKeys.length} selected products:
           </p>
 
           {bulkAssignModal.type === 'CATEGORY' ? (
@@ -854,7 +839,7 @@ export default function AdminProductsPage() {
           ) : (
             <Select
               className="w-full"
-              placeholder="Select Brand"
+              placeholder="Select Retailer"
               value={bulkTargetId}
               onChange={(val) => setBulkTargetId(val)}
               options={brands?.map((b) => ({ label: b.name, value: b.id }))}

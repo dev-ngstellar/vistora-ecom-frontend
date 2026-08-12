@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useOrderMutations, useOrders, useOrderStats } from '@/hooks/use-sales';
-import { Order, OrderStatus } from '@/types/sales.types';
-import { SalesStatCard } from '@/components/sales/sales-stat-card';
+import { Order } from '@/types/sales.types';
 import { StatusBadge } from '@/components/sales/status-badge';
 import { OrderTimeline } from '@/components/sales/order-timeline';
 import { InvoiceModal } from '@/components/sales/invoice-modal';
@@ -18,13 +18,11 @@ import {
   Form,
   Dropdown,
   DatePicker,
-  Tag,
   Avatar,
 } from 'antd';
 import {
   Search,
   Download,
-  Filter,
   Eye,
   ShoppingBag,
   Clock,
@@ -37,8 +35,13 @@ import {
   User,
   MapPin,
   Calendar,
+  Boxes,
+  TrendingUp,
 } from 'lucide-react';
 import dayjs from 'dayjs';
+import { PageHeader } from '@/components/admin/page-header';
+import { AdminCard } from '@/components/admin/admin-card';
+import { TableToolbar } from '@/components/admin/table-toolbar';
 
 const { RangePicker } = DatePicker;
 
@@ -72,6 +75,21 @@ export default function AdminOrdersPage() {
   });
 
   const { updateStatus, cancelOrder } = useOrderMutations();
+
+  const searchParams = useSearchParams();
+  const invoiceParam = searchParams?.get('invoice') || searchParams?.get('orderId');
+
+  useEffect(() => {
+    if (invoiceParam && ordersData?.orders?.length) {
+      const matched = ordersData.orders.find(
+        (o) => o.id === invoiceParam || o.orderNumber === invoiceParam
+      );
+      if (matched) {
+        setSelectedOrder(matched);
+        setIsInvoiceOpen(true);
+      }
+    }
+  }, [invoiceParam, ordersData]);
 
   const handleOpenDetails = (order: Order) => {
     setSelectedOrder(order);
@@ -131,6 +149,15 @@ export default function AdminOrdersPage() {
     }
   };
 
+  // Calculate high-level order counts
+  const ordersList = ordersData?.orders || [];
+  const totalOrdersCount = ordersData?.meta?.total || ordersList.length;
+  const pendingOrdersCount = ordersList.filter((o) =>
+    ['PENDING', 'PROCESSING', 'CONFIRMED', 'PACKED'].includes(o.status)
+  ).length;
+  const deliveredOrdersCount = ordersList.filter((o) => o.status === 'DELIVERED').length;
+  const totalRevenueSum = ordersList.reduce((acc, o) => acc + (Number(o.total) || 0), 0);
+
   const columns = [
     {
       title: 'Order Number',
@@ -139,7 +166,7 @@ export default function AdminOrdersPage() {
       render: (text: string, record: Order) => (
         <button
           onClick={() => handleOpenDetails(record)}
-          className="font-mono font-extrabold text-indigo-600 dark:text-indigo-400 hover:underline text-left block"
+          className="font-mono font-extrabold text-[#A50025] hover:underline text-left block"
         >
           #{text}
         </button>
@@ -151,14 +178,14 @@ export default function AdminOrdersPage() {
       key: 'user',
       render: (_: any, record: Order) => (
         <div className="flex items-center gap-2.5">
-          <Avatar className="bg-slate-900 text-white font-bold">
+          <Avatar className="bg-[#0F172A] text-white font-bold shrink-0">
             {record.user?.firstName?.[0] || 'C'}
           </Avatar>
           <div>
-            <span className="font-bold text-slate-900 dark:text-white block text-xs">
+            <span className="font-bold text-[#111827] block text-xs">
               {record.user?.fullName || 'Guest Customer'}
             </span>
-            <span className="text-[11px] text-slate-400 font-medium">{record.user?.email}</span>
+            <span className="text-[11px] text-[#64748B] font-medium block">{record.user?.email || '—'}</span>
           </div>
         </div>
       ),
@@ -168,7 +195,7 @@ export default function AdminOrdersPage() {
       dataIndex: 'items',
       key: 'items',
       render: (items: any[]) => (
-        <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+        <span className="text-xs font-semibold text-[#111827] bg-[#F7F8FA] border border-[#E5E7EB] px-2.5 py-1 rounded-full">
           {items?.length || 0} item(s)
         </span>
       ),
@@ -178,7 +205,7 @@ export default function AdminOrdersPage() {
       dataIndex: 'total',
       key: 'total',
       render: (total: number) => (
-        <span className="font-black text-slate-900 dark:text-white text-sm">
+        <span className="font-black text-[#111827] text-sm">
           ₹{Number(total).toLocaleString('en-IN')}
         </span>
       ),
@@ -202,7 +229,7 @@ export default function AdminOrdersPage() {
       dataIndex: 'createdAt',
       key: 'createdAt',
       render: (date: string) => (
-        <span className="text-xs text-slate-500 font-medium">
+        <span className="text-xs text-[#64748B] font-medium">
           {dayjs(date).format('MMM D, YYYY')}
         </span>
       ),
@@ -211,156 +238,210 @@ export default function AdminOrdersPage() {
       title: 'Actions',
       key: 'actions',
       render: (_: any, record: Order) => (
-        <Dropdown
-          menu={{
-            items: [
-              {
-                key: 'view',
-                icon: <Eye className="w-4 h-4 text-indigo-600" />,
-                label: 'View Details',
-                onClick: () => handleOpenDetails(record),
-              },
-              {
-                key: 'invoice',
-                icon: <FileText className="w-4 h-4 text-emerald-600" />,
-                label: 'View Invoice',
-                onClick: () => {
-                  setSelectedOrder(record);
-                  setIsInvoiceOpen(true);
+        <Space size="small">
+          <Button
+            type="text"
+            icon={<Eye className="w-4 h-4 text-[#A50025]" />}
+            title="View Invoice"
+            onClick={() => {
+              setSelectedOrder(record);
+              setIsInvoiceOpen(true);
+            }}
+          />
+          <Dropdown
+            menu={{
+              items: [
+                {
+                  key: 'invoice',
+                  icon: <FileText className="w-4 h-4 text-[#A50025]" />,
+                  label: 'View Invoice',
+                  onClick: () => {
+                    setSelectedOrder(record);
+                    setIsInvoiceOpen(true);
+                  },
                 },
-              },
-              {
-                key: 'update_status',
-                icon: <Clock className="w-4 h-4 text-amber-600" />,
-                label: 'Update Status',
-                onClick: () => handleOpenStatusModal(record),
-              },
-              {
-                type: 'divider',
-              },
-              {
-                key: 'cancel',
-                danger: true,
-                disabled: record.status === 'CANCELLED' || record.status === 'DELIVERED',
-                icon: <Ban className="w-4 h-4" />,
-                label: 'Cancel Order',
-                onClick: () => handleOpenCancelModal(record),
-              },
-            ],
-          }}
-          trigger={['click']}
-        >
-          <Button type="text" icon={<MoreHorizontal className="w-4 h-4" />} />
-        </Dropdown>
+                {
+                  key: 'view',
+                  icon: <ShoppingBag className="w-4 h-4 text-indigo-600" />,
+                  label: 'View Order Details',
+                  onClick: () => handleOpenDetails(record),
+                },
+                {
+                  key: 'update_status',
+                  icon: <Clock className="w-4 h-4 text-amber-600" />,
+                  label: 'Update Status',
+                  onClick: () => handleOpenStatusModal(record),
+                },
+                {
+                  type: 'divider',
+                },
+                {
+                  key: 'cancel',
+                  danger: true,
+                  disabled: record.status === 'CANCELLED' || record.status === 'DELIVERED',
+                  icon: <Ban className="w-4 h-4" />,
+                  label: 'Cancel Order',
+                  onClick: () => handleOpenCancelModal(record),
+                },
+              ],
+            }}
+            trigger={['click']}
+          >
+            <Button type="text" icon={<MoreHorizontal className="w-4 h-4" />} />
+          </Dropdown>
+        </Space>
       ),
     },
   ];
 
   return (
-    <div className="space-y-6 pb-12">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs">
-        <div>
-          <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 text-xs font-bold uppercase tracking-wider mb-1">
-            <ShoppingBag className="w-4 h-4" />
-            <span>Sales & Order Fulfillment</span>
+    <div className="space-y-5 pb-8">
+      {/* Top Order KPI Stat Cards Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white rounded-xl border border-[#E5E7EB] p-4 shadow-2xs flex items-center justify-between">
+          <div>
+            <span className="text-[11px] font-bold text-[#64748B] uppercase tracking-wider block">
+              Total Orders
+            </span>
+            <h3 className="text-xl font-black text-[#111827] mt-0.5">
+              {totalOrdersCount}
+            </h3>
+            <span className="text-[10px] text-[#64748B] font-semibold block">
+              All time purchases
+            </span>
           </div>
-          <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Order Management</h1>
+          <div className="w-10 h-10 rounded-xl bg-[#FFF0F3] border border-[#A50025]/20 flex items-center justify-center text-[#A50025] shrink-0">
+            <ShoppingBag className="w-5 h-5" />
+          </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="bg-white rounded-xl border border-[#E5E7EB] p-4 shadow-2xs flex items-center justify-between">
+          <div>
+            <span className="text-[11px] font-bold text-[#64748B] uppercase tracking-wider block">
+              Pending Dispatch
+            </span>
+            <h3 className="text-xl font-black text-[#111827] mt-0.5">
+              {pendingOrdersCount}
+            </h3>
+            <span className="text-[10px] text-amber-600 font-semibold block">
+              Awaiting retailer dispatch
+            </span>
+          </div>
+          <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600 shrink-0">
+            <Clock className="w-5 h-5" />
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl border border-[#E5E7EB] p-4 shadow-2xs flex items-center justify-between">
+          <div>
+            <span className="text-[11px] font-bold text-[#64748B] uppercase tracking-wider block">
+              Delivered Orders
+            </span>
+            <h3 className="text-xl font-black text-[#111827] mt-0.5">
+              {deliveredOrdersCount}
+            </h3>
+            <span className="text-[10px] text-emerald-600 font-semibold block">
+              Successfully fulfilled
+            </span>
+          </div>
+          <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 shrink-0">
+            <CheckCircle className="w-5 h-5" />
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl border border-[#E5E7EB] p-4 shadow-2xs flex items-center justify-between">
+          <div>
+            <span className="text-[11px] font-bold text-[#64748B] uppercase tracking-wider block">
+              Order Value (Page)
+            </span>
+            <h3 className="text-xl font-black text-[#111827] mt-0.5">
+              ₹{Number(totalRevenueSum).toLocaleString('en-IN')}
+            </h3>
+            <span className="text-[10px] text-blue-600 font-semibold block">
+              Current view gross total
+            </span>
+          </div>
+          <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 shrink-0">
+            <TrendingUp className="w-5 h-5" />
+          </div>
+        </div>
+      </div>
+
+      {/* Page Header */}
+      <PageHeader
+        title="Orders & Retailer Fulfillment"
+        subtitle="Manage customer purchases, multi-retailer partner fulfillment, and dispatch statuses."
+        action={
           <Button
-            type="default"
+            type="primary"
             icon={<Download className="w-4 h-4" />}
             onClick={handleExportCsv}
-            className="rounded-2xl font-bold border-slate-300 dark:border-slate-700"
+            className="rounded-lg font-bold text-xs bg-[#A50025] hover:bg-[#7D001C] text-white h-9 px-4"
           >
             Export Orders
           </Button>
-        </div>
-      </div>
-
-      {/* Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <SalesStatCard
-          title="Total Orders"
-          value={statsData?.totalOrders || 0}
-          icon={ShoppingBag}
-          colorScheme="indigo"
-        />
-        <SalesStatCard
-          title="Pending Fulfillment"
-          value={statsData?.pendingOrders || 0}
-          icon={Clock}
-          colorScheme="amber"
-        />
-        <SalesStatCard
-          title="Completed Orders"
-          value={statsData?.completedOrders || 0}
-          icon={CheckCircle}
-          colorScheme="emerald"
-        />
-        <SalesStatCard
-          title="Total Sales Revenue"
-          value={`₹${(statsData?.totalRevenue || 0).toLocaleString('en-IN')}`}
-          icon={DollarSign}
-          colorScheme="purple"
-        />
-      </div>
-
-      {/* Filter & Search Bar */}
-      <div className="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-wrap items-center gap-4">
-        <Input
-          placeholder="Search by Order #, Customer name or email..."
-          prefix={<Search className="w-4 h-4 text-slate-400 mr-1" />}
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full md:w-80 rounded-2xl"
-          allowClear
-        />
-
-        <Select
-          placeholder="Order Status"
-          value={statusFilter}
-          onChange={(val) => setStatusFilter(val)}
-          className="w-40"
-          allowClear
-        >
-          <Select.Option value="PENDING">Pending</Select.Option>
-          <Select.Option value="CONFIRMED">Confirmed</Select.Option>
-          <Select.Option value="PROCESSING">Processing</Select.Option>
-          <Select.Option value="SHIPPED">Shipped</Select.Option>
-          <Select.Option value="DELIVERED">Delivered</Select.Option>
-          <Select.Option value="CANCELLED">Cancelled</Select.Option>
-        </Select>
-
-        <Select
-          placeholder="Payment Status"
-          value={paymentFilter}
-          onChange={(val) => setPaymentFilter(val)}
-          className="w-40"
-          allowClear
-        >
-          <Select.Option value="PAID">Paid</Select.Option>
-          <Select.Option value="PENDING">Pending</Select.Option>
-          <Select.Option value="FAILED">Failed</Select.Option>
-          <Select.Option value="REFUNDED">Refunded</Select.Option>
-        </Select>
-
-        <RangePicker
-          onChange={(dates) => {
-            if (dates && dates[0] && dates[1]) {
-              setDateRange([dates[0].toISOString(), dates[1].toISOString()]);
-            } else {
+        }
+        toolbar={
+          <TableToolbar
+            searchValue={search}
+            onSearchChange={(val) => setSearch(val)}
+            searchPlaceholder="Search order #, customer name, email..."
+            onReset={() => {
+              setSearch('');
+              setStatusFilter(undefined);
+              setPaymentFilter(undefined);
               setDateRange(undefined);
+            }}
+            filters={
+              <div className="flex items-center gap-2 flex-wrap">
+                <Select
+                  placeholder="Order Status"
+                  value={statusFilter}
+                  onChange={(val) => setStatusFilter(val)}
+                  className="w-36 text-xs"
+                  allowClear
+                >
+                  <Select.Option value="PENDING">Pending</Select.Option>
+                  <Select.Option value="CONFIRMED">Confirmed</Select.Option>
+                  <Select.Option value="PROCESSING">Processing</Select.Option>
+                  <Select.Option value="PACKED">Packed</Select.Option>
+                  <Select.Option value="SHIPPED">Shipped</Select.Option>
+                  <Select.Option value="OUT_FOR_DELIVERY">Out for Delivery</Select.Option>
+                  <Select.Option value="DELIVERED">Delivered</Select.Option>
+                  <Select.Option value="CANCELLED">Cancelled</Select.Option>
+                </Select>
+
+                <Select
+                  placeholder="Payment Status"
+                  value={paymentFilter}
+                  onChange={(val) => setPaymentFilter(val)}
+                  className="w-36 text-xs"
+                  allowClear
+                >
+                  <Select.Option value="PAID">Paid</Select.Option>
+                  <Select.Option value="PENDING">Pending</Select.Option>
+                  <Select.Option value="FAILED">Failed</Select.Option>
+                  <Select.Option value="REFUNDED">Refunded</Select.Option>
+                </Select>
+
+                <RangePicker
+                  onChange={(dates) => {
+                    if (dates && dates[0] && dates[1]) {
+                      setDateRange([dates[0].toISOString(), dates[1].toISOString()]);
+                    } else {
+                      setDateRange(undefined);
+                    }
+                  }}
+                  className="rounded-lg text-xs"
+                />
+              </div>
             }
-          }}
-          className="rounded-2xl"
-        />
-      </div>
+          />
+        }
+      />
 
       {/* Orders Data Table */}
-      <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-xs">
+      <AdminCard headerBorder={false} className="p-0">
         <Table
           dataSource={ordersData?.orders || []}
           columns={columns}
@@ -377,15 +458,15 @@ export default function AdminOrdersPage() {
             showSizeChanger: true,
           }}
         />
-      </div>
+      </AdminCard>
 
       {/* Order Details Drawer */}
       <Drawer
         title={
           selectedOrder ? (
             <div className="flex items-center gap-2">
-              <ShoppingBag className="w-5 h-5 text-indigo-600" />
-              <span className="font-black text-slate-900 dark:text-white">
+              <ShoppingBag className="w-5 h-5 text-[#A50025]" />
+              <span className="font-black text-[#111827]">
                 Order #{selectedOrder.orderNumber}
               </span>
             </div>
@@ -394,7 +475,7 @@ export default function AdminOrdersPage() {
           )
         }
         placement="right"
-        size={640}
+        styles={{ wrapper: { width: '640px', maxWidth: '100vw' } }}
         onClose={() => setIsDetailDrawerOpen(false)}
         open={isDetailDrawerOpen}
         extra={
@@ -403,14 +484,14 @@ export default function AdminOrdersPage() {
               <Button
                 icon={<FileText className="w-4 h-4" />}
                 onClick={() => setIsInvoiceOpen(true)}
-                className="rounded-xl font-bold"
+                className="rounded-lg font-bold text-xs"
               >
                 Invoice
               </Button>
               <Button
                 type="primary"
                 onClick={() => handleOpenStatusModal(selectedOrder)}
-                className="bg-slate-900 rounded-xl font-bold"
+                className="bg-[#A50025] hover:bg-[#7D001C] rounded-lg font-bold text-xs text-white"
               >
                 Update Status
               </Button>
@@ -419,26 +500,26 @@ export default function AdminOrdersPage() {
         }
       >
         {selectedOrder && (
-          <div className="space-y-6 text-xs">
+          <div className="space-y-5 text-xs">
             {/* Status Highlights */}
-            <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-100 dark:border-slate-800">
+            <div className="grid grid-cols-3 gap-3 p-4 bg-[#F7F8FA] rounded-xl border border-[#E5E7EB]">
               <div>
-                <span className="text-slate-400 font-semibold uppercase tracking-wider block text-[10px]">Current Status</span>
+                <span className="text-[#64748B] font-semibold uppercase tracking-wider block text-[10px]">Current Status</span>
                 <div className="mt-1">
                   <StatusBadge status={selectedOrder.status} category="order" />
                 </div>
               </div>
 
               <div>
-                <span className="text-slate-400 font-semibold uppercase tracking-wider block text-[10px]">Payment</span>
+                <span className="text-[#64748B] font-semibold uppercase tracking-wider block text-[10px]">Payment Status</span>
                 <div className="mt-1">
                   <StatusBadge status={selectedOrder.payments?.[0]?.status || 'PENDING'} category="payment" />
                 </div>
               </div>
 
               <div>
-                <span className="text-slate-400 font-semibold uppercase tracking-wider block text-[10px]">Total Paid</span>
-                <span className="text-base font-black text-slate-900 dark:text-white mt-1 block">
+                <span className="text-[#64748B] font-semibold uppercase tracking-wider block text-[10px]">Total Order Amount</span>
+                <span className="text-base font-black text-[#111827] mt-1 block">
                   ₹{Number(selectedOrder.total).toLocaleString('en-IN')}
                 </span>
               </div>
@@ -446,54 +527,76 @@ export default function AdminOrdersPage() {
 
             {/* Customer & Address Information */}
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-slate-50 dark:bg-slate-800/40 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
-                <div className="flex items-center gap-2 text-indigo-600 font-bold mb-2">
+              <div className="bg-[#F7F8FA] p-3.5 rounded-xl border border-[#E5E7EB]">
+                <div className="flex items-center gap-1.5 text-[#A50025] font-bold mb-2">
                   <User className="w-4 h-4" />
-                  <span>Customer Info</span>
+                  <span>Customer Details</span>
                 </div>
-                <p className="font-bold text-slate-900 dark:text-white">{selectedOrder.user?.fullName}</p>
-                <p className="text-slate-500 font-medium">{selectedOrder.user?.email}</p>
-                <p className="text-slate-500 font-medium">{selectedOrder.user?.phone || 'No phone provided'}</p>
+                <p className="font-bold text-[#111827]">{selectedOrder.user?.fullName || 'Guest Customer'}</p>
+                <p className="text-[#64748B] font-medium">{selectedOrder.user?.email || '—'}</p>
+                <p className="text-[#64748B] font-medium">{selectedOrder.user?.phone || 'No phone provided'}</p>
               </div>
 
-              <div className="bg-slate-50 dark:bg-slate-800/40 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
-                <div className="flex items-center gap-2 text-indigo-600 font-bold mb-2">
+              <div className="bg-[#F7F8FA] p-3.5 rounded-xl border border-[#E5E7EB]">
+                <div className="flex items-center gap-1.5 text-[#A50025] font-bold mb-2">
                   <MapPin className="w-4 h-4" />
                   <span>Shipping Address</span>
                 </div>
-                <p className="font-bold text-slate-900 dark:text-white">{selectedOrder.address?.fullName}</p>
-                <p className="text-slate-600">{selectedOrder.address?.addressLine1}</p>
-                <p className="text-slate-600">
+                <p className="font-bold text-[#111827]">{selectedOrder.address?.fullName || 'Same as Customer'}</p>
+                <p className="text-[#64748B]">{selectedOrder.address?.addressLine1 || 'No address line 1'}</p>
+                <p className="text-[#64748B]">
                   {selectedOrder.address?.city}, {selectedOrder.address?.state} - {selectedOrder.address?.postalCode}
                 </p>
               </div>
             </div>
 
-            {/* Products Purchased */}
+            {/* Multi-Retailer Order Fulfillment Breakdown */}
             <div>
-              <h4 className="font-black text-slate-900 dark:text-white text-sm mb-3">Products Purchased</h4>
-              <div className="space-y-3">
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="font-extrabold text-[#111827] text-xs uppercase tracking-wider">
+                  Item Fulfillment & Partner Ownership
+                </h4>
+                <span className="text-[10px] font-bold text-[#A50025] bg-[#FFF0F3] px-2 py-0.5 rounded-full border border-[#A50025]/20">
+                  Vistora Enterprise Admin View Only
+                </span>
+              </div>
+
+              <div className="space-y-2.5">
                 {selectedOrder.items.map((item) => (
                   <div
                     key={item.id}
-                    className="flex items-center justify-between p-3 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700"
+                    className="p-3 bg-white rounded-xl border border-[#E5E7EB] shadow-2xs space-y-2"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center font-bold text-slate-400">
-                        📦
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-[#F7F8FA] border border-[#E5E7EB] flex items-center justify-center font-bold text-[#64748B]">
+                          📦
+                        </div>
+                        <div>
+                          <span className="font-bold text-[#111827] block">{item.productName}</span>
+                          <span className="text-[11px] text-[#64748B] font-mono">SKU: {item.sku}</span>
+                        </div>
                       </div>
-                      <div>
-                        <span className="font-bold text-slate-900 dark:text-white block">{item.productName}</span>
-                        <span className="text-[11px] text-slate-400 font-mono">SKU: {item.sku}</span>
+
+                      <div className="text-right">
+                        <span className="font-black text-[#111827] block">
+                          ₹{Number(item.total).toLocaleString('en-IN')}
+                        </span>
+                        <span className="text-[10px] text-[#64748B]">
+                          {item.quantity} × ₹{Number(item.unitPrice).toLocaleString('en-IN')}
+                        </span>
                       </div>
                     </div>
 
-                    <div className="text-right">
-                      <span className="font-black text-slate-900 dark:text-white block">
-                        ₹{Number(item.total).toLocaleString('en-IN')}
-                      </span>
-                      <span className="text-[11px] text-slate-400">
-                        {item.quantity} × ₹{Number(item.unitPrice).toLocaleString('en-IN')}
+                    {/* Retailer Partner Confidential Ownership Tag */}
+                    <div className="pt-2 border-t border-[#F3F4F6] flex items-center justify-between text-[11px]">
+                      <div className="flex items-center gap-2">
+                        <span className="px-2.5 py-0.5 rounded-md bg-[#FFF0F3] text-[#A50025] font-bold border border-[#A50025]/20">
+                          Retailer Partner: {item.product?.brand?.name || (item.productName.toLowerCase().includes('mst') ? 'MST / MTS Handlooms' : 'Vistora Retailer Partner')}
+                        </span>
+                      </div>
+                      <span className="text-[#16A34A] font-bold">
+                        Pending Retailer Dispatch
                       </span>
                     </div>
                   </div>
@@ -503,7 +606,7 @@ export default function AdminOrdersPage() {
 
             {/* Order Timeline */}
             <div>
-              <h4 className="font-black text-slate-900 dark:text-white text-sm mb-3">Status Timeline</h4>
+              <h4 className="font-extrabold text-[#111827] text-xs uppercase tracking-wider mb-2">Status Timeline</h4>
               <OrderTimeline history={selectedOrder.statusHistory} />
             </div>
           </div>
