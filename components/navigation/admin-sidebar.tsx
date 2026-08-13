@@ -86,6 +86,7 @@ interface AdminSidebarProps {
   onToggleCollapse: () => void;
   mobileOpen: boolean;
   onMobileClose: () => void;
+  themeMode?: 'light' | 'dark';
 }
 
 export const AdminSidebar: React.FC<AdminSidebarProps> = ({
@@ -93,13 +94,22 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
   onToggleCollapse,
   mobileOpen,
   onMobileClose,
+  themeMode = 'light',
 }) => {
   const pathname = usePathname();
 
+  const isDark = themeMode === 'dark';
+
   const sidebarContent = (
-    <div className="flex flex-col h-full bg-slate-900 text-slate-300 border-r border-slate-800">
+    <div className={`flex flex-col h-full transition-colors duration-300 ${
+      isDark 
+        ? 'bg-slate-950/90 text-slate-300 border-r border-slate-900/80' 
+        : 'bg-white/90 text-slate-700 border-r border-slate-200/80'
+    } backdrop-blur-md`}>
       {/* Brand Header */}
-      <div className="h-16 px-4 flex items-center justify-between border-b border-slate-800 shrink-0">
+      <div className={`h-16 px-4 flex items-center justify-between border-b shrink-0 ${
+        isDark ? 'border-slate-900/80' : 'border-slate-100'
+      }`}>
         <Link href="/admin/dashboard" className="flex items-center gap-3">
           <img
             src={brandConfig.logoUrl}
@@ -108,7 +118,9 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
           />
           {!collapsed && (
             <div className="flex flex-col min-w-0">
-              <span className="font-black text-sm tracking-tight text-white truncate">
+              <span className={`font-black text-sm tracking-tight truncate ${
+                isDark ? 'text-white' : 'text-slate-950'
+              }`}>
                 {brandConfig.shortName} ADMIN
               </span>
               <span className="text-[9px] font-bold text-orange uppercase tracking-widest leading-none">
@@ -121,7 +133,11 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
         {/* Collapse toggle button on desktop */}
         <button
           onClick={onToggleCollapse}
-          className="hidden md:flex p-1.5 rounded-xl bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 transition"
+          className={`hidden md:flex p-1.5 rounded-xl transition ${
+            isDark 
+              ? 'bg-slate-900 text-slate-400 hover:text-white hover:bg-slate-800' 
+              : 'bg-slate-50 text-slate-500 hover:text-slate-950 hover:bg-slate-100'
+          }`}
           title={collapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
         >
           {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
@@ -133,7 +149,9 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
         {adminNavGroups.map((group, groupIdx) => (
           <div key={groupIdx} className="space-y-1">
             {!collapsed && (
-              <p className="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">
+              <p className={`px-3 text-[10px] font-bold uppercase tracking-wider mb-2 ${
+                isDark ? 'text-slate-600' : 'text-slate-400'
+              }`}>
                 {group.groupTitle}
               </p>
             )}
@@ -153,21 +171,31 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
                   onClick={onMobileClose}
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all duration-150 group relative ${
                     isActive
-                      ? 'bg-maroon text-white shadow-md shadow-maroon/40'
-                      : 'text-slate-400 hover:text-slate-100 hover:bg-slate-800/80'
+                      ? 'bg-gradient-to-r from-[#A50025] to-[#7D001C] text-white shadow-md shadow-[#A50025]/30'
+                      : isDark
+                        ? 'text-slate-400 hover:text-slate-100 hover:bg-slate-900/60'
+                        : 'text-slate-600 hover:text-slate-950 hover:bg-slate-50'
                   }`}
                   title={collapsed ? item.label : undefined}
                 >
                   <IconComponent
                     className={`w-4 h-4 shrink-0 transition-transform duration-200 group-hover:scale-110 ${
-                      isActive ? 'text-white' : 'text-slate-400 group-hover:text-slate-200'
+                      isActive 
+                        ? 'text-white' 
+                        : isDark 
+                          ? 'text-slate-400 group-hover:text-slate-200' 
+                          : 'text-slate-500 group-hover:text-slate-850'
                     }`}
                   />
 
                   {!collapsed && <span className="truncate">{item.label}</span>}
 
                   {collapsed && (
-                    <div className="absolute left-full ml-3 px-2.5 py-1.5 bg-slate-900 text-white text-xs font-medium rounded-lg shadow-xl border border-slate-800 opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50 whitespace-nowrap">
+                    <div className={`absolute left-full ml-3 px-2.5 py-1.5 text-xs font-medium rounded-lg shadow-xl border opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50 whitespace-nowrap ${
+                      isDark 
+                        ? 'bg-slate-900 text-white border-slate-800' 
+                        : 'bg-white text-slate-900 border-slate-200'
+                    }`}>
                       {item.label}
                     </div>
                   )}
@@ -179,15 +207,21 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
       </div>
 
       {/* Bottom Store Switcher */}
-      <div className="p-3 border-t border-slate-800 shrink-0">
+      <div className={`p-3 border-t shrink-0 ${
+        isDark ? 'border-slate-900/80' : 'border-slate-100'
+      }`}>
         <Link
           href="/"
-          className={`flex items-center gap-3 p-2.5 rounded-xl bg-slate-800/60 hover:bg-slate-800 text-slate-300 hover:text-white transition text-xs font-semibold ${
+          className={`flex items-center gap-3 p-2.5 rounded-xl transition text-xs font-semibold ${
             collapsed ? 'justify-center' : ''
+          } ${
+            isDark 
+              ? 'bg-slate-900/50 hover:bg-slate-900 text-slate-350 hover:text-white' 
+              : 'bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-slate-950'
           }`}
           title="Back to Customer Store"
         >
-          <Store className="w-4 h-4 text-amber-400 shrink-0" />
+          <Store className="w-4 h-4 text-amber-500 shrink-0" />
           {!collapsed && <span>View Customer Store</span>}
         </Link>
       </div>

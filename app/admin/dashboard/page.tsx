@@ -117,28 +117,28 @@ export default function AdminDashboardPage() {
           title="Top VIP Customers"
           subtitle="Highest spending customer accounts"
           action={
-            <Button type="default" href="/admin/customers" className="rounded-lg text-xs font-bold border-[#E5E7EB] hover:text-[#A50025] hover:border-[#A50025]">
+            <Button type="default" href="/admin/customers" className="rounded-lg text-xs font-bold border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 hover:text-[#A50025] dark:hover:text-[#A50025] hover:border-[#A50025] dark:hover:border-[#A50025]">
               View All Customers
             </Button>
           }
         >
           {(!analytics?.customers?.topCustomers || analytics.customers.topCustomers.length === 0) ? (
-            <div className="py-6 text-center text-xs text-[#64748B] font-medium">
+            <div className="py-6 text-center text-xs text-slate-500 dark:text-slate-400 font-medium">
               No customer purchase history available for selected period.
             </div>
           ) : (
-            <div className="divide-y divide-[#E5E7EB] text-xs">
+            <div className="divide-y divide-slate-100 dark:divide-slate-800/80 text-xs">
               {analytics.customers.topCustomers.slice(0, 4).map((cust) => (
                 <div key={cust.id} className="py-2.5 flex items-center justify-between">
                   <div>
-                    <span className="font-bold text-[#111827] block">{cust.name}</span>
-                    <span className="text-[11px] text-[#64748B]">{cust.email}</span>
+                    <span className="font-bold text-slate-900 dark:text-white block">{cust.name}</span>
+                    <span className="text-[11px] text-slate-500 dark:text-slate-400">{cust.email}</span>
                   </div>
                   <div className="text-right">
-                    <span className="font-black text-[#A50025] block">
+                    <span className="font-black text-[#A50025] dark:text-rose-400 block">
                       ₹{Number(cust.totalSpent).toLocaleString('en-IN')}
                     </span>
-                    <span className="text-[10px] text-[#64748B] font-semibold">{cust.ordersCount} orders</span>
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold">{cust.ordersCount} orders</span>
                   </div>
                 </div>
               ))}
@@ -152,7 +152,7 @@ export default function AdminDashboardPage() {
         title="Recent Orders"
         subtitle="Latest customer purchases awaiting fulfillment"
         action={
-          <Button type="default" href="/admin/orders" className="rounded-lg text-xs font-bold border-[#E5E7EB] hover:text-[#A50025] hover:border-[#A50025]">
+          <Button type="default" href="/admin/orders" className="rounded-lg text-xs font-bold border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 hover:text-[#A50025] dark:hover:text-[#A50025] hover:border-[#A50025] dark:hover:border-[#A50025]">
             View All Orders
           </Button>
         }
@@ -164,12 +164,12 @@ export default function AdminDashboardPage() {
           pagination={false}
           locale={{ emptyText: <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No recent customer orders found in live database." /> }}
           columns={[
-            { title: 'ORDER ID', dataIndex: 'id', key: 'id', render: (val) => <span className="font-extrabold text-xs font-mono text-[#A50025]">{val}</span> },
-            { title: 'CUSTOMER', dataIndex: 'customer', key: 'customer', render: (val) => <span className="font-bold text-xs text-[#111827]">{val}</span> },
-            { title: 'AMOUNT', dataIndex: 'amount', key: 'amount', render: (val) => <span className="font-black text-xs">₹{Number(val).toLocaleString('en-IN')}</span> },
+            { title: 'ORDER ID', dataIndex: 'id', key: 'id', render: (val) => <span className="font-extrabold text-xs font-mono text-[#A50025] dark:text-rose-400">{val}</span> },
+            { title: 'CUSTOMER', dataIndex: 'customer', key: 'customer', render: (val) => <span className="font-bold text-xs text-slate-900 dark:text-slate-200">{val}</span> },
+            { title: 'AMOUNT', dataIndex: 'amount', key: 'amount', render: (val) => <span className="font-black text-xs text-slate-900 dark:text-slate-100">₹{Number(val).toLocaleString('en-IN')}</span> },
             { title: 'PAYMENT', dataIndex: 'paymentStatus', key: 'paymentStatus', render: (val) => <StatusBadge status={val} category="payment" /> },
             { title: 'FULFILLMENT', dataIndex: 'orderStatus', key: 'orderStatus', render: (val) => <StatusBadge status={val} category="order" /> },
-            { title: 'DATE', dataIndex: 'date', key: 'date', render: (val) => <span className="text-xs text-[#64748B]">{dayjs(val).format('MMM D, YYYY')}</span> },
+            { title: 'DATE', dataIndex: 'date', key: 'date', render: (val) => <span className="text-xs text-slate-500 dark:text-slate-400">{dayjs(val).format('MMM D, YYYY')}</span> },
             {
               title: 'ACTION',
               key: 'action',
@@ -177,7 +177,7 @@ export default function AdminDashboardPage() {
                 <Button
                   type="text"
                   size="small"
-                  icon={<Eye className="w-4 h-4 text-[#A50025]" />}
+                  icon={<Eye className="w-4 h-4 text-[#A50025] dark:text-rose-450" />}
                   title="View Invoice"
                   href={`/admin/orders?invoice=${record.id}`}
                 />
