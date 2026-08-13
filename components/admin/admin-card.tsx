@@ -21,7 +21,7 @@ export const AdminCard: React.FC<AdminCardProps> = ({
 }) => {
   return (
     <div
-      className={`bg-white/85 dark:bg-slate-900/60 backdrop-blur-md rounded-2xl border border-slate-250/60 dark:border-slate-800/80 shadow-[0_4px_20px_-4px_rgba(148,163,184,0.12)] dark:shadow-[0_4px_30px_rgba(0,0,0,0.2)] hover:border-slate-300 dark:hover:border-slate-700/80 transition-all duration-300 ${className}`}
+      className={`bg-white/45 dark:bg-slate-900/30 backdrop-blur-xl rounded-2xl border border-slate-200/50 dark:border-slate-800/60 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.02)] hover:border-slate-350 dark:hover:border-slate-700/80 hover:bg-white/60 dark:hover:bg-slate-900/40 transition-all duration-305 ${className}`}
     >
       {(title || subtitle || action) && (
         <div

@@ -4,7 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { ProtectedRoute } from '@/components/protected-route';
 import { AdminSidebar } from '@/components/navigation/admin-sidebar';
 import { AdminHeader } from '@/components/navigation/admin-header';
-import { ConfigProvider, theme } from 'antd';
+import { ConfigProvider, theme, App } from 'antd';
+import AntdStaticSetter from '@/lib/antd';
 
 import { brandConfig } from '@/config';
 
@@ -53,47 +54,59 @@ export default function AdminGlobalLayout({
           },
         }}
       >
-        <div className={`min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white transition-colors duration-300 ${
-          themeMode === 'dark' 
-            ? 'dark bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-black text-slate-100' 
-            : 'bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-50 via-slate-100/50 to-slate-200/80 text-slate-900'
-        }`}>
-          {/* Sidebar */}
-          <AdminSidebar
-            collapsed={collapsed}
-            onToggleCollapse={() => setCollapsed(!collapsed)}
-            mobileOpen={mobileOpen}
-            onMobileClose={() => setMobileOpen(false)}
-            themeMode={themeMode}
-          />
+        <App>
+          <AntdStaticSetter />
+          <div className={`min-h-screen flex flex-col antialiased selection:bg-[#A50025] selection:text-white transition-colors duration-300 relative overflow-hidden ${
+            themeMode === 'dark' 
+              ? 'dark bg-slate-950 text-slate-100' 
+              : 'bg-slate-50 text-slate-900'
+          }`}>
+            {/* Soft Glowing Ambient Lights */}
+            <div className="absolute top-[-10%] right-[-10%] w-[55%] h-[55%] rounded-full bg-gradient-to-br from-[#A50025]/8 dark:from-[#A50025]/5 to-transparent blur-[120px] pointer-events-none -z-10 animate-pulse duration-[10000ms]" />
+            <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-gradient-to-tr from-indigo-500/8 dark:from-indigo-500/4 to-transparent blur-[130px] pointer-events-none -z-10" />
+            <div className="absolute top-[25%] left-[20%] w-[35%] h-[35%] rounded-full bg-gradient-to-br from-amber-500/3 dark:from-amber-500/1 to-transparent blur-[110px] pointer-events-none -z-10" />
 
-          {/* Content Wrapper */}
-          <div
-            className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${
-              collapsed ? 'md:ml-20' : 'md:ml-60'
-            }`}
-          >
-            {/* Header */}
-            <AdminHeader
-              onToggleMobileSidebar={() => setMobileOpen(!mobileOpen)}
+            {/* Dot Grid Layer */}
+            <div className="absolute inset-0 dot-grid pointer-events-none -z-20 opacity-80" />
+
+            {/* Sidebar */}
+            <AdminSidebar
               collapsed={collapsed}
+              onToggleCollapse={() => setCollapsed(!collapsed)}
+              mobileOpen={mobileOpen}
+              onMobileClose={() => setMobileOpen(false)}
               themeMode={themeMode}
-              onToggleTheme={toggleTheme}
             />
 
-            {/* Main Scrollable Content */}
-            <main className="flex-1 p-4 sm:p-5 lg:p-6 max-w-[1440px] w-full mx-auto space-y-5">
-              {children}
-            </main>
+            {/* Content Wrapper */}
+            <div
+              className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${
+                collapsed ? 'md:ml-20' : 'md:ml-60'
+              }`}
+            >
+              {/* Header */}
+              <AdminHeader
+                onToggleMobileSidebar={() => setMobileOpen(!mobileOpen)}
+                collapsed={collapsed}
+                themeMode={themeMode}
+                onToggleTheme={toggleTheme}
+              />
 
-            {/* Admin Footer */}
-            <footer className="py-4 px-6 border-t border-slate-200 dark:border-slate-800/60 bg-white/50 dark:bg-slate-950/50 text-xs text-slate-500 dark:text-slate-400 flex flex-col sm:flex-row items-center justify-between gap-2 backdrop-blur-xs">
-              <span>© {new Date().getFullYear()} {brandConfig.name} Administration Portal</span>
-              <span className="text-[11px] font-mono text-slate-400 dark:text-slate-500">v1.0.0</span>
-            </footer>
+              {/* Main Scrollable Content */}
+              <main className="flex-1 p-4 sm:p-5 lg:p-6 max-w-[1440px] w-full mx-auto space-y-5 relative z-10">
+                {children}
+              </main>
+
+              {/* Admin Footer */}
+              <footer className="py-4 px-6 border-t border-slate-200 dark:border-slate-800/60 bg-white/40 dark:bg-slate-950/40 text-xs text-slate-500 dark:text-slate-400 flex flex-col sm:flex-row items-center justify-between gap-2 backdrop-blur-xs relative z-10">
+                <span>© {new Date().getFullYear()} {brandConfig.name} Administration Portal</span>
+                <span className="text-[11px] font-mono text-slate-400 dark:text-slate-500">v1.0.0</span>
+              </footer>
+            </div>
           </div>
-        </div>
+        </App>
       </ConfigProvider>
     </ProtectedRoute>
   );
 }
+

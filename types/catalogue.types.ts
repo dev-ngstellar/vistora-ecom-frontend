@@ -35,6 +35,7 @@ export interface Brand {
   logoUrl: string | null;
   description: string | null;
   website: string | null;
+  address?: string | null;
   featured?: boolean;
   status: BrandStatus;
   createdAt: string;

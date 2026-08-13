@@ -52,17 +52,17 @@ export const UserMenu: React.FC = () => {
     <div className="relative" ref={menuRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2.5 p-1.5 rounded-[14px] hover:bg-slate-100/80 transition-colors focus:outline-none"
+        className="flex items-center gap-2.5 p-1.5 rounded-[14px] hover:bg-slate-100/80 dark:hover:bg-slate-800/60 transition-colors focus:outline-none"
         aria-expanded={isOpen}
       >
         <div className="w-8 h-8 rounded-[10px] bg-[#B5123B] text-white flex items-center justify-center font-bold text-xs shadow-xs">
           {userInitial}
         </div>
         <div className="hidden md:flex flex-col text-left">
-          <span className="text-xs font-extrabold text-[#111111] leading-tight">
+          <span className="text-xs font-extrabold text-[#111111] dark:text-slate-100 leading-tight">
             {user.firstName} {user.lastName}
           </span>
-          <span className="text-[10px] text-[#6B7280] uppercase tracking-wider font-semibold">
+          <span className="text-[10px] text-[#6B7280] dark:text-slate-400 uppercase tracking-wider font-semibold">
             {user.role}
           </span>
         </div>
@@ -70,19 +70,19 @@ export const UserMenu: React.FC = () => {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-64 rounded-[20px] bg-white shadow-2xl border border-[#ECECEC] py-2.5 z-50 animate-in fade-in slide-in-from-top-2 duration-150 space-y-1">
-          <div className="px-4 py-3 border-b border-[#ECECEC]">
-            <p className="text-xs font-bold text-[#111111] truncate">
+        <div className="absolute right-0 mt-2 w-64 rounded-[20px] bg-white dark:bg-slate-900 shadow-2xl border border-[#ECECEC] dark:border-slate-800/80 py-2.5 z-50 animate-in fade-in slide-in-from-top-2 duration-150 space-y-1">
+          <div className="px-4 py-3 border-b border-[#ECECEC] dark:border-slate-800/80">
+            <p className="text-xs font-bold text-[#111111] dark:text-white truncate">
               {user.fullName || `${user.firstName} ${user.lastName}`}
             </p>
-            <p className="text-[11px] text-[#6B7280] truncate mt-0.5">{user.email}</p>
+            <p className="text-[11px] text-[#6B7280] dark:text-slate-400 truncate mt-0.5">{user.email}</p>
           </div>
 
           <div className="py-1">
             <Link
               href="/profile"
               onClick={() => setIsOpen(false)}
-              className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-[#FDF2F5] hover:text-[#B5123B] transition-colors"
+              className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-[#FDF2F5] dark:hover:bg-rose-950/20 hover:text-[#B5123B] dark:hover:text-rose-450 transition-colors"
             >
               <UserIcon className="w-4 h-4 text-slate-400" />
               <span>My Profile</span>
@@ -91,7 +91,7 @@ export const UserMenu: React.FC = () => {
             <Link
               href="/orders"
               onClick={() => setIsOpen(false)}
-              className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-[#FDF2F5] hover:text-[#B5123B] transition-colors"
+              className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-[#FDF2F5] dark:hover:bg-rose-950/20 hover:text-[#B5123B] dark:hover:text-rose-450 transition-colors"
             >
               <Package className="w-4 h-4 text-slate-400" />
               <span>My Orders</span>
@@ -100,7 +100,7 @@ export const UserMenu: React.FC = () => {
             <Link
               href="/wishlist"
               onClick={() => setIsOpen(false)}
-              className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-[#FDF2F5] hover:text-[#B5123B] transition-colors"
+              className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-[#FDF2F5] dark:hover:bg-rose-950/20 hover:text-[#B5123B] dark:hover:text-rose-450 transition-colors"
             >
               <Heart className="w-4 h-4 text-slate-400" />
               <span>Wishlist</span>
@@ -110,21 +110,21 @@ export const UserMenu: React.FC = () => {
               <Link
                 href="/admin/dashboard"
                 onClick={() => setIsOpen(false)}
-                className="flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-[#B5123B] hover:bg-[#FDF2F5] transition-colors"
+                className="flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-[#B5123B] dark:text-rose-400 hover:bg-[#FDF2F5] dark:hover:bg-rose-950/20 transition-colors"
               >
-                <Shield className="w-4 h-4 text-[#B5123B]" />
+                <Shield className="w-4 h-4 text-[#B5123B] dark:text-rose-400" />
                 <span>Admin Dashboard</span>
               </Link>
             )}
           </div>
 
-          <div className="border-t border-[#ECECEC] pt-1 mt-1">
+          <div className="border-t border-[#ECECEC] dark:border-slate-800/80 pt-1 mt-1">
             <button
               onClick={() => {
                 setIsOpen(false);
                 logout();
               }}
-              className="w-full flex items-center gap-2.5 px-4 py-2 text-xs text-rose-600 hover:bg-rose-50 transition font-bold text-left"
+              className="w-full flex items-center gap-2.5 px-4 py-2 text-xs text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition font-bold text-left"
             >
               <LogOut className="w-4 h-4" />
               <span>Log Out</span>

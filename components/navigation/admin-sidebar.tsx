@@ -101,7 +101,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
   const isDark = themeMode === 'dark';
 
   const sidebarContent = (
-    <div className={`flex flex-col h-full transition-colors duration-300 ${
+    <div className={`admin-sidebar flex flex-col h-full transition-colors duration-300 ${
       isDark 
         ? 'bg-slate-950/90 text-slate-300 border-r border-slate-900/80' 
         : 'bg-white/90 text-slate-700 border-r border-slate-200/80'
@@ -169,22 +169,22 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
                   key={item.href}
                   href={item.href}
                   onClick={onMobileClose}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all duration-150 group relative ${
+                  className={`sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all duration-150 group relative ${
                     isActive
-                      ? 'bg-gradient-to-r from-[#A50025] to-[#7D001C] text-white shadow-md shadow-[#A50025]/30'
+                      ? 'sidebar-link-active bg-gradient-to-r from-[#A50025] to-[#7D001C] !text-white shadow-md shadow-[#A50025]/30'
                       : isDark
-                        ? 'text-slate-400 hover:text-slate-100 hover:bg-slate-900/60'
-                        : 'text-slate-600 hover:text-slate-950 hover:bg-slate-50'
+                        ? '!text-slate-400 hover:!text-slate-100 hover:bg-slate-900/60'
+                        : '!text-slate-650 hover:!text-slate-950 hover:bg-slate-50'
                   }`}
                   title={collapsed ? item.label : undefined}
                 >
                   <IconComponent
                     className={`w-4 h-4 shrink-0 transition-transform duration-200 group-hover:scale-110 ${
                       isActive 
-                        ? 'text-white' 
+                        ? '!text-white' 
                         : isDark 
-                          ? 'text-slate-400 group-hover:text-slate-200' 
-                          : 'text-slate-500 group-hover:text-slate-850'
+                          ? '!text-slate-400 group-hover:!text-slate-200' 
+                          : '!text-slate-500 group-hover:!text-slate-850'
                     }`}
                   />
 
@@ -212,12 +212,12 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
       }`}>
         <Link
           href="/"
-          className={`flex items-center gap-3 p-2.5 rounded-xl transition text-xs font-semibold ${
+          className={`sidebar-link flex items-center gap-3 p-2.5 rounded-xl transition text-xs font-semibold ${
             collapsed ? 'justify-center' : ''
           } ${
             isDark 
-              ? 'bg-slate-900/50 hover:bg-slate-900 text-slate-350 hover:text-white' 
-              : 'bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-slate-950'
+              ? 'bg-slate-900/50 hover:bg-slate-900 !text-slate-350 hover:!text-white' 
+              : 'bg-slate-50 hover:bg-slate-100 !text-slate-600 hover:!text-slate-950'
           }`}
           title="Back to Customer Store"
         >

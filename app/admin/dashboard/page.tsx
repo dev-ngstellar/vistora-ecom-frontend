@@ -98,6 +98,9 @@ export default function AdminDashboardPage() {
         }}
       />
 
+      {/* QUICK EXECUTIVE ACTIONS */}
+      <DashboardQuickActions />
+
       {/* ROW 2 — SALES OVERVIEW (60%) & ORDER FULFILLMENT STATUS (40%) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
         <div className="lg:col-span-7">

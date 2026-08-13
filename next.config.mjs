@@ -31,6 +31,16 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'images.unsplash.com',
       },
+      {
+        protocol: 'http',
+        hostname: 'api-vistora-ecom.ngstellar.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'api-vistora-ecom.ngstellar.com',
+        pathname: '/**',
+      },
     ],
   },
 };

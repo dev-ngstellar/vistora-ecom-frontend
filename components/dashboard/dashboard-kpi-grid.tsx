@@ -90,34 +90,34 @@ export const DashboardKPIGrid: React.FC<DashboardKPIGridProps> = ({ metrics }) =
         return (
           <div
             key={idx}
-            className={`bg-white/80 dark:bg-slate-900/60 backdrop-blur-md p-3.5 sm:p-4 rounded-2xl border border-slate-205/60 dark:border-slate-800/80 shadow-[0_4px_15px_-3px_rgba(0,0,0,0.03)] hover:-translate-y-1 hover:border-[#A50025]/30 dark:hover:border-slate-700/80 transition-all duration-300 flex flex-col justify-between ${card.hoverGlow}`}
+            className={`group bg-white/45 dark:bg-slate-900/30 backdrop-blur-xl p-4 rounded-2xl border border-slate-200/50 dark:border-slate-800/60 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.02)] hover:-translate-y-1.5 hover:bg-white/70 dark:hover:bg-slate-900/50 hover:border-slate-300/80 dark:hover:border-slate-700/80 transition-all duration-300 flex flex-col justify-between ${card.hoverGlow}`}
           >
             <div className="flex items-center justify-between gap-1">
-              <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400 truncate">
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-350 transition-colors">
                 {card.title}
               </span>
-              <div className={`p-1.5 rounded-lg border ${card.color} shrink-0`}>
+              <div className={`p-1.5 rounded-xl border transition-transform duration-300 group-hover:scale-110 ${card.color} shrink-0`}>
                 <Icon className="w-3.5 h-3.5" />
               </div>
             </div>
 
-            <div className="mt-2">
-              <h3 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white tracking-tight">
+            <div className="mt-2.5">
+              <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-none">
                 {card.value}
               </h3>
 
-              <div className="flex items-center justify-between mt-0.5 text-[10px]">
+              <div className="flex items-center justify-between mt-1 text-[10px]">
                 {card.change ? (
                   <div
                     className={`flex items-center gap-0.5 font-bold ${
-                      card.isPositive ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-450'
+                      card.isPositive ? 'text-emerald-600 dark:text-emerald-450' : 'text-rose-600 dark:text-rose-450'
                     }`}
                   >
                     {card.isPositive ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                    <span>{card.change} vs 7d</span>
+                    <span>{card.change} <span className="text-slate-400 dark:text-slate-500 font-medium">vs 7d</span></span>
                   </div>
                 ) : (
-                  <span className="text-slate-500 dark:text-slate-400 font-medium truncate">{card.subtitle}</span>
+                  <span className="text-slate-400 dark:text-slate-500 font-bold tracking-wide truncate">{card.subtitle}</span>
                 )}
               </div>
             </div>

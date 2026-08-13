@@ -4,8 +4,6 @@ import React from 'react';
 import { useCart, useCartMutations } from '@/hooks/use-shopping';
 import { CartItemCard } from '@/components/shopping/cart-item-card';
 import { CartSummaryCard } from '@/components/shopping/cart-summary-card';
-import { CouponForm } from '@/components/shopping/coupon-form';
-import { ShippingCalculator } from '@/components/shopping/shipping-calculator';
 import { EmptyCart } from '@/components/shopping/empty-states';
 import { ShoppingBag, Trash2, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
@@ -13,7 +11,7 @@ import { ProtectedRoute } from '@/components/protected-route';
 
 export default function CartPage() {
   const { data: cartSummary, isLoading } = useCart();
-  const { updateCartItem, removeCartItem, clearCart, applyCoupon, removeCoupon } = useCartMutations();
+  const { updateCartItem, removeCartItem, clearCart } = useCartMutations();
 
   if (isLoading) {
     return (
@@ -32,7 +30,7 @@ export default function CartPage() {
   }
 
   return (
-    <div className="space-y-8 pb-16">
+    <div className="space-y-8 pb-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs">
         <div>
@@ -82,17 +80,8 @@ export default function CartPage() {
           ))}
         </div>
 
-        {/* Right Column: Coupon, Shipping, Order Summary */}
+        {/* Right Column: Order Summary */}
         <div className="space-y-6">
-          <CouponForm
-            appliedCoupon={cartSummary?.couponCode}
-            onApplyCoupon={(code) => applyCoupon.mutate(code)}
-            onRemoveCoupon={() => removeCoupon.mutate()}
-            isLoading={applyCoupon.isPending || removeCoupon.isPending}
-          />
-
-          <ShippingCalculator subtotal={cartSummary?.subtotal || 0} />
-
           {cartSummary && <CartSummaryCard summary={cartSummary} />}
         </div>
       </div>

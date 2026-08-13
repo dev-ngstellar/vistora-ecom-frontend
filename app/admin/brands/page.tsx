@@ -56,6 +56,7 @@ export default function AdminBrandsPage() {
         slug: brand.slug,
         description: brand.description,
         website: brand.website,
+        address: brand.address || '',
         featured: brand.featured ?? false,
         status: brand.status,
       });
@@ -66,6 +67,7 @@ export default function AdminBrandsPage() {
       form.setFieldsValue({
         status: 'ACTIVE',
         featured: false,
+        address: '',
       });
     }
     setIsDrawerOpen(true);
@@ -77,6 +79,7 @@ export default function AdminBrandsPage() {
       slug: values.slug,
       description: values.description || null,
       website: values.website || null,
+      address: values.address || null,
       logoUrl: logoUrl || null,
       featured: values.featured ?? false,
       status: values.status,
@@ -123,7 +126,12 @@ export default function AdminBrandsPage() {
                 </span>
               )}
             </div>
-            <span className="text-xs text-slate-400 font-mono">/brands/{record.slug}</span>
+            <span className="text-xs text-slate-400 font-mono block">/brands/{record.slug}</span>
+            {record.address && (
+              <span className="text-[11px] text-slate-500 font-semibold block mt-0.5">
+                📍 {record.address}
+              </span>
+            )}
           </div>
         </div>
       ),
@@ -268,6 +276,14 @@ export default function AdminBrandsPage() {
 
           <Form.Item name="website" label={<span className="font-bold text-xs">Official Website URL</span>}>
             <Input placeholder="https://www.retailerdomain.com" className="rounded-xl" />
+          </Form.Item>
+
+          <Form.Item
+            name="address"
+            label={<span className="font-bold text-xs">Retailer Address</span>}
+            rules={[{ required: true, message: 'Retailer address is required' }]}
+          >
+            <Input placeholder="e.g. 18, Temple Road, Auroville, Pondicherry - 605101" className="rounded-xl" />
           </Form.Item>
 
           <Form.Item name="description" label={<span className="font-bold text-xs">Retailer Description</span>}>

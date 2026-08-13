@@ -122,3 +122,93 @@
 .animate-progress-glow {
   animation: progressGlow 1.5s ease-in-out infinite;
 }
+
+/* Premium Dashboard Dot Grid Pattern */
+.dot-grid {
+  background-image: radial-gradient(rgba(148, 163, 184, 0.08) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+.dark .dot-grid {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* Custom Slim Scrollbars for Admin Tables/Cards */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.2);
+  border-radius: 99px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.35);
+}
+
+/* Glassmorphism custom styling */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+.dark .glass-panel {
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+/* Sidebar monochrome style overrides to bypass Ant Design default blue link colors */
+.sidebar-link {
+  color: #4b5563 !important; /* gray-600 */
+}
+.sidebar-link svg {
+  color: #6b7280 !important; /* gray-500 */
+}
+
+/* Hover state light mode */
+.sidebar-link:hover {
+  color: #000000 !important; /* solid black */
+  background-color: #f3f4f6 !important; /* gray-100 */
+}
+.sidebar-link:hover svg {
+  color: #000000 !important;
+}
+
+/* Inactive Dark Mode state */
+.dark .sidebar-link {
+  color: #9ca3af !important; /* gray-400 */
+}
+.dark .sidebar-link svg {
+  color: #9ca3af !important;
+}
+
+/* Hover state dark mode */
+.dark .sidebar-link:hover {
+  color: #ffffff !important; /* white */
+  background-color: rgba(31, 41, 55, 0.5) !important; /* gray-800/50 */
+}
+.dark .sidebar-link:hover svg {
+  color: #ffffff !important;
+}
+
+/* Active State Override (both modes) */
+.sidebar-link.sidebar-link-active,
+.dark .sidebar-link.sidebar-link-active {
+  background-image: linear-gradient(to right, #A50025, #7D001C) !important;
+  color: #ffffff !important;
+}
+.sidebar-link.sidebar-link-active svg,
+.dark .sidebar-link.sidebar-link-active svg {
+  color: #ffffff !important;
+}
+
+/* Retain amber color on the switcher icon */
+.sidebar-link svg.text-amber-500 {
+  color: #f59e0b !important;
+}
+
+

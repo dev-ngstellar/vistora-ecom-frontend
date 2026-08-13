@@ -29,6 +29,7 @@ import {
   Popconfirm,
   Badge,
 } from 'antd';
+import { modal } from '@/lib/antd';
 import {
   Plus,
   Edit,
@@ -188,7 +189,7 @@ export default function AdminProductsPage() {
   };
 
   const handleDelete = (id: string) => {
-    Modal.confirm({
+    modal.confirm({
       title: 'Delete Product',
       content: 'Are you sure you want to soft delete this product from catalog?',
       okText: 'Yes, Delete',
@@ -198,7 +199,7 @@ export default function AdminProductsPage() {
   };
 
   const handleDuplicate = (product: Product) => {
-    Modal.confirm({
+    modal.confirm({
       title: 'Duplicate Product',
       content: `Create a draft clone of "${product.name}"?`,
       okText: 'Duplicate',
@@ -245,7 +246,7 @@ export default function AdminProductsPage() {
       return;
     }
 
-    Modal.confirm({
+    modal.confirm({
       title: `Bulk ${action}`,
       content: `Are you sure you want to perform '${action}' on ${selectedRowKeys.length} selected product(s)?`,
       okText: 'Confirm Action',

@@ -4,6 +4,38 @@ import { Download, Printer, FileText } from 'lucide-react';
 import { Order } from '@/types/sales.types';
 import dayjs from 'dayjs';
 
+const getRetailerDetails = (item: any) => {
+  const brandName = item.product?.brand?.name || '';
+  const productName = item.productName.toLowerCase();
+
+  let name = 'Vistora Retailer Partner';
+  let address = item.product?.brand?.address || 'Vistora HQ, Plot 12, HSR Layout, Bengaluru, Karnataka - 560102';
+
+  if (brandName.toLowerCase().includes('luxe') || productName.includes('lakme') || productName.includes('powerplay')) {
+    name = 'Vistora Luxe Cosmetics';
+    if (!item.product?.brand?.address) {
+      address = 'Vistora Luxe Chambers, 3rd Floor, Brigade Road, Bengaluru, Karnataka - 560001';
+    }
+  } else if (brandName.toLowerCase().includes('vnatura') || productName.includes('eyetex') || productName.includes('kajal') || productName.includes('bbloom')) {
+    name = 'Bbloom VNatura';
+    if (!item.product?.brand?.address) {
+      address = 'Auroville Nature Care, 18, Temple Road, Auroville, Pondicherry - 605101';
+    }
+  } else if (brandName.toLowerCase().includes('mst') || productName.includes('mst') || productName.includes('saree') || productName.includes('handloom')) {
+    name = 'MST / MTS Handlooms';
+    if (!item.product?.brand?.address) {
+      address = 'MST Handloom Chambers, 45, Nethaji Road, Coimbatore, Tamil Nadu - 641001';
+    }
+  } else if (brandName) {
+    name = brandName;
+    if (!item.product?.brand?.address) {
+      address = `${brandName} Hub, Industrial Area Phase II, Chennai, Tamil Nadu - 600001`;
+    }
+  }
+
+  return { name, address };
+};
+
 interface InvoiceModalProps {
   order: Order | null;
   open: boolean;
@@ -136,22 +168,30 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({ order, open, onClose
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {order.items.map((item) => (
-                <tr key={item.id}>
-                  <td className="p-2.5 font-semibold text-slate-900">
-                    {item.productName}
-                    {item.variant && (
-                      <span className="block text-[11px] text-slate-500 font-normal">
-                        Size: {item.variant.size || 'N/A'} | Color: {item.variant.color || 'N/A'}
+              {order.items.map((item) => {
+                const retailer = getRetailerDetails(item);
+                return (
+                  <tr key={item.id}>
+                    <td className="p-2.5 font-semibold text-slate-900">
+                      <div>{item.productName}</div>
+                      {item.variant && (
+                        <span className="block text-[11px] text-slate-500 font-normal mt-0.5">
+                          Size: {item.variant.size || 'N/A'} | Color: {item.variant.color || 'N/A'}
+                        </span>
+                      )}
+                      {/* Retailer dispatch reference */}
+                      <span className="block text-[10px] text-slate-500 font-bold mt-1 bg-slate-50 border border-slate-200/60 p-1.5 rounded-lg space-y-0.5 max-w-sm">
+                        <span className="text-[#A50025]">Retailer: {retailer.name}</span>
+                        <span className="block text-slate-400 font-medium font-mono text-[9px]">Address: {retailer.address}</span>
                       </span>
-                    )}
-                  </td>
-                  <td className="p-2.5 font-mono text-slate-600 text-center">{item.sku}</td>
-                  <td className="p-2.5 text-right font-medium">₹{Number(item.unitPrice).toLocaleString('en-IN')}</td>
-                  <td className="p-2.5 text-center font-bold">{item.quantity}</td>
-                  <td className="p-2.5 text-right font-bold text-slate-900">₹{Number(item.total).toLocaleString('en-IN')}</td>
-                </tr>
-              ))}
+                    </td>
+                    <td className="p-2.5 font-mono text-slate-600 text-center">{item.sku}</td>
+                    <td className="p-2.5 text-right font-medium">₹{Number(item.unitPrice).toLocaleString('en-IN')}</td>
+                    <td className="p-2.5 text-center font-bold">{item.quantity}</td>
+                    <td className="p-2.5 text-right font-bold text-slate-900">₹{Number(item.total).toLocaleString('en-IN')}</td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
