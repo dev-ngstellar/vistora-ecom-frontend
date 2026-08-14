@@ -52,13 +52,13 @@ export const MobileCustomerNav: React.FC = () => {
       {isOpen && (
         <div
           onClick={() => setIsOpen(false)}
-          className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 transition-opacity"
+          className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-[99] transition-opacity"
         />
       )}
 
       {/* Drawer panel */}
       <div
-        className={`fixed top-0 left-0 bottom-0 w-[280px] max-w-[85vw] bg-white shadow-2xl z-50 flex flex-col transition-transform duration-300 ease-in-out ${
+        className={`fixed top-0 left-0 bottom-0 h-screen w-[280px] max-w-[85vw] bg-white shadow-2xl z-[100] flex flex-col transition-transform duration-300 ease-in-out ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >

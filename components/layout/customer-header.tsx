@@ -22,7 +22,7 @@ export const CustomerHeader: React.FC = () => {
   const wishCount = wishlistCount || 0;
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md border-b border-[#E5E7EB] transition-all duration-300 shadow-xs">
+    <header className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-md border-b border-[#E5E7EB] transition-all duration-300 shadow-xs">
       {/* 1. TOP OFFER BAR (28-32px height, #A50025 Maroon bg, #E66001 Orange badge) */}
       <div className="bg-[#A50025] text-white text-[11px] h-7 sm:h-8 px-4 text-center font-medium flex items-center justify-center gap-2 shadow-xs">
         <Sparkles className="w-3.5 h-3.5 text-[#E66001] fill-[#E66001] shrink-0" />
