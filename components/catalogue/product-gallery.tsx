@@ -81,7 +81,7 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({
       )}
 
       {/* Main Compact Product Image Box */}
-      <div className="relative flex-1 w-full h-[320px] sm:h-[380px] rounded-2xl overflow-hidden bg-[#F7F8FA] border border-[#E5E7EB] shadow-2xs group flex items-center justify-center order-1 sm:order-2">
+      <div className="relative w-full h-[320px] sm:h-[380px] sm:flex-1 rounded-2xl overflow-hidden bg-[#F7F8FA] border border-[#E5E7EB] shadow-2xs group flex items-center justify-center order-1 sm:order-2">
         <Image
           src={selectedImage}
           alt={productName}

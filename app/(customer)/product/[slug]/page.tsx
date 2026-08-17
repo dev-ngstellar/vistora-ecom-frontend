@@ -117,8 +117,10 @@ export default function ProductDetailPage() {
     product.status === 'INACTIVE' ||
     (selectedVariant ? selectedVariant.stock <= 0 : false);
 
+  const availableStock = selectedVariant ? selectedVariant.stock : 0;
+
   const handleAddToCart = () => {
-    if (isOutOfStock) return;
+    if (isOutOfStock || quantity > availableStock) return;
     if (isInCart) {
       router.push('/cart');
       return;
@@ -135,7 +137,7 @@ export default function ProductDetailPage() {
   };
 
   const handleBuyNow = () => {
-    if (isOutOfStock) return;
+    if (isOutOfStock || quantity > availableStock) return;
     if (isInCart) {
       router.push('/checkout');
       return;
@@ -325,32 +327,44 @@ export default function ProductDetailPage() {
                 </button>
                 <span className="text-xs font-black text-[#111827]">{quantity}</span>
                 <button
-                  disabled={isOutOfStock || isInCart}
+                  disabled={isOutOfStock || isInCart || quantity >= availableStock}
                   onClick={() => setQuantity(quantity + 1)}
                   className="w-7 h-7 rounded-lg bg-white text-[#111827] font-black text-sm hover:bg-slate-200 transition shadow-2xs flex items-center justify-center disabled:opacity-50"
                 >
                   +
                 </button>
               </div>
+              {quantity > availableStock && (
+                <p className="text-[10px] text-rose-600 font-extrabold mt-1">
+                  ⚠️ Insufficient stock (Only {availableStock} units left)
+                </p>
+              )}
             </div>
 
             {/* Primary Action Buttons */}
             <div className="space-y-2 pt-1">
               {/* Add to Cart / Go to Cart */}
               <button
-                disabled={isOutOfStock}
+                disabled={isOutOfStock || (!isInCart && quantity > availableStock)}
                 onClick={handleAddToCart}
                 className={`w-full h-10 rounded-xl font-black text-xs tracking-wider uppercase transition-all duration-200 shadow-xs flex items-center justify-center gap-2 ${isOutOfStock
                     ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
                     : isInCart
                       ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                      : 'bg-[#A50025] hover:bg-[#7D001C] text-white active:scale-[0.99]'
+                      : quantity > availableStock
+                        ? 'bg-rose-50 text-rose-500 border border-rose-200 cursor-not-allowed'
+                        : 'bg-[#A50025] hover:bg-[#7D001C] text-white active:scale-[0.99]'
                   }`}
               >
                 {isInCart ? (
                   <>
                     <CheckCircle2 className="w-4 h-4 text-white" />
                     <span>ALREADY ADDED TO CART (GO TO BAG)</span>
+                  </>
+                ) : quantity > availableStock ? (
+                  <>
+                    <ShoppingBag className="w-4 h-4 text-rose-500" />
+                    <span>Insufficient Stock</span>
                   </>
                 ) : (
                   <>
@@ -362,15 +376,15 @@ export default function ProductDetailPage() {
 
               {/* Buy Now Button */}
               <button
-                disabled={isOutOfStock}
+                disabled={isOutOfStock || quantity > availableStock}
                 onClick={handleBuyNow}
-                className={`w-full h-10 rounded-xl font-black text-xs tracking-wider uppercase transition-all duration-200 shadow-xs flex items-center justify-center gap-2 ${isOutOfStock
+                className={`w-full h-10 rounded-xl font-black text-xs tracking-wider uppercase transition-all duration-200 shadow-xs flex items-center justify-center gap-2 ${isOutOfStock || quantity > availableStock
                     ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
                     : 'bg-[#E66001] hover:bg-[#B84D01] text-white active:scale-[0.99]'
                   }`}
               >
                 <Sparkles className="w-4 h-4 text-white" />
-                <span>{isOutOfStock ? 'Sold Out' : 'BUY NOW'}</span>
+                <span>{isOutOfStock ? 'Sold Out' : quantity > availableStock ? 'Insufficient Stock' : 'BUY NOW'}</span>
               </button>
 
               {/* Wishlist Button */}
@@ -522,26 +536,31 @@ export default function ProductDetailPage() {
         </button>
 
         <button
-          disabled={isOutOfStock}
+          disabled={isOutOfStock || (!isInCart && quantity > availableStock)}
           onClick={handleAddToCart}
           className={`flex-1 h-10 rounded-xl font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${isOutOfStock
               ? 'bg-slate-200 text-slate-400'
               : isInCart
                 ? 'bg-emerald-600 text-white'
-                : 'bg-[#A50025] text-white'
+                : quantity > availableStock
+                  ? 'bg-rose-50 text-rose-500 border border-rose-200'
+                  : 'bg-[#A50025] text-white'
             }`}
         >
           <ShoppingBag className="w-4 h-4" />
-          <span>{isInCart ? 'Go to Bag' : 'Add to Cart'}</span>
+          <span>{isInCart ? 'Go to Bag' : quantity > availableStock ? 'Insufficient Stock' : 'Add to Cart'}</span>
         </button>
 
         <button
-          disabled={isOutOfStock}
+          disabled={isOutOfStock || quantity > availableStock}
           onClick={handleBuyNow}
-          className="flex-1 h-10 rounded-xl bg-[#E66001] text-white font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-1.5"
+          className={`flex-1 h-10 rounded-xl font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${isOutOfStock || quantity > availableStock
+              ? 'bg-slate-200 text-slate-400'
+              : 'bg-[#E66001] text-white'
+            }`}
         >
           <Sparkles className="w-4 h-4" />
-          <span>Buy Now</span>
+          <span>{quantity > availableStock ? 'Insufficient Stock' : 'Buy Now'}</span>
         </button>
       </div>
 

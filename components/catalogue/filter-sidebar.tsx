@@ -78,11 +78,10 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
             <div className="space-y-1 pt-1 max-h-72 overflow-y-auto pr-1">
               <button
                 onClick={() => onFilterChange({ categoryId: undefined })}
-                className={`w-full text-left px-3.5 py-2 rounded-[10px] text-xs transition-all flex items-center justify-between ${
-                  !filters.categoryId
+                className={`w-full text-left px-3.5 py-2 rounded-[10px] text-xs transition-all flex items-center justify-between ${!filters.categoryId
                     ? 'bg-[#FDF2F5] text-[#A50025] font-extrabold'
                     : 'text-[#6B7280] hover:bg-[#FAFAFA] hover:text-[#111111] font-semibold'
-                }`}
+                  }`}
               >
                 <span>All Categories</span>
                 {!filters.categoryId && <Check className="w-3.5 h-3.5 text-[#A50025]" />}
@@ -106,13 +105,12 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
                           {/* Main / Parent Category */}
                           <button
                             onClick={() => onFilterChange({ categoryId: parent.id })}
-                            className={`w-full text-left px-3.5 py-2 rounded-[10px] text-xs transition-all flex items-center justify-between ${
-                              isParentActive
+                            className={`w-full text-left px-3.5 py-2 rounded-[10px] text-xs transition-all flex items-center justify-between ${isParentActive
                                 ? 'bg-[#FDF2F5] text-[#A50025] font-extrabold'
                                 : hasActiveChild
-                                ? 'text-[#A50025] font-extrabold bg-[#FFF0F3]/50'
-                                : 'text-[#111827] hover:bg-[#FAFAFA] font-bold'
-                            }`}
+                                  ? 'text-[#A50025] font-extrabold bg-[#FFF0F3]/50'
+                                  : 'text-[#111827] hover:bg-[#FAFAFA] font-bold'
+                              }`}
                           >
                             <span className="truncate">{parent.name}</span>
                             {isParentActive && <Check className="w-3.5 h-3.5 text-[#A50025]" />}
@@ -128,11 +126,10 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
                                   <button
                                     key={sub.id}
                                     onClick={() => onFilterChange({ categoryId: sub.id })}
-                                    className={`w-full text-left px-3 py-1.5 rounded-[8px] text-[11px] transition-all flex items-center justify-between ${
-                                      isSubActive
+                                    className={`w-full text-left px-3 py-1.5 rounded-[8px] text-[11px] transition-all flex items-center justify-between ${isSubActive
                                         ? 'bg-[#FDF2F5] text-[#A50025] font-extrabold'
                                         : 'text-[#64748B] hover:bg-[#FAFAFA] hover:text-[#111827] font-semibold'
-                                    }`}
+                                      }`}
                                   >
                                     <div className="flex items-center gap-1.5 truncate">
                                       <span className="w-1.5 h-1.5 rounded-full bg-[#CBD5E1] shrink-0" />
@@ -160,11 +157,10 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
                             <button
                               key={sub.id}
                               onClick={() => onFilterChange({ categoryId: sub.id })}
-                              className={`w-full text-left px-3.5 py-1.5 rounded-[8px] text-[11px] transition-all flex items-center justify-between ${
-                                isSubActive
+                              className={`w-full text-left px-3.5 py-1.5 rounded-[8px] text-[11px] transition-all flex items-center justify-between ${isSubActive
                                   ? 'bg-[#FDF2F5] text-[#A50025] font-extrabold'
                                   : 'text-[#64748B] hover:bg-[#FAFAFA] hover:text-[#111827] font-semibold'
-                              }`}
+                                }`}
                             >
                               <span className="truncate">{sub.name}</span>
                               {isSubActive && <Check className="w-3 h-3 text-[#A50025]" />}
@@ -198,11 +194,10 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
             <div className="space-y-1 pt-1 max-h-48 overflow-y-auto pr-1">
               <button
                 onClick={() => onFilterChange({ collectionId: undefined })}
-                className={`w-full text-left px-3.5 py-2 rounded-[10px] text-xs transition-all flex items-center justify-between ${
-                  !filters.collectionId
+                className={`w-full text-left px-3.5 py-2 rounded-[10px] text-xs transition-all flex items-center justify-between ${!filters.collectionId
                     ? 'bg-[#FDF2F5] text-[#B5123B] font-extrabold'
                     : 'text-[#6B7280] hover:bg-[#FAFAFA] hover:text-[#111111] font-semibold'
-                }`}
+                  }`}
               >
                 <span>All Collections</span>
                 {!filters.collectionId && <Check className="w-3.5 h-3.5 text-[#B5123B]" />}
@@ -211,11 +206,10 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
                 <button
                   key={col.id}
                   onClick={() => onFilterChange({ collectionId: col.id })}
-                  className={`w-full text-left px-3.5 py-2 rounded-[10px] text-xs transition-all flex items-center justify-between ${
-                    filters.collectionId === col.id
+                  className={`w-full text-left px-3.5 py-2 rounded-[10px] text-xs transition-all flex items-center justify-between ${filters.collectionId === col.id
                       ? 'bg-[#FDF2F5] text-[#B5123B] font-extrabold'
                       : 'text-[#6B7280] hover:bg-[#FAFAFA] hover:text-[#111111] font-semibold'
-                  }`}
+                    }`}
                 >
                   <span className="truncate">{col.name}</span>
                   {filters.collectionId === col.id && <Check className="w-3.5 h-3.5 text-[#B5123B]" />}
@@ -266,7 +260,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
       </div>
 
       {/* Size Chips Filter */}
-      <div className="border-b border-[#ECECEC] pb-5 space-y-3">
+      {/* <div className="border-b border-[#ECECEC] pb-5 space-y-3">
         <button
           onClick={() => toggleSection('sizes')}
           className="w-full flex items-center justify-between text-xs font-extrabold text-[#111111] uppercase tracking-wider text-left focus:outline-none"
@@ -293,7 +287,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
             ))}
           </div>
         )}
-      </div>
+      </div> */}
     </aside>
   );
 };
