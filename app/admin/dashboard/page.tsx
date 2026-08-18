@@ -58,7 +58,7 @@ export default function AdminDashboardPage() {
     <div className="space-y-5 pb-8">
       {/* Page Header */}
       <PageHeader
-        title="Dashboard"
+        title="Dash board"
         subtitle="Welcome back! Here's what's happening with your store."
         action={
           <div className="flex items-center gap-2">
