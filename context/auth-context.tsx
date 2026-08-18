@@ -44,14 +44,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     const initAuth = async () => {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+      const token = typeof window !== 'undefined' ? sessionStorage.getItem('accessToken') : null;
       if (token) {
         try {
           const currentUser = await authService.getCurrentUser();
           setUser(currentUser);
         } catch {
-          localStorage.removeItem('accessToken');
-          localStorage.removeItem('refreshToken');
+          sessionStorage.removeItem('accessToken');
+          sessionStorage.removeItem('refreshToken');
           setUser(null);
         }
       }
@@ -63,8 +63,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = (data: AuthResponseData) => {
     if (typeof window !== 'undefined') {
-      localStorage.setItem('accessToken', data.accessToken);
-      localStorage.setItem('refreshToken', data.refreshToken);
+      sessionStorage.setItem('accessToken', data.accessToken);
+      sessionStorage.setItem('refreshToken', data.refreshToken);
     }
     setUser(data.user);
     syncGuestCart();
@@ -77,8 +77,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Suppress API logout errors
     } finally {
       if (typeof window !== 'undefined') {
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
+        sessionStorage.removeItem('accessToken');
+        sessionStorage.removeItem('refreshToken');
       }
       setUser(null);
       toast.success('Logged out successfully');

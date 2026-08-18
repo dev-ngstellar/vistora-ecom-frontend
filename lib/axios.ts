@@ -23,7 +23,7 @@ apiClient.interceptors.request.use(
     }
 
     if (typeof window !== 'undefined') {
-      const accessToken = localStorage.getItem('accessToken');
+      const accessToken = sessionStorage.getItem('accessToken');
       if (accessToken && config.headers) {
         config.headers.Authorization = `Bearer ${accessToken}`;
       }
@@ -80,7 +80,7 @@ apiClient.interceptors.response.use(
 
       try {
         const storedRefreshToken =
-          typeof window !== 'undefined' ? localStorage.getItem('refreshToken') : null;
+          typeof window !== 'undefined' ? sessionStorage.getItem('refreshToken') : null;
 
         const refreshResponse = await axios.post<
           ApiEnvelope<{ accessToken: string; refreshToken: string }>
@@ -94,9 +94,9 @@ apiClient.interceptors.response.use(
         const newRefreshToken = refreshResponse.data.data.refreshToken;
 
         if (typeof window !== 'undefined') {
-          localStorage.setItem('accessToken', newAccessToken);
+          sessionStorage.setItem('accessToken', newAccessToken);
           if (newRefreshToken) {
-            localStorage.setItem('refreshToken', newRefreshToken);
+            sessionStorage.setItem('refreshToken', newRefreshToken);
           }
         }
 
@@ -110,8 +110,8 @@ apiClient.interceptors.response.use(
       } catch (refreshError) {
         processQueue(refreshError, null);
         if (typeof window !== 'undefined') {
-          localStorage.removeItem('accessToken');
-          localStorage.removeItem('refreshToken');
+          sessionStorage.removeItem('accessToken');
+          sessionStorage.removeItem('refreshToken');
           // Only redirect to login page for Admin Portal routes
           if (window.location.pathname.startsWith('/admin')) {
             window.location.href = '/auth/login?session_expired=true';

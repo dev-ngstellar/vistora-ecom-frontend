@@ -165,7 +165,7 @@ export default function AdminOrdersPage() {
     try {
       const response = await fetch('/api/v1/orders/export', {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+          Authorization: `Bearer ${sessionStorage.getItem('accessToken')}`,
         },
       });
       const blob = await response.blob();
