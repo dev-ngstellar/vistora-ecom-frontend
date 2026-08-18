@@ -13,14 +13,7 @@ export const apiClient = axios.create({
 
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    // Redirect inventory requests to local backend if production URL is active
-    if (
-      config.url &&
-      (config.url === '/inventory' || config.url.startsWith('/inventory/')) &&
-      API_BASE_URL.includes('api-vistora-ecom.ngstellar.com')
-    ) {
-      config.baseURL = 'http://localhost:4000/api/v1';
-    }
+
 
     if (typeof window !== 'undefined') {
       const accessToken = sessionStorage.getItem('accessToken');
