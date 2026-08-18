@@ -149,7 +149,7 @@ export default function AdminProductsPage() {
   const handleFormSubmit = async (values: Record<string, any>) => {
     const payload: Record<string, any> = {};
     const numericFields = ['price', 'compareAtPrice', 'costPrice', 'taxRate'];
-    
+
     Object.keys(values).forEach((key) => {
       const val = values[key];
       if (val === '' || val === undefined) {
@@ -642,7 +642,7 @@ export default function AdminProductsPage() {
                       </Form.Item>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-3 gap-4">
                       <Form.Item
                         name="price"
                         label={<span className="font-bold text-xs">Retail Price ({brandConfig.currency.symbol})</span>}
@@ -655,12 +655,6 @@ export default function AdminProductsPage() {
                         name="compareAtPrice"
                         label={<span className="font-bold text-xs">Compare At Price ({brandConfig.currency.symbol})</span>}
                       >
-                        <InputNumber min={0} className="w-full rounded-xl" prefix={brandConfig.currency.symbol} />
-                      </Form.Item>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <Form.Item name="costPrice" label={<span className="font-bold text-xs">Cost Price ({brandConfig.currency.symbol})</span>}>
                         <InputNumber min={0} className="w-full rounded-xl" prefix={brandConfig.currency.symbol} />
                       </Form.Item>
 
