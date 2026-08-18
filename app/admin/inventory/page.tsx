@@ -52,6 +52,7 @@ export default function AdminInventoryPage() {
   const [adjustingItem, setAdjustingItem] = useState<InventoryItem | null>(null);
   const [historyItem, setHistoryItem] = useState<InventoryItem | null>(null);
   const [form] = Form.useForm();
+  const actionValue = Form.useWatch('action', form);
 
   // Compute warehouse KPI metrics
   const totalAvailable = inventoryItems.reduce((sum, item) => sum + item.availableStock, 0);
@@ -329,7 +330,7 @@ export default function AdminInventoryPage() {
             </Radio.Group>
           </Form.Item>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className={`grid ${actionValue === 'REMOVE' ? 'grid-cols-1' : 'grid-cols-2'} gap-4`}>
             <Form.Item
               name="quantity"
               label={<span className="font-bold text-xs">Quantity Units</span>}
@@ -338,12 +339,14 @@ export default function AdminInventoryPage() {
               <InputNumber min={1} className="w-full rounded-xl" />
             </Form.Item>
 
-            <Form.Item
-              name="lowStockThreshold"
-              label={<span className="font-bold text-xs">Low Stock Threshold</span>}
-            >
-              <InputNumber min={1} className="w-full rounded-xl" />
-            </Form.Item>
+            {actionValue !== 'REMOVE' && (
+              <Form.Item
+                name="lowStockThreshold"
+                label={<span className="font-bold text-xs">Low Stock Threshold</span>}
+              >
+                <InputNumber min={1} className="w-full rounded-xl" />
+              </Form.Item>
+            )}
           </div>
 
           <Form.Item
