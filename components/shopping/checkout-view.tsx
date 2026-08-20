@@ -22,6 +22,7 @@ import {
   CheckCircle2,
   ChevronRight,
   Plus,
+  Pencil,
   ShieldCheck,
   ArrowLeft,
   Loader2,
@@ -48,7 +49,14 @@ export const CheckoutView: React.FC = () => {
     createdOrderId,
   } = useCheckout();
 
-  const { addresses, isLoading: loadingAddresses, createAddress, isCreating } = useAddresses();
+  const {
+    addresses,
+    isLoading: loadingAddresses,
+    createAddress,
+    isCreating,
+    updateAddress,
+    isUpdating,
+  } = useAddresses();
   const selectedAddress = addresses.find((a) => a.id === selectedAddressId) || null;
 
   const { methods: shippingMethods, selectedMethod, setSelectedMethodId, shippingCost } = useShipping(
@@ -65,6 +73,7 @@ export const CheckoutView: React.FC = () => {
 
   // Address modal/form state
   const [showAddressForm, setShowAddressForm] = useState(false);
+  const [editingAddressId, setEditingAddressId] = useState<string | null>(null);
   const [newAddr, setNewAddr] = useState({
     fullName: '',
     phone: '',
@@ -78,9 +87,49 @@ export const CheckoutView: React.FC = () => {
     isDefault: true,
   });
 
+  const handleEditAddress = (addr: any, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingAddressId(addr.id);
+    setNewAddr({
+      fullName: addr.fullName,
+      phone: addr.phone,
+      addressLine1: addr.addressLine1,
+      addressLine2: addr.addressLine2 || '',
+      city: addr.city,
+      state: addr.state,
+      postalCode: addr.postalCode,
+      country: addr.country,
+      type: addr.type,
+      isDefault: addr.isDefault,
+    });
+    setShowAddressForm(true);
+  };
+
+  const handleAddNewClick = () => {
+    setEditingAddressId(null);
+    setNewAddr({
+      fullName: '',
+      phone: '',
+      addressLine1: '',
+      addressLine2: '',
+      city: '',
+      state: '',
+      postalCode: '',
+      country: 'United States',
+      type: 'HOME',
+      isDefault: true,
+    });
+    setShowAddressForm(!showAddressForm || editingAddressId !== null);
+  };
+
   const handleAddAddressSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    createAddress(newAddr);
+    if (editingAddressId) {
+      updateAddress({ id: editingAddressId, data: newAddr });
+      setEditingAddressId(null);
+    } else {
+      createAddress(newAddr);
+    }
     setShowAddressForm(false);
   };
 
@@ -240,7 +289,7 @@ export const CheckoutView: React.FC = () => {
                     Select Shipping Address
                   </h2>
                   <button
-                    onClick={() => setShowAddressForm(!showAddressForm)}
+                    onClick={handleAddNewClick}
                     className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold flex items-center gap-1 transition"
                   >
                     <Plus className="w-4 h-4" />
@@ -265,9 +314,18 @@ export const CheckoutView: React.FC = () => {
                       >
                         <div className="flex items-center justify-between">
                           <span className="text-xs font-extrabold uppercase text-slate-900">{addr.fullName}</span>
-                          <span className="text-[10px] font-bold uppercase text-maroon bg-maroon-light px-2 py-0.5 rounded-full">
-                            {addr.type}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-bold uppercase text-maroon bg-maroon-light px-2 py-0.5 rounded-full">
+                              {addr.type}
+                            </span>
+                            <button
+                              onClick={(e) => handleEditAddress(addr, e)}
+                              className="p-1 text-slate-400 hover:text-maroon transition shrink-0"
+                              title="Edit Address"
+                            >
+                              <Pencil className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
                         </div>
                         <p className="text-xs text-slate-600 leading-relaxed">
                           {addr.addressLine1}, {addr.city}, {addr.state} {addr.postalCode}, {addr.country}
@@ -286,7 +344,9 @@ export const CheckoutView: React.FC = () => {
                 {/* Add Address Form Modal */}
                 {showAddressForm && (
                   <form onSubmit={handleAddAddressSubmit} className="p-5 bg-slate-50 rounded-2xl border border-slate-200 space-y-4 text-xs">
-                    <h3 className="font-bold text-slate-900 text-sm">New Delivery Address</h3>
+                    <h3 className="font-bold text-slate-900 text-sm">
+                      {editingAddressId ? 'Edit Delivery Address' : 'New Delivery Address'}
+                    </h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <input
                         type="text"
@@ -355,10 +415,10 @@ export const CheckoutView: React.FC = () => {
                       </button>
                       <button
                         type="submit"
-                        disabled={isCreating}
+                        disabled={isCreating || isUpdating}
                         className="px-4 py-2 rounded-xl bg-maroon text-white font-bold hover:bg-maroon-dark transition"
                       >
-                        {isCreating ? 'Saving...' : 'Save Address'}
+                        {isCreating || isUpdating ? 'Saving...' : editingAddressId ? 'Update Address' : 'Save Address'}
                       </button>
                     </div>
                   </form>

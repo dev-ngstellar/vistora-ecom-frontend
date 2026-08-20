@@ -73,8 +73,8 @@ export const adminNavGroups: AdminNavGroup[] = [
   {
     groupTitle: 'Administration',
     items: [
-      { label: 'Users', href: '/admin/users', icon: UserCheck },
-      { label: 'Roles', href: '/admin/roles', icon: ShieldCheck },
+      // { label: 'Users', href: '/admin/users', icon: UserCheck },
+      // { label: 'Roles', href: '/admin/roles', icon: ShieldCheck },
       { label: 'Reports', href: '/admin/reports', icon: BarChart3 },
       { label: 'Settings', href: '/admin/settings', icon: Settings },
     ],
@@ -102,8 +102,8 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
 
   const sidebarContent = (
     <div className={`admin-sidebar flex flex-col h-full transition-colors duration-300 ${isDark
-        ? 'bg-slate-950/90 text-slate-300 border-r border-slate-900/80'
-        : 'bg-white/90 text-slate-700 border-r border-slate-200/80'
+      ? 'bg-slate-950/90 text-slate-300 border-r border-slate-900/80'
+      : 'bg-white/90 text-slate-700 border-r border-slate-200/80'
       } backdrop-blur-md`}>
       {/* Brand Header */}
       <div className={`h-16 px-4 flex items-center justify-between border-b shrink-0 ${isDark ? 'border-slate-900/80' : 'border-slate-100'
@@ -131,8 +131,8 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
         <button
           onClick={onToggleCollapse}
           className={`hidden md:flex p-1.5 rounded-xl transition ${isDark
-              ? 'bg-slate-900 text-slate-400 hover:text-white hover:bg-slate-800'
-              : 'bg-slate-50 text-slate-500 hover:text-slate-950 hover:bg-slate-100'
+            ? 'bg-slate-900 text-slate-400 hover:text-white hover:bg-slate-800'
+            : 'bg-slate-50 text-slate-500 hover:text-slate-950 hover:bg-slate-100'
             }`}
           title={collapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
         >
@@ -165,19 +165,19 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
                   href={item.href}
                   onClick={onMobileClose}
                   className={`sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all duration-150 group relative ${isActive
-                      ? 'sidebar-link-active bg-gradient-to-r from-[#A50025] to-[#7D001C] !text-white shadow-md shadow-[#A50025]/30'
-                      : isDark
-                        ? '!text-slate-400 hover:!text-slate-100 hover:bg-slate-900/60'
-                        : '!text-slate-650 hover:!text-slate-950 hover:bg-slate-50'
+                    ? 'sidebar-link-active bg-gradient-to-r from-[#A50025] to-[#7D001C] !text-white shadow-md shadow-[#A50025]/30'
+                    : isDark
+                      ? '!text-slate-400 hover:!text-slate-100 hover:bg-slate-900/60'
+                      : '!text-slate-650 hover:!text-slate-950 hover:bg-slate-50'
                     }`}
                   title={collapsed ? item.label : undefined}
                 >
                   <IconComponent
                     className={`w-4 h-4 shrink-0 transition-transform duration-200 group-hover:scale-110 ${isActive
-                        ? '!text-white'
-                        : isDark
-                          ? '!text-slate-400 group-hover:!text-slate-200'
-                          : '!text-slate-500 group-hover:!text-slate-850'
+                      ? '!text-white'
+                      : isDark
+                        ? '!text-slate-400 group-hover:!text-slate-200'
+                        : '!text-slate-500 group-hover:!text-slate-850'
                       }`}
                   />
 
@@ -185,8 +185,8 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
 
                   {collapsed && (
                     <div className={`absolute left-full ml-3 px-2.5 py-1.5 text-xs font-medium rounded-lg shadow-xl border opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50 whitespace-nowrap ${isDark
-                        ? 'bg-slate-900 text-white border-slate-800'
-                        : 'bg-white text-slate-900 border-slate-200'
+                      ? 'bg-slate-900 text-white border-slate-800'
+                      : 'bg-white text-slate-900 border-slate-200'
                       }`}>
                       {item.label}
                     </div>

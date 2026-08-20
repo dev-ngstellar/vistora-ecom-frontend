@@ -87,10 +87,71 @@ export function buildGuestCartSummary(items: GuestCartItem[]): CartSummaryRespon
 
 // ==================== CART HOOKS ====================
 export const useCart = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
+
+  let isBuyNow = false;
+  let buyNowItem: any = null;
+  if (typeof window !== 'undefined') {
+    const searchParams = new URLSearchParams(window.location.search);
+    isBuyNow = searchParams.get('buyNow') === 'true';
+    if (isBuyNow) {
+      const stored = sessionStorage.getItem('buyNowItem');
+      if (stored) {
+        try {
+          buyNowItem = JSON.parse(stored);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    }
+  }
+
   return useQuery<CartSummaryResponse>({
-    queryKey: ['cart', isAuthenticated],
+    queryKey: ['cart', isAuthenticated, isBuyNow, buyNowItem?.productId, buyNowItem?.quantity],
     queryFn: async () => {
+      if (isBuyNow && buyNowItem) {
+        const subtotal = buyNowItem.price * buyNowItem.quantity;
+        const tax = parseFloat((subtotal * 0.05).toFixed(2));
+        const shipping = subtotal >= 150 ? 0 : 15;
+        const total = parseFloat((subtotal + tax + shipping).toFixed(2));
+
+        return {
+          id: 'buynow_cart',
+          userId: user?.id || 'guest',
+          subtotal,
+          discount: 0,
+          tax,
+          shipping,
+          total,
+          couponCode: null,
+          itemCount: buyNowItem.quantity,
+          items: [{
+            id: 'buynow_item',
+            cartId: 'buynow_cart',
+            productId: buyNowItem.productId,
+            variantId: buyNowItem.variantId || null,
+            quantity: buyNowItem.quantity,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            product: {
+              id: buyNowItem.productId,
+              name: buyNowItem.productName,
+              slug: buyNowItem.productSlug,
+              price: buyNowItem.price,
+              imageUrl: buyNowItem.imageUrl,
+              images: [{ id: 'img', url: buyNowItem.imageUrl }]
+            },
+            variant: buyNowItem.variantId ? {
+              id: buyNowItem.variantId,
+              productId: buyNowItem.productId,
+              name: '',
+              price: buyNowItem.price,
+              sku: ''
+            } : null
+          }]
+        } as any;
+      }
+
       if (isAuthenticated) {
         return cartService.get();
       } else {

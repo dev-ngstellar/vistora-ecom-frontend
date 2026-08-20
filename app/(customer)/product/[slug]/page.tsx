@@ -8,7 +8,7 @@ import { ProductGallery } from '@/components/catalogue/product-gallery';
 import { VariantSelector } from '@/components/catalogue/variant-selector';
 import { ProductCard } from '@/components/catalogue/product-card';
 import { ProductDetailSkeleton } from '@/components/catalogue/skeleton-loaders';
-import { ProductVariant } from '@/types/catalogue.types';
+import { ProductVariant, ProductImage } from '@/types/catalogue.types';
 import { useCart, useCartMutations, useWishlist, useWishlistMutations } from '@/hooks/use-shopping';
 import {
   ShoppingBag,
@@ -65,6 +65,60 @@ export default function ProductDetailPage() {
       setSelectedVariant(product.variants[0]);
     }
   }, [product]);
+
+  // Combine Master Product Images + Tab 2 Variant Uploaded Images
+  const allGalleryImages = React.useMemo(() => {
+    if (!product) return [];
+    const list: ProductImage[] = [...(product.images || [])];
+
+    product.variants?.forEach((v) => {
+      const urls = [v.imageUrl, ...(v.imageUrls || [])].filter(Boolean) as string[];
+      urls.forEach((url) => {
+        if (!list.some((img) => img.imageUrl === url)) {
+          list.push({
+            id: `var-img-${url}`,
+            productId: product.id,
+            imageUrl: url,
+            altText: v.color || product.name,
+            isPrimary: false,
+            sortOrder: list.length,
+          });
+        }
+      });
+    });
+
+    return list;
+  }, [product]);
+
+  const selectedVariantImage = React.useMemo(() => {
+    if (!selectedVariant) return null;
+
+    // 1. Explicit variant imageUrl set in Admin Tab 2
+    if (selectedVariant.imageUrl) return selectedVariant.imageUrl;
+    if (selectedVariant.imageUrls && selectedVariant.imageUrls.length > 0) return selectedVariant.imageUrls[0];
+
+    // 2. Alt-text color match in product images
+    if (selectedVariant.color && allGalleryImages.length > 0) {
+      const colorLower = selectedVariant.color.toLowerCase().trim();
+      const matchedImg = allGalleryImages.find((img) =>
+        img.altText ? img.altText.toLowerCase().includes(colorLower) : false,
+      );
+      if (matchedImg) return matchedImg.imageUrl;
+    }
+
+    // 3. Match image by color variant index
+    if (product?.variants && product.variants.length > 0 && allGalleryImages.length > 0) {
+      const colorVariants = Array.from(
+        new Set(product.variants.map((v) => v.color).filter(Boolean)),
+      );
+      const colorIndex = colorVariants.indexOf(selectedVariant.color);
+      if (colorIndex >= 0 && allGalleryImages[colorIndex]) {
+        return allGalleryImages[colorIndex].imageUrl;
+      }
+    }
+
+    return allGalleryImages[0]?.imageUrl || null;
+  }, [selectedVariant, product, allGalleryImages]);
 
   if (isLoading) {
     return <ProductDetailSkeleton />;
@@ -138,12 +192,8 @@ export default function ProductDetailPage() {
 
   const handleBuyNow = () => {
     if (isOutOfStock || quantity > availableStock) return;
-    if (isInCart) {
-      router.push('/checkout');
-      return;
-    }
-    addToCart.mutate(
-      {
+    requireCustomerAuth(() => {
+      const buyNowItem = {
         productId: product.id,
         variantId: selectedVariant?.id || null,
         quantity,
@@ -151,15 +201,10 @@ export default function ProductDetailPage() {
         productSlug: product.slug,
         price: priceNum,
         imageUrl: primaryImg,
-      },
-      {
-        onSuccess: () => {
-          requireCustomerAuth(() => {
-            router.push('/checkout');
-          });
-        },
-      }
-    );
+      };
+      sessionStorage.setItem('buyNowItem', JSON.stringify(buyNowItem));
+      router.push('/checkout?buyNow=true');
+    });
   };
 
   const handleWishlistToggle = () => {
@@ -184,7 +229,19 @@ export default function ProductDetailPage() {
 
         {/* COLUMN 1: PRODUCT IMAGE GALLERY (32% -> 4 Cols) */}
         <div className="lg:col-span-4 lg:sticky lg:top-20">
-          <ProductGallery images={product.images} productName={product.name} />
+          <ProductGallery
+            images={allGalleryImages}
+            productName={product.name}
+            selectedImageOverride={selectedVariantImage}
+            selectedVariantImageUrls={
+              selectedVariant?.imageUrls && selectedVariant.imageUrls.length > 0
+                ? selectedVariant.imageUrls
+                : selectedVariant?.imageUrl
+                  ? [selectedVariant.imageUrl]
+                  : null
+            }
+            selectedColor={selectedVariant?.color}
+          />
         </div>
 
         {/* COLUMN 2: PRODUCT INFORMATION (40% -> 5 Cols) */}
@@ -194,7 +251,7 @@ export default function ProductDetailPage() {
           <div className="space-y-1 border-b border-[#E5E7EB] pb-2.5">
             <div className="flex items-center justify-between gap-2">
               <span className="text-[11px] font-black uppercase tracking-widest text-[#A50025]">
-                {product.brand?.name || product.category?.name || 'VISTORA SELECTION'}
+                {product.category?.name || 'VISTORA SELECTION'}
               </span>
               <div className="inline-flex items-center gap-1 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md text-amber-800 font-extrabold text-[11px]">
                 <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
@@ -249,6 +306,8 @@ export default function ProductDetailPage() {
           {product.variants && product.variants.length > 0 && (
             <VariantSelector
               variants={product.variants}
+              productImages={product.images}
+              selectedVariant={selectedVariant}
               onVariantSelect={(v) => setSelectedVariant(v)}
             />
           )}
@@ -348,12 +407,12 @@ export default function ProductDetailPage() {
                 disabled={isOutOfStock || (!isInCart && quantity > availableStock)}
                 onClick={handleAddToCart}
                 className={`w-full h-10 rounded-xl font-black text-xs tracking-wider uppercase transition-all duration-200 shadow-xs flex items-center justify-center gap-2 ${isOutOfStock
-                    ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                    : isInCart
-                      ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                      : quantity > availableStock
-                        ? 'bg-rose-50 text-rose-500 border border-rose-200 cursor-not-allowed'
-                        : 'bg-[#A50025] hover:bg-[#7D001C] text-white active:scale-[0.99]'
+                  ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                  : isInCart
+                    ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                    : quantity > availableStock
+                      ? 'bg-rose-50 text-rose-500 border border-rose-200 cursor-not-allowed'
+                      : 'bg-[#A50025] hover:bg-[#7D001C] text-white active:scale-[0.99]'
                   }`}
               >
                 {isInCart ? (
@@ -379,8 +438,8 @@ export default function ProductDetailPage() {
                 disabled={isOutOfStock || quantity > availableStock}
                 onClick={handleBuyNow}
                 className={`w-full h-10 rounded-xl font-black text-xs tracking-wider uppercase transition-all duration-200 shadow-xs flex items-center justify-center gap-2 ${isOutOfStock || quantity > availableStock
-                    ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                    : 'bg-[#E66001] hover:bg-[#B84D01] text-white active:scale-[0.99]'
+                  ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                  : 'bg-[#E66001] hover:bg-[#B84D01] text-white active:scale-[0.99]'
                   }`}
               >
                 <Sparkles className="w-4 h-4 text-white" />
@@ -391,8 +450,8 @@ export default function ProductDetailPage() {
               <button
                 onClick={handleWishlistToggle}
                 className={`w-full h-9 rounded-xl border transition-all text-xs font-bold flex items-center justify-center gap-2 ${isInWishlist
-                    ? 'bg-[#FFF0F3] border-[#A50025]/40 text-[#A50025]'
-                    : 'border-[#E5E7EB] text-[#111827] hover:text-[#A50025] hover:bg-[#FFF0F3] hover:border-[#A50025]/30'
+                  ? 'bg-[#FFF0F3] border-[#A50025]/40 text-[#A50025]'
+                  : 'border-[#E5E7EB] text-[#111827] hover:text-[#A50025] hover:bg-[#FFF0F3] hover:border-[#A50025]/30'
                   }`}
               >
                 <Heart className={`w-4 h-4 ${isInWishlist ? 'fill-[#A50025] text-[#A50025]' : ''}`} />
@@ -539,12 +598,12 @@ export default function ProductDetailPage() {
           disabled={isOutOfStock || (!isInCart && quantity > availableStock)}
           onClick={handleAddToCart}
           className={`flex-1 h-10 rounded-xl font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${isOutOfStock
-              ? 'bg-slate-200 text-slate-400'
-              : isInCart
-                ? 'bg-emerald-600 text-white'
-                : quantity > availableStock
-                  ? 'bg-rose-50 text-rose-500 border border-rose-200'
-                  : 'bg-[#A50025] text-white'
+            ? 'bg-slate-200 text-slate-400'
+            : isInCart
+              ? 'bg-emerald-600 text-white'
+              : quantity > availableStock
+                ? 'bg-rose-50 text-rose-500 border border-rose-200'
+                : 'bg-[#A50025] text-white'
             }`}
         >
           <ShoppingBag className="w-4 h-4" />
@@ -555,8 +614,8 @@ export default function ProductDetailPage() {
           disabled={isOutOfStock || quantity > availableStock}
           onClick={handleBuyNow}
           className={`flex-1 h-10 rounded-xl font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${isOutOfStock || quantity > availableStock
-              ? 'bg-slate-200 text-slate-400'
-              : 'bg-[#E66001] text-white'
+            ? 'bg-slate-200 text-slate-400'
+            : 'bg-[#E66001] text-white'
             }`}
         >
           <Sparkles className="w-4 h-4" />

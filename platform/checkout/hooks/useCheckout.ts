@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { CheckoutStep } from '../types/checkout.types';
 import { checkoutService, CreateOrderPayload } from '../services/checkout.service';
@@ -12,9 +12,12 @@ import { useCart } from '@/platform/hooks';
 
 export const useCheckout = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const queryClient = useQueryClient();
   const { user, isAuthenticated } = useAuth();
   const { data: cartSummary } = useCart();
+
+  const isBuyNow = searchParams?.get('buyNow') === 'true';
 
   const [currentStep, setCurrentStep] = useState<CheckoutStep>(CheckoutStep.SHIPPING_ADDRESS);
   const [highestStepReached, setHighestStepReached] = useState<CheckoutStep>(CheckoutStep.SHIPPING_ADDRESS);
@@ -67,6 +70,9 @@ export const useCheckout = () => {
     mutationFn: (payload: CreateOrderPayload) => checkoutService.createOrder(payload),
     onSuccess: (order) => {
       setCreatedOrderId(order.id);
+      if (typeof window !== 'undefined') {
+        sessionStorage.removeItem('buyNowItem');
+      }
       queryClient.invalidateQueries({ queryKey: ['cart'] });
       queryClient.invalidateQueries({ queryKey: ['orders'] });
       setCurrentStep(CheckoutStep.CONFIRMATION);
@@ -83,11 +89,31 @@ export const useCheckout = () => {
       return;
     }
 
+    let buyNowPayload: Partial<CreateOrderPayload> = {};
+    if (isBuyNow && typeof window !== 'undefined') {
+      const stored = sessionStorage.getItem('buyNowItem');
+      if (stored) {
+        try {
+          const buyNowItem = JSON.parse(stored);
+          buyNowPayload = {
+            items: [{
+              productId: buyNowItem.productId,
+              variantId: buyNowItem.variantId || null,
+              quantity: buyNowItem.quantity
+            }]
+          };
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    }
+
     createOrderMutation.mutate({
       addressId: selectedAddressId,
       paymentMethod: selectedPaymentMethod,
       couponCode: cartSummary?.couponCode || null,
       notes,
+      ...buyNowPayload,
       ...payload,
     });
   };

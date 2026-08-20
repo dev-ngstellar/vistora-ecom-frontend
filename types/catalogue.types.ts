@@ -75,6 +75,8 @@ export interface ProductVariant {
   price: number;
   compareAtPrice: number | null;
   stock: number;
+  imageUrl?: string | null;
+  imageUrls?: string[];
   status: VariantStatus;
 }
 

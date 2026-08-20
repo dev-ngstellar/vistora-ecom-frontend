@@ -8,11 +8,17 @@ import { Maximize2, X } from 'lucide-react';
 interface ProductGalleryProps {
   images?: ProductImage[];
   productName: string;
+  selectedImageOverride?: string | null;
+  selectedVariantImageUrls?: string[] | null;
+  selectedColor?: string | null;
 }
 
 export const ProductGallery: React.FC<ProductGalleryProps> = ({
   images = [],
   productName,
+  selectedImageOverride,
+  selectedVariantImageUrls,
+  selectedColor,
 }) => {
   const defaultImages = images.length > 0 ? images : [
     {
@@ -25,9 +31,41 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({
     },
   ];
 
-  const primaryImage = defaultImages.find((img) => img.isPrimary) || defaultImages[0];
-  const [selectedImage, setSelectedImage] = useState<string>(primaryImage.imageUrl);
+  // Filter images by selected variant imageUrls or selected color altText, otherwise show all images
+  const displayImages = React.useMemo(() => {
+    // 1. If explicit variant image URLs array is assigned (from Admin multi-select)
+    if (selectedVariantImageUrls && selectedVariantImageUrls.length > 0) {
+      const matched = defaultImages.filter((img) =>
+        selectedVariantImageUrls.includes(img.imageUrl),
+      );
+      if (matched.length > 0) return matched;
+    }
+
+    // 2. If altText matches selected color
+    if (selectedColor) {
+      const colorLower = selectedColor.toLowerCase().trim();
+      const matched = defaultImages.filter((img) =>
+        img.altText ? img.altText.toLowerCase().includes(colorLower) : false,
+      );
+      if (matched.length > 0) return matched;
+    }
+
+    return defaultImages;
+  }, [defaultImages, selectedVariantImageUrls, selectedColor]);
+
+  const primaryImage = displayImages.find((img) => img.isPrimary) || displayImages[0];
+  const [selectedImage, setSelectedImage] = useState<string>(
+    selectedImageOverride || primaryImage.imageUrl,
+  );
   const [isZoomOpen, setIsZoomOpen] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (selectedImageOverride) {
+      setSelectedImage(selectedImageOverride);
+    } else if (displayImages.length > 0) {
+      setSelectedImage(displayImages[0].imageUrl);
+    }
+  }, [selectedImageOverride, displayImages]);
 
   // Close modal when pressing Escape key
   useEffect(() => {
@@ -50,15 +88,15 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({
     };
   }, [isZoomOpen]);
 
-  const currentIndex = defaultImages.findIndex((img) => img.imageUrl === selectedImage);
+  const currentIndex = displayImages.findIndex((img) => img.imageUrl === selectedImage);
   const activeIndex = currentIndex >= 0 ? currentIndex + 1 : 1;
 
   return (
     <div className="flex flex-col sm:flex-row gap-2.5 items-start w-full">
       {/* Vertical Thumbnails Column (Amazon/Flipkart Style) */}
-      {defaultImages.length > 1 && (
+      {displayImages.length > 1 && (
         <div className="flex sm:flex-col items-center gap-2 overflow-x-auto sm:overflow-y-auto max-h-[380px] w-full sm:w-14 shrink-0 order-2 sm:order-1 scrollbar-none pb-1 sm:pb-0">
-          {defaultImages.map((img, idx) => (
+          {displayImages.map((img, idx) => (
             <button
               key={img.id}
               onClick={() => setSelectedImage(img.imageUrl)}
@@ -93,9 +131,9 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({
         />
 
         {/* Image Counter Badge */}
-        {defaultImages.length > 1 && (
+        {displayImages.length > 1 && (
           <div className="absolute top-2.5 left-2.5 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md text-white text-[10px] font-bold tracking-wider z-10">
-            {activeIndex} / {defaultImages.length}
+            {activeIndex} / {displayImages.length}
           </div>
         )}
 

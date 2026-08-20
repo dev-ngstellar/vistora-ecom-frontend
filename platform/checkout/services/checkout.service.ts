@@ -7,6 +7,7 @@ export interface CreateOrderPayload {
   paymentMethod: 'RAZORPAY' | 'STRIPE' | 'COD';
   couponCode?: string | null;
   notes?: string;
+  items?: Array<{ productId: string; variantId?: string | null; quantity: number }>;
 }
 
 export const checkoutService = {

@@ -109,7 +109,26 @@ export default function AdminProductsPage() {
           altText: img.altText || '',
         })) || []
       );
-      setVariants(product.variants || []);
+      const loadedVariants = (product.variants || []).map((v) => {
+        const matchedUrls: string[] = [];
+        if (v.imageUrl) matchedUrls.push(v.imageUrl);
+        if (v.color && product.images) {
+          const colorLower = v.color.toLowerCase().trim();
+          product.images.forEach((img) => {
+            if (img.altText && img.altText.toLowerCase().includes(colorLower)) {
+              if (!matchedUrls.includes(img.imageUrl)) {
+                matchedUrls.push(img.imageUrl);
+              }
+            }
+          });
+        }
+        return {
+          ...v,
+          imageUrl: v.imageUrl || matchedUrls[0] || null,
+          imageUrls: (v as any).imageUrls && (v as any).imageUrls.length > 0 ? (v as any).imageUrls : matchedUrls,
+        };
+      });
+      setVariants(loadedVariants);
       form.setFieldsValue({
         name: product.name,
         slug: product.slug,
@@ -161,21 +180,49 @@ export default function AdminProductsPage() {
       }
     });
 
-    // Attach processed images and variants
-    payload.images = images.map((img, idx) => ({
+    // 1. Process Master Product Images (Ensure Master Primary Image is index 0 with isPrimary: true)
+    const primaryIdx = images.findIndex((img) => img.isPrimary);
+    const sortedImages = [...images];
+    if (primaryIdx > 0) {
+      const primaryItem = sortedImages.splice(primaryIdx, 1)[0];
+      sortedImages.unshift(primaryItem);
+    }
+
+    const masterImagesList = sortedImages.map((img, idx) => ({
       imageUrl: img.imageUrl,
-      isPrimary: img.isPrimary ?? idx === 0,
+      isPrimary: idx === 0,
       sortOrder: idx,
       altText: img.altText || payload.name,
     }));
 
+    // 2. Include variant-specific image URLs into product images with altText = variant color name
+    variants.forEach((v) => {
+      const vUrls = [v.imageUrl, ...(v.imageUrls || [])].filter(Boolean) as string[];
+      vUrls.forEach((url) => {
+        if (!masterImagesList.some((img) => img.imageUrl === url)) {
+          masterImagesList.push({
+            imageUrl: url,
+            isPrimary: false,
+            sortOrder: masterImagesList.length,
+            altText: v.color || payload.name,
+          });
+        }
+      });
+    });
+
+    payload.images = masterImagesList;
+
     payload.variants = variants.map((v) => ({
       sku: v.sku || `${payload.sku}-${v.color || ''}-${v.size || ''}`,
       color: v.color || null,
+      colorHex: v.colorHex || null,
       size: v.size || null,
       barcode: v.barcode || null,
       price: v.price != null ? Number(v.price) : Number(payload.price || 0),
+      compareAtPrice: v.compareAtPrice != null ? Number(v.compareAtPrice) : null,
       stock: v.stock != null ? Number(v.stock) : 0,
+      imageUrl: v.imageUrl || (v.imageUrls?.[0] || null),
+      imageUrls: v.imageUrls && v.imageUrls.length > 0 ? v.imageUrls : v.imageUrl ? [v.imageUrl] : [],
       status: v.status || 'ACTIVE',
     }));
 
@@ -207,7 +254,96 @@ export default function AdminProductsPage() {
     });
   };
 
-  // Variant Helpers inside Form
+  // Variant & Options Matrix Helpers inside Form
+  const [optionTypes, setOptionTypes] = useState<Array<{ name: string; values: string }>>([
+    { name: 'Color', values: 'Red, Black, Pink' },
+    { name: 'Size', values: 'S, M, L' },
+  ]);
+
+  const handleAddOptionType = () => {
+    setOptionTypes([...optionTypes, { name: '', values: '' }]);
+  };
+
+  const handleRemoveOptionType = (index: number) => {
+    setOptionTypes(optionTypes.filter((_, i) => i !== index));
+  };
+
+  const handleUpdateOptionType = (index: number, field: 'name' | 'values', val: string) => {
+    const updated = [...optionTypes];
+    updated[index][field] = val;
+    setOptionTypes(updated);
+  };
+
+  const handleGenerateVariantsFromOptions = () => {
+    const baseSku = form.getFieldValue('sku') || 'SKU';
+    const basePrice = form.getFieldValue('price') || 0;
+    const baseCompareAt = form.getFieldValue('compareAtPrice') || null;
+
+    const activeOptions = optionTypes
+      .map((opt) => ({
+        name: opt.name.trim(),
+        values: opt.values
+          .split(',')
+          .map((v) => v.trim())
+          .filter(Boolean),
+      }))
+      .filter((opt) => opt.name && opt.values.length > 0);
+
+    if (activeOptions.length === 0) {
+      toast.error('Please define at least one option dimension (e.g. Color) with comma-separated values');
+      return;
+    }
+
+    const cartesian = (...args: any[][]): any[][] =>
+      args.reduce((a, b) => a.flatMap((d) => b.map((e) => [d, e].flat())));
+
+    const optionValueArrays = activeOptions.map((opt) => opt.values);
+    const rawCombinations =
+      optionValueArrays.length === 1
+        ? optionValueArrays[0].map((v) => [v])
+        : cartesian(...optionValueArrays);
+
+    const generated: Partial<ProductVariant>[] = rawCombinations.map((combo: string[]) => {
+      let colorVal: string | null = null;
+      let sizeVal: string | null = null;
+      const otherSpecs: string[] = [];
+
+      activeOptions.forEach((opt, idx) => {
+        const val = combo[idx];
+        const optNameLower = opt.name.toLowerCase();
+        if (optNameLower.includes('color') || optNameLower.includes('shade')) {
+          colorVal = val;
+        } else if (
+          optNameLower.includes('size') ||
+          optNameLower.includes('volume') ||
+          optNameLower.includes('weight')
+        ) {
+          sizeVal = val;
+        } else {
+          otherSpecs.push(`${opt.name}: ${val}`);
+        }
+      });
+
+      const skuSuffix = combo.map((v) => v.toUpperCase().replace(/\s+/g, '')).join('-');
+      const generatedSku = `${baseSku}-${skuSuffix}`;
+
+      return {
+        sku: generatedSku,
+        color: colorVal || (activeOptions.length === 1 ? combo[0] : null),
+        size: sizeVal || null,
+        dimensions: otherSpecs.length > 0 ? otherSpecs.join(' | ') : null,
+        price: basePrice,
+        compareAtPrice: baseCompareAt,
+        stock: 10,
+        status: 'ACTIVE',
+        imageUrls: [],
+      };
+    });
+
+    setVariants(generated);
+    toast.success(`Generated ${generated.length} variant combinations!`);
+  };
+
   const handleAddVariant = () => {
     const defaultSku = `${form.getFieldValue('sku') || 'SKU'}-VAR-${variants.length + 1}`;
     setVariants([
@@ -224,9 +360,19 @@ export default function AdminProductsPage() {
   };
 
   const handleUpdateVariant = (index: number, key: string, value: any) => {
-    const updated = [...variants];
-    updated[index] = { ...updated[index], [key]: value };
-    setVariants(updated);
+    setVariants((prev) => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], [key]: value };
+      return updated;
+    });
+  };
+
+  const handleUpdateVariantMultipleFields = (index: number, fields: Record<string, any>) => {
+    setVariants((prev) => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], ...fields };
+      return updated;
+    });
   };
 
   const handleRemoveVariant = (index: number) => {
@@ -563,16 +709,40 @@ export default function AdminProductsPage() {
             items={[
               {
                 key: '1',
-                label: <span className="font-bold text-xs">1. Basic Info & Media</span>,
+                label: <span className="font-bold text-xs">1. Basic Info & Organization</span>,
                 children: (
                   <div className="space-y-4 pt-2">
-                    <Form.Item
-                      name="name"
-                      label={<span className="font-bold text-xs">Product Name</span>}
-                      rules={[{ required: true, message: 'Product name is required' }]}
-                    >
-                      <Input placeholder="e.g. Italian Cashmere Blazer" className="rounded-xl" />
-                    </Form.Item>
+                    {/* Basic Identifiers */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <Form.Item
+                        name="name"
+                        label={<span className="font-bold text-xs">Product Name</span>}
+                        rules={[{ required: true, message: 'Product name is required' }]}
+                      >
+                        <Input
+                          placeholder="e.g. Nivea Lipbalm"
+                          className="rounded-xl"
+                          onChange={(e) => {
+                            if (!editingProduct) {
+                              const autoSlug = e.target.value
+                                .toLowerCase()
+                                .trim()
+                                .replace(/[^\w\s-]/g, '')
+                                .replace(/[\s_-]+/g, '-')
+                                .replace(/^-+|-+$/g, '');
+                              form.setFieldValue('slug', autoSlug);
+                            }
+                          }}
+                        />
+                      </Form.Item>
+
+                      <Form.Item
+                        name="slug"
+                        label={<span className="font-bold text-xs">URL Slug / Handle</span>}
+                      >
+                        <Input placeholder="e.g. nivea-lipbalm" className="rounded-xl font-mono text-xs" />
+                      </Form.Item>
+                    </div>
 
                     <div className="grid grid-cols-2 gap-4">
                       <Form.Item
@@ -580,7 +750,7 @@ export default function AdminProductsPage() {
                         label={<span className="font-bold text-xs">SKU Code</span>}
                         rules={[{ required: true, message: 'SKU is required' }]}
                       >
-                        <Input placeholder="e.g. BLZ-101" className="rounded-xl font-mono" />
+                        <Input placeholder="e.g. NVLPM-01" className="rounded-xl font-mono" />
                       </Form.Item>
 
                       <Form.Item name="barcode" label={<span className="font-bold text-xs">Barcode / EAN</span>}>
@@ -588,31 +758,7 @@ export default function AdminProductsPage() {
                       </Form.Item>
                     </div>
 
-                    {/* Shared Media Upload Component */}
-                    <div>
-                      <label className="font-bold text-xs block mb-2">Product Images Gallery</label>
-                      <MediaUpload
-                        multiple
-                        value={images}
-                        onChange={(val) => setImages(val || [])}
-                      />
-                    </div>
-
-                    <Form.Item name="shortDescription" label={<span className="font-bold text-xs">Short Summary</span>}>
-                      <Input.TextArea rows={2} placeholder="Brief product summary for cards..." className="rounded-xl" />
-                    </Form.Item>
-
-                    <Form.Item name="description" label={<span className="font-bold text-xs">Full Editorial Description</span>}>
-                      <Input.TextArea rows={4} placeholder="Comprehensive description..." className="rounded-xl" />
-                    </Form.Item>
-                  </div>
-                ),
-              },
-              {
-                key: '2',
-                label: <span className="font-bold text-xs">2. Organization & Pricing</span>,
-                children: (
-                  <div className="space-y-4 pt-2">
+                    {/* Catalog & Retailer Assignment */}
                     <div className="grid grid-cols-3 gap-4">
                       <Form.Item
                         name="categoryId"
@@ -625,7 +771,7 @@ export default function AdminProductsPage() {
                         />
                       </Form.Item>
 
-                      <Form.Item name="brandId" label={<span className="font-bold text-xs">Retailer</span>}>
+                      <Form.Item name="brandId" label={<span className="font-bold text-xs">Retailer / Brand</span>}>
                         <Select
                           allowClear
                           placeholder="Select Retailer"
@@ -642,6 +788,7 @@ export default function AdminProductsPage() {
                       </Form.Item>
                     </div>
 
+                    {/* Default Product Pricing */}
                     <div className="grid grid-cols-3 gap-4">
                       <Form.Item
                         name="price"
@@ -663,7 +810,8 @@ export default function AdminProductsPage() {
                       </Form.Item>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-4 pt-2">
+                    {/* Publication & Status */}
+                    <div className="grid grid-cols-3 gap-4 pt-2 border-t border-slate-100">
                       <Form.Item name="status" label={<span className="font-bold text-xs">Publication Status</span>}>
                         <Select
                           options={[
@@ -689,107 +837,278 @@ export default function AdminProductsPage() {
                         <Switch />
                       </Form.Item>
                     </div>
+
+                    {/* Shared Media Upload Component */}
+                    <div>
+                      <label className="font-bold text-xs block mb-2">Master Product Media Gallery</label>
+                      <MediaUpload
+                        multiple
+                        value={images}
+                        onChange={(val) => setImages(val || [])}
+                      />
+                    </div>
+
+                    <Form.Item name="shortDescription" label={<span className="font-bold text-xs">Short Summary</span>}>
+                      <Input.TextArea rows={2} placeholder="Brief product summary for cards..." className="rounded-xl" />
+                    </Form.Item>
+
+                    <Form.Item name="description" label={<span className="font-bold text-xs">Full Editorial Description</span>}>
+                      <Input.TextArea rows={4} placeholder="Comprehensive description..." className="rounded-xl" />
+                    </Form.Item>
+                  </div>
+                ),
+              },
+              {
+                key: '2',
+                label: <span className="font-bold text-xs">2. Product Variants & Matrix</span>,
+                children: (
+                  <div className="space-y-6 pt-2">
+                    {/* SECTION 1: OPTION DIMENSIONS BUILDER */}
+                    <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="text-xs font-black uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
+                            <Sparkles className="w-3.5 h-3.5 text-[#A50025]" /> 1. Define Option Dimensions (e.g. Color, Size, Material)
+                          </h4>
+                          <p className="text-[11px] text-slate-500 font-medium">
+                            Add dimensions and comma-separated values to automatically generate all variant combinations.
+                          </p>
+                        </div>
+                        <Button
+                          type="dashed"
+                          size="small"
+                          icon={<Plus className="w-3 h-3" />}
+                          onClick={handleAddOptionType}
+                          className="font-bold text-xs rounded-lg"
+                        >
+                          Add Option
+                        </Button>
+                      </div>
+
+                      <div className="space-y-2">
+                        {optionTypes.map((opt, optIdx) => (
+                          <div key={optIdx} className="grid grid-cols-[1fr_2fr_32px] gap-2 items-center">
+                            <Input
+                              placeholder="Option Name (e.g. Color, Size)"
+                              value={opt.name}
+                              onChange={(e) => handleUpdateOptionType(optIdx, 'name', e.target.value)}
+                              className="text-xs rounded-xl font-semibold"
+                            />
+                            <Input
+                              placeholder="Values (comma separated, e.g. Strawberry, Original, Cherry)"
+                              value={opt.values}
+                              onChange={(e) => handleUpdateOptionType(optIdx, 'values', e.target.value)}
+                              className="text-xs rounded-xl"
+                            />
+                            <Button
+                              type="text"
+                              danger
+                              size="small"
+                              icon={<Trash2 className="w-3.5 h-3.5" />}
+                              onClick={() => handleRemoveOptionType(optIdx)}
+                            />
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="pt-2 border-t border-slate-200/60 flex items-center justify-between">
+                        <span className="text-[11px] text-slate-500 font-medium">
+                          Click below to auto-generate exact variant SKUs for every combination:
+                        </span>
+                        <Button
+                          type="primary"
+                          icon={<Sparkles className="w-3.5 h-3.5" />}
+                          onClick={handleGenerateVariantsFromOptions}
+                          className="bg-[#A50025] hover:bg-[#80001c] font-black text-xs rounded-xl"
+                        >
+                          Generate Variant Matrix
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* SECTION 2: VARIANT MATRIX TABLE */}
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="text-xs font-black uppercase tracking-wider text-slate-800">
+                            2. Variant Matrix & Inventory ({variants.length} Combinations)
+                          </h4>
+                          <p className="text-[11px] text-slate-500 font-medium">
+                            Set SKU, price, stock, and gallery images for each purchasable SKU combination.
+                          </p>
+                        </div>
+                        <Button
+                          type="dashed"
+                          icon={<Plus className="w-3.5 h-3.5" />}
+                          onClick={handleAddVariant}
+                          className="font-bold text-xs rounded-xl"
+                        >
+                          Add Custom Variant
+                        </Button>
+                      </div>
+
+                      {variants.length === 0 ? (
+                        <div className="p-6 text-center border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 font-medium text-xs">
+                          No variants added. Product will sell as a single standard item.
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          {/* Table Column Headers */}
+                          <div className="grid grid-cols-[1.2fr_0.9fr_1fr_1.2fr_1fr_0.8fr_40px] gap-2 px-3 py-2 bg-[#F7F8FA] border border-[#E5E7EB] rounded-xl text-[10px] font-black uppercase tracking-wider text-[#111827]">
+                            <span>Color / Shade</span>
+                            <span>Hex / Color</span>
+                            <span>Size / Volume</span>
+                            <span>Variant SKU</span>
+                            <span>Price ({brandConfig.currency.symbol})</span>
+                            <span>Stock</span>
+                            <span className="text-center">Remove</span>
+                          </div>
+
+                          {variants.map((v, idx) => (
+                            <div key={idx} className="p-3 rounded-2xl bg-white border border-[#E5E7EB] shadow-2xs space-y-3">
+                              <div className="grid grid-cols-[1.2fr_0.9fr_1fr_1.2fr_1fr_0.8fr_40px] gap-2 items-center">
+                                <div>
+                                  <Input
+                                    placeholder="e.g. Strawberry / Red"
+                                    value={v.color || ''}
+                                    onChange={(e) => handleUpdateVariant(idx, 'color', e.target.value)}
+                                    className="text-xs rounded-xl"
+                                  />
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <input
+                                    type="color"
+                                    value={v.colorHex || '#111827'}
+                                    onChange={(e) => handleUpdateVariant(idx, 'colorHex', e.target.value)}
+                                    className="w-6 h-6 rounded-md cursor-pointer border-0 p-0 shrink-0 bg-transparent"
+                                    title="Pick Swatch Color"
+                                  />
+                                  <Input
+                                    placeholder="#FF6600"
+                                    value={v.colorHex || ''}
+                                    onChange={(e) => handleUpdateVariant(idx, 'colorHex', e.target.value)}
+                                    className="text-[11px] font-mono rounded-lg px-1.5 py-0.5"
+                                  />
+                                </div>
+                                <div>
+                                  <Input
+                                    placeholder="e.g. 10g / Free Size"
+                                    value={v.size || ''}
+                                    onChange={(e) => handleUpdateVariant(idx, 'size', e.target.value)}
+                                    className="text-xs rounded-xl"
+                                  />
+                                </div>
+                                <div>
+                                  <Input
+                                    placeholder="e.g. SKU-001"
+                                    value={v.sku || ''}
+                                    onChange={(e) => handleUpdateVariant(idx, 'sku', e.target.value)}
+                                    className="text-xs font-mono rounded-xl"
+                                  />
+                                </div>
+                                <div>
+                                  <InputNumber
+                                    placeholder="0.00"
+                                    value={v.price}
+                                    onChange={(val) => handleUpdateVariant(idx, 'price', val)}
+                                    className="w-full text-xs rounded-xl"
+                                    prefix={brandConfig.currency.symbol}
+                                  />
+                                </div>
+                                <div>
+                                  <InputNumber
+                                    placeholder="0"
+                                    value={v.stock}
+                                    onChange={(val) => handleUpdateVariant(idx, 'stock', val)}
+                                    className="w-full text-xs rounded-xl"
+                                  />
+                                </div>
+                                <div className="flex justify-center">
+                                  <Button
+                                    type="text"
+                                    danger
+                                    icon={<Trash2 className="w-4 h-4" />}
+                                    onClick={() => handleRemoveVariant(idx)}
+                                  />
+                                </div>
+                              </div>
+
+                              {/* Direct Variant Image Upload & Gallery Selection */}
+                              <div className="pt-2 border-t border-slate-100 space-y-2 text-[11px]">
+                                <div className="flex items-center justify-between">
+                                  <span className="font-bold text-slate-700">Variant Media Upload:</span>
+                                  <span className="text-[10px] text-slate-400 font-medium">Admin can upload images directly for this variant</span>
+                                </div>
+                                {images.length > 0 && (
+                                  <Select
+                                    mode="multiple"
+                                    allowClear
+                                    placeholder="Or select photos from master product gallery..."
+                                    value={
+                                      v.imageUrls && v.imageUrls.length > 0
+                                        ? v.imageUrls
+                                        : v.imageUrl
+                                          ? [v.imageUrl]
+                                          : []
+                                    }
+                                    onChange={(val: string[]) => {
+                                      const newUrls = val || [];
+                                      handleUpdateVariantMultipleFields(idx, {
+                                        imageUrls: newUrls,
+                                        imageUrl: newUrls[0] || null,
+                                      });
+                                    }}
+                                    className="w-full text-xs"
+                                    optionLabelProp="label"
+                                    options={images.map((img, i) => {
+                                      const rawFilename = img.imageUrl.split('/').pop()?.split('?')[0] || `Image ${i + 1}`;
+                                      const displayName = img.altText ? `${img.altText} (${rawFilename})` : rawFilename;
+
+                                      return {
+                                        value: img.imageUrl,
+                                        label: (
+                                          <div className="flex items-center gap-2 py-0.5">
+                                            <img
+                                              src={img.imageUrl}
+                                              alt={displayName}
+                                              className="w-6 h-6 rounded-md object-contain border border-slate-200 bg-slate-50 shrink-0"
+                                            />
+                                            <span className="text-xs font-bold truncate text-slate-800">
+                                              {displayName}
+                                            </span>
+                                          </div>
+                                        ),
+                                      };
+                                    })}
+                                  />
+                                )}
+                                <MediaUpload
+                                  multiple
+                                  value={(v.imageUrls || (v.imageUrl ? [v.imageUrl] : [])).map((url, imgIdx) => ({
+                                    imageUrl: url,
+                                    isPrimary: imgIdx === 0,
+                                    sortOrder: imgIdx,
+                                  }))}
+                                  onChange={(uploadedList) => {
+                                    const urls = (uploadedList || []).map((item: UploadedMediaItem) => item.imageUrl);
+                                    handleUpdateVariantMultipleFields(idx, {
+                                      imageUrls: urls,
+                                      imageUrl: urls[0] || null,
+                                    });
+                                  }}
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 ),
               },
               {
                 key: '3',
-                label: <span className="font-bold text-xs">3. Product Variants</span>,
-                children: (
-                  <div className="space-y-4 pt-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-slate-500 font-semibold">
-                        Add specific color, size, and SKU variations for this product.
-                      </span>
-                      <Button
-                        type="dashed"
-                        icon={<Plus className="w-3.5 h-3.5" />}
-                        onClick={handleAddVariant}
-                        className="font-bold text-xs"
-                      >
-                        Add Variant
-                      </Button>
-                    </div>
-
-                    {variants.length === 0 ? (
-                      <div className="p-6 text-center border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 font-medium text-xs">
-                        No variants added. Product will sell as a single standard item.
-                      </div>
-                    ) : (
-                      <div className="space-y-3">
-                        {/* Table Column Headers */}
-                        <div className="grid grid-cols-[1fr_1fr_1.4fr_1fr_1fr_40px] gap-2.5 px-4 py-2 bg-[#F7F8FA] border border-[#E5E7EB] rounded-xl text-[11px] font-black uppercase tracking-wider text-[#111827]">
-                          <span>Color / Shade</span>
-                          <span>Size / Volume</span>
-                          <span>Variant SKU</span>
-                          <span>Price ({brandConfig.currency.symbol})</span>
-                          <span>Stock Qty</span>
-                          <span className="text-center">Remove</span>
-                        </div>
-
-                        {variants.map((v, idx) => (
-                          <div key={idx} className="p-3 rounded-2xl bg-white border border-[#E5E7EB] shadow-2xs">
-                            <div className="grid grid-cols-[1fr_1fr_1.4fr_1fr_1fr_40px] gap-2.5 items-center">
-                              <div>
-                                <Input
-                                  placeholder="e.g. Red / Black"
-                                  value={v.color || ''}
-                                  onChange={(e) => handleUpdateVariant(idx, 'color', e.target.value)}
-                                  className="text-xs rounded-xl"
-                                />
-                              </div>
-                              <div>
-                                <Input
-                                  placeholder="e.g. 5ml / Free Size"
-                                  value={v.size || ''}
-                                  onChange={(e) => handleUpdateVariant(idx, 'size', e.target.value)}
-                                  className="text-xs rounded-xl"
-                                />
-                              </div>
-                              <div>
-                                <Input
-                                  placeholder="e.g. SKU-001"
-                                  value={v.sku || ''}
-                                  onChange={(e) => handleUpdateVariant(idx, 'sku', e.target.value)}
-                                  className="text-xs font-mono rounded-xl"
-                                />
-                              </div>
-                              <div>
-                                <InputNumber
-                                  placeholder="0.00"
-                                  value={v.price}
-                                  onChange={(val) => handleUpdateVariant(idx, 'price', val)}
-                                  className="w-full text-xs rounded-xl"
-                                  prefix={brandConfig.currency.symbol}
-                                />
-                              </div>
-                              <div>
-                                <InputNumber
-                                  placeholder="0"
-                                  value={v.stock}
-                                  onChange={(val) => handleUpdateVariant(idx, 'stock', val)}
-                                  className="w-full text-xs rounded-xl"
-                                />
-                              </div>
-                              <div className="flex justify-center">
-                                <Button
-                                  type="text"
-                                  danger
-                                  icon={<Trash2 className="w-4 h-4" />}
-                                  onClick={() => handleRemoveVariant(idx)}
-                                />
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ),
-              },
-              {
-                key: '4',
-                label: <span className="font-bold text-xs">4. SEO Metadata</span>,
+                label: <span className="font-bold text-xs">3. SEO Metadata</span>,
                 children: (
                   <div className="space-y-4 pt-2">
                     <Form.Item name="metaTitle" label={<span className="font-bold text-xs">Meta Title</span>}>
@@ -801,7 +1120,7 @@ export default function AdminProductsPage() {
                     </Form.Item>
 
                     <Form.Item name="metaKeywords" label={<span className="font-bold text-xs">Meta Keywords</span>}>
-                      <Input placeholder="e.g. blazer, fashion, cashmere, luxury" className="rounded-xl" />
+                      <Input placeholder="e.g. lipbalm, nivea, cosmetics, skincare" className="rounded-xl" />
                     </Form.Item>
                   </div>
                 ),

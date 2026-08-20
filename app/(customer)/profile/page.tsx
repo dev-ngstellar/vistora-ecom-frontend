@@ -16,6 +16,7 @@ import {
   Package,
   Plus,
   Trash2,
+  Pencil,
   CheckCircle2,
   ShoppingBag,
   Heart,
@@ -28,6 +29,7 @@ export default function ProfilePage() {
   const queryClient = useQueryClient();
 
   const [showAddModal, setShowAddModal] = useState(false);
+  const [editingAddress, setEditingAddress] = useState<AddressResponse | null>(null);
   const [formData, setFormData] = useState({
     fullName: '',
     addressLine1: '',
@@ -73,6 +75,33 @@ export default function ProfilePage() {
     },
   });
 
+  // 2b. Update Address Mutation
+  const updateAddressMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: typeof formData }) =>
+      addressService.updateAddress(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['customer', 'addresses'] });
+      toast.success('Address updated successfully');
+      setShowAddModal(false);
+      setEditingAddress(null);
+      setFormData({
+        fullName: '',
+        addressLine1: '',
+        addressLine2: '',
+        city: '',
+        state: '',
+        postalCode: '',
+        country: 'India',
+        phone: '',
+        type: 'HOME',
+        isDefault: false,
+      });
+    },
+    onError: () => {
+      toast.error('Failed to update address. Please check required fields.');
+    },
+  });
+
   // 3. Delete Address Mutation
   const deleteAddressMutation = useMutation({
     mutationFn: (id: string) => addressService.deleteAddress(id),
@@ -85,13 +114,51 @@ export default function ProfilePage() {
     },
   });
 
+  const handleOpenAddModal = () => {
+    setEditingAddress(null);
+    setFormData({
+      fullName: '',
+      addressLine1: '',
+      addressLine2: '',
+      city: '',
+      state: '',
+      postalCode: '',
+      country: 'India',
+      phone: '',
+      type: 'HOME',
+      isDefault: false,
+    });
+    setShowAddModal(true);
+  };
+
+  const handleOpenEditModal = (addr: AddressResponse) => {
+    setEditingAddress(addr);
+    setFormData({
+      fullName: addr.fullName,
+      addressLine1: addr.addressLine1,
+      addressLine2: addr.addressLine2 || '',
+      city: addr.city,
+      state: addr.state,
+      postalCode: addr.postalCode,
+      country: addr.country,
+      phone: addr.phone,
+      type: addr.type,
+      isDefault: addr.isDefault,
+    });
+    setShowAddModal(true);
+  };
+
   const handleCreateSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.fullName || !formData.addressLine1 || !formData.city || !formData.postalCode || !formData.phone) {
       toast.error('Please fill in all required address fields');
       return;
     }
-    addAddressMutation.mutate(formData);
+    if (editingAddress) {
+      updateAddressMutation.mutate({ id: editingAddress.id, data: formData });
+    } else {
+      addAddressMutation.mutate(formData);
+    }
   };
 
   const userInitial = user?.firstName ? user.firstName.charAt(0).toUpperCase() : 'U';
@@ -186,7 +253,7 @@ export default function ProfilePage() {
               </div>
 
               <button
-                onClick={() => setShowAddModal(true)}
+                onClick={handleOpenAddModal}
                 className="px-3.5 py-2 rounded-xl bg-orange text-white text-xs font-bold hover:bg-orange-dark transition flex items-center gap-1.5 shadow-xs"
               >
                 <Plus className="w-4 h-4" />
@@ -212,6 +279,13 @@ export default function ProfilePage() {
                         <span className="text-[10px] font-bold uppercase text-maroon bg-maroon-light px-2 py-0.5 rounded-full">
                           {addr.type}
                         </span>
+                        <button
+                          onClick={() => handleOpenEditModal(addr)}
+                          className="text-slate-400 hover:text-maroon transition p-1"
+                          title="Edit Address"
+                        >
+                          <Pencil className="w-3.5 h-3.5" />
+                        </button>
                         <button
                           onClick={() => deleteAddressMutation.mutate(addr.id)}
                           disabled={deleteAddressMutation.isPending}
@@ -255,7 +329,7 @@ export default function ProfilePage() {
               <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                 <h3 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
                   <MapPin className="w-5 h-5 text-maroon" />
-                  Add New Shipping Address
+                  {editingAddress ? 'Edit Shipping Address' : 'Add New Shipping Address'}
                 </h3>
                 <button
                   onClick={() => setShowAddModal(false)}
@@ -389,11 +463,13 @@ export default function ProfilePage() {
                   </button>
                   <button
                     type="submit"
-                    disabled={addAddressMutation.isPending}
+                    disabled={addAddressMutation.isPending || updateAddressMutation.isPending}
                     className="px-5 py-2 rounded-xl bg-maroon text-white font-bold hover:bg-maroon-dark transition shadow-xs flex items-center gap-1.5"
                   >
-                    {addAddressMutation.isPending && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                    <span>Save Address</span>
+                    {(addAddressMutation.isPending || updateAddressMutation.isPending) && (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    )}
+                    <span>{editingAddress ? 'Update Address' : 'Save Address'}</span>
                   </button>
                 </div>
               </form>

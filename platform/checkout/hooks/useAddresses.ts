@@ -41,6 +41,18 @@ export const useAddresses = () => {
     },
   });
 
+  const updateAddressMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<AddressInput> }) =>
+      addressService.updateAddress(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['checkout', 'addresses'] });
+      toast.success('Address updated successfully');
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || 'Failed to update address');
+    },
+  });
+
   const selectedShippingAddress = addresses.find((a) => a.id === selectedShippingAddressId) || null;
   const selectedBillingAddress = addresses.find((a) => a.id === selectedBillingAddressId) || selectedShippingAddress;
 
@@ -58,5 +70,7 @@ export const useAddresses = () => {
     selectBillingAddress: (id: string) => setSelectedBillingAddressId(id),
     createAddress: createAddressMutation.mutate,
     isCreating: createAddressMutation.isPending,
+    updateAddress: updateAddressMutation.mutate,
+    isUpdating: updateAddressMutation.isPending,
   };
 };
