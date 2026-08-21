@@ -31,23 +31,38 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({
     },
   ];
 
-  // Filter images by selected variant imageUrls or selected color altText, otherwise show all images
+  // Filter images by selected variant imageUrls and selected color altText, otherwise show all images
   const displayImages = React.useMemo(() => {
-    // 1. If explicit variant image URLs array is assigned (from Admin multi-select)
+    const matched: ProductImage[] = [];
+
+    // 1. Match by explicit variant image URLs array if provided
     if (selectedVariantImageUrls && selectedVariantImageUrls.length > 0) {
-      const matched = defaultImages.filter((img) =>
-        selectedVariantImageUrls.includes(img.imageUrl),
-      );
-      if (matched.length > 0) return matched;
+      defaultImages.forEach((img) => {
+        if (
+          selectedVariantImageUrls.includes(img.imageUrl) &&
+          !matched.some((m) => m.imageUrl === img.imageUrl)
+        ) {
+          matched.push(img);
+        }
+      });
     }
 
-    // 2. If altText matches selected color
+    // 2. Match by selected color in altText or variant image
     if (selectedColor) {
       const colorLower = selectedColor.toLowerCase().trim();
-      const matched = defaultImages.filter((img) =>
-        img.altText ? img.altText.toLowerCase().includes(colorLower) : false,
-      );
-      if (matched.length > 0) return matched;
+      defaultImages.forEach((img) => {
+        if (
+          img.altText &&
+          img.altText.toLowerCase().includes(colorLower) &&
+          !matched.some((m) => m.imageUrl === img.imageUrl)
+        ) {
+          matched.push(img);
+        }
+      });
+    }
+
+    if (matched.length > 0) {
+      return matched;
     }
 
     return defaultImages;
