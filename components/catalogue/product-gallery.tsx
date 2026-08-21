@@ -31,42 +31,40 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({
     },
   ];
 
-  // Filter images by selected variant imageUrls and selected color altText, otherwise show all images
+  // Display variant images if a variant with images is selected, otherwise show master product images
   const displayImages = React.useMemo(() => {
-    const matched: ProductImage[] = [];
-
-    // 1. Match by explicit variant image URLs array if provided
+    // 1. Explicit variant image URLs if provided for active variant
     if (selectedVariantImageUrls && selectedVariantImageUrls.length > 0) {
-      defaultImages.forEach((img) => {
-        if (
-          selectedVariantImageUrls.includes(img.imageUrl) &&
-          !matched.some((m) => m.imageUrl === img.imageUrl)
-        ) {
-          matched.push(img);
+      const variantList: ProductImage[] = [];
+      const seen = new Set<string>();
+      selectedVariantImageUrls.forEach((url, idx) => {
+        if (url && !seen.has(url)) {
+          seen.add(url);
+          variantList.push({
+            id: `var-img-${idx}-${url}`,
+            productId: 'variant',
+            imageUrl: url,
+            altText: productName,
+            isPrimary: idx === 0,
+            sortOrder: idx,
+          });
         }
       });
+      if (variantList.length > 0) return variantList;
     }
 
-    // 2. Match by selected color in altText or variant image
-    if (selectedColor) {
-      const colorLower = selectedColor.toLowerCase().trim();
-      defaultImages.forEach((img) => {
-        if (
-          img.altText &&
-          img.altText.toLowerCase().includes(colorLower) &&
-          !matched.some((m) => m.imageUrl === img.imageUrl)
-        ) {
-          matched.push(img);
-        }
-      });
-    }
+    // 2. Return deduplicated master product defaultImages
+    const result: ProductImage[] = [];
+    const resultSet = new Set<string>();
+    defaultImages.forEach((img) => {
+      if (img.imageUrl && !resultSet.has(img.imageUrl)) {
+        resultSet.add(img.imageUrl);
+        result.push(img);
+      }
+    });
 
-    if (matched.length > 0) {
-      return matched;
-    }
-
-    return defaultImages;
-  }, [defaultImages, selectedVariantImageUrls, selectedColor]);
+    return result;
+  }, [defaultImages, selectedVariantImageUrls, productName]);
 
   const primaryImage = displayImages.find((img) => img.isPrimary) || displayImages[0];
   const [selectedImage, setSelectedImage] = useState<string>(

@@ -66,25 +66,17 @@ export default function ProductDetailPage() {
     }
   }, [product]);
 
-  // Combine Master Product Images + Tab 2 Variant Uploaded Images
+  // Master Product Images Gallery (Deduplicated)
   const allGalleryImages = React.useMemo(() => {
-    if (!product) return [];
-    const list: ProductImage[] = [...(product.images || [])];
+    if (!product || !product.images) return [];
+    const list: ProductImage[] = [];
+    const seenUrls = new Set<string>();
 
-    product.variants?.forEach((v) => {
-      const urls = [v.imageUrl, ...(v.imageUrls || [])].filter(Boolean) as string[];
-      urls.forEach((url) => {
-        if (!list.some((img) => img.imageUrl === url)) {
-          list.push({
-            id: `var-img-${url}`,
-            productId: product.id,
-            imageUrl: url,
-            altText: v.color || product.name,
-            isPrimary: false,
-            sortOrder: list.length,
-          });
-        }
-      });
+    product.images.forEach((img) => {
+      if (img.imageUrl && !seenUrls.has(img.imageUrl)) {
+        seenUrls.add(img.imageUrl);
+        list.push(img);
+      }
     });
 
     return list;

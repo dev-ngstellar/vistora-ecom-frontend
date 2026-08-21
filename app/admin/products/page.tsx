@@ -110,22 +110,31 @@ export default function AdminProductsPage() {
         })) || []
       );
       const loadedVariants = (product.variants || []).map((v) => {
-        const matchedUrls: string[] = [];
-        if (v.imageUrl) matchedUrls.push(v.imageUrl);
-        if (v.color && product.images) {
-          const colorLower = v.color.toLowerCase().trim();
-          product.images.forEach((img) => {
-            if (img.altText && img.altText.toLowerCase().includes(colorLower)) {
-              if (!matchedUrls.includes(img.imageUrl)) {
-                matchedUrls.push(img.imageUrl);
-              }
-            }
-          });
+        // 1. Explicit imageUrls array on variant
+        if ((v as any).imageUrls && Array.isArray((v as any).imageUrls) && (v as any).imageUrls.length > 0) {
+          return {
+            ...v,
+            imageUrl: v.imageUrl || (v as any).imageUrls[0] || null,
+            imageUrls: (v as any).imageUrls,
+          };
         }
+
+        // 2. ProductVariantImage relation array from backend
+        if ((v as any).images && Array.isArray((v as any).images) && (v as any).images.length > 0) {
+          const vUrls = (v as any).images.map((img: any) => img.imageUrl);
+          return {
+            ...v,
+            imageUrl: v.imageUrl || vUrls[0] || null,
+            imageUrls: vUrls,
+          };
+        }
+
+        // 3. Single imageUrl on variant
+        const fallbackUrls = v.imageUrl ? [v.imageUrl] : [];
         return {
           ...v,
-          imageUrl: v.imageUrl || matchedUrls[0] || null,
-          imageUrls: (v as any).imageUrls && (v as any).imageUrls.length > 0 ? (v as any).imageUrls : matchedUrls,
+          imageUrl: v.imageUrl || null,
+          imageUrls: fallbackUrls,
         };
       });
       setVariants(loadedVariants);
@@ -188,26 +197,19 @@ export default function AdminProductsPage() {
       sortedImages.unshift(primaryItem);
     }
 
-    const masterImagesList = sortedImages.map((img, idx) => ({
-      imageUrl: img.imageUrl,
-      isPrimary: idx === 0,
-      sortOrder: idx,
-      altText: img.altText || payload.name,
-    }));
+    const masterImagesList: any[] = [];
+    const seenMasterUrls = new Set<string>();
 
-    // 2. Include variant-specific image URLs into product images with altText = variant color name
-    variants.forEach((v) => {
-      const vUrls = [v.imageUrl, ...(v.imageUrls || [])].filter(Boolean) as string[];
-      vUrls.forEach((url) => {
-        if (!masterImagesList.some((img) => img.imageUrl === url)) {
-          masterImagesList.push({
-            imageUrl: url,
-            isPrimary: false,
-            sortOrder: masterImagesList.length,
-            altText: v.color || payload.name,
-          });
-        }
-      });
+    sortedImages.forEach((img) => {
+      if (img.imageUrl && !seenMasterUrls.has(img.imageUrl)) {
+        seenMasterUrls.add(img.imageUrl);
+        masterImagesList.push({
+          imageUrl: img.imageUrl,
+          isPrimary: masterImagesList.length === 0,
+          sortOrder: masterImagesList.length,
+          altText: img.altText || payload.name,
+        });
+      }
     });
 
     payload.images = masterImagesList;
@@ -1039,64 +1041,80 @@ export default function AdminProductsPage() {
                                   <span className="font-bold text-slate-700">Variant Media Upload:</span>
                                   <span className="text-[10px] text-slate-400 font-medium">Admin can upload images directly for this variant</span>
                                 </div>
-                                {images.length > 0 && (
-                                  <Select
-                                    mode="multiple"
-                                    allowClear
-                                    placeholder="Or select photos from master product gallery..."
-                                    value={
-                                      v.imageUrls && v.imageUrls.length > 0
-                                        ? v.imageUrls
-                                        : v.imageUrl
-                                          ? [v.imageUrl]
-                                          : []
-                                    }
-                                    onChange={(val: string[]) => {
-                                      const newUrls = val || [];
-                                      handleUpdateVariantMultipleFields(idx, {
-                                        imageUrls: newUrls,
-                                        imageUrl: newUrls[0] || null,
-                                      });
-                                    }}
-                                    className="w-full text-xs"
-                                    optionLabelProp="label"
-                                    options={images.map((img, i) => {
-                                      const rawFilename = img.imageUrl.split('/').pop()?.split('?')[0] || `Image ${i + 1}`;
-                                      const displayName = img.altText ? `${img.altText} (${rawFilename})` : rawFilename;
+                                {(() => {
+                                   const variantImageUrls = v.imageUrls && v.imageUrls.length > 0
+                                     ? v.imageUrls
+                                     : v.imageUrl
+                                       ? [v.imageUrl]
+                                       : [];
 
-                                      return {
-                                        value: img.imageUrl,
-                                        label: (
-                                          <div className="flex items-center gap-2 py-0.5">
-                                            <img
-                                              src={img.imageUrl}
-                                              alt={displayName}
-                                              className="w-6 h-6 rounded-md object-contain border border-slate-200 bg-slate-50 shrink-0"
-                                            />
-                                            <span className="text-xs font-bold truncate text-slate-800">
-                                              {displayName}
-                                            </span>
-                                          </div>
-                                        ),
-                                      };
-                                    })}
-                                  />
-                                )}
-                                <MediaUpload
-                                  multiple
-                                  value={(v.imageUrls || (v.imageUrl ? [v.imageUrl] : [])).map((url, imgIdx) => ({
-                                    imageUrl: url,
-                                    isPrimary: imgIdx === 0,
-                                    sortOrder: imgIdx,
-                                  }))}
-                                  onChange={(uploadedList) => {
-                                    const urls = (uploadedList || []).map((item: UploadedMediaItem) => item.imageUrl);
-                                    handleUpdateVariantMultipleFields(idx, {
-                                      imageUrls: urls,
-                                      imageUrl: urls[0] || null,
-                                    });
-                                  }}
-                                />
+                                   const combinedOptions = [...images];
+                                   variantImageUrls.forEach((url) => {
+                                     if (url && !combinedOptions.some((img) => img.imageUrl === url)) {
+                                       combinedOptions.push({
+                                         imageUrl: url,
+                                         altText: v.color || '',
+                                       });
+                                     }
+                                   });
+
+                                   return (
+                                     <>
+                                       {combinedOptions.length > 0 && (
+                                         <Select
+                                           mode="multiple"
+                                           allowClear
+                                           placeholder="Or select photos from master product gallery..."
+                                           value={variantImageUrls}
+                                           onChange={(val: string[]) => {
+                                             const newUrls = val || [];
+                                             handleUpdateVariantMultipleFields(idx, {
+                                               imageUrls: newUrls,
+                                               imageUrl: newUrls[0] || null,
+                                             });
+                                           }}
+                                           className="w-full text-xs"
+                                           optionLabelProp="label"
+                                           options={combinedOptions.map((img, i) => {
+                                             const rawFilename = img.imageUrl.split('/').pop()?.split('?')[0] || `Image ${i + 1}`;
+                                             const displayName = img.altText ? `${img.altText} (${rawFilename})` : rawFilename;
+
+                                             return {
+                                               value: img.imageUrl,
+                                               label: (
+                                                 <div className="flex items-center gap-2 py-0.5">
+                                                   <img
+                                                     src={img.imageUrl}
+                                                     alt={displayName}
+                                                     className="w-6 h-6 rounded-md object-contain border border-slate-200 bg-slate-50 shrink-0"
+                                                   />
+                                                   <span className="text-xs font-bold truncate text-slate-800">
+                                                     {displayName}
+                                                   </span>
+                                                 </div>
+                                               ),
+                                             };
+                                           })}
+                                         />
+                                       )}
+                                       <MediaUpload
+                                         multiple
+                                         value={variantImageUrls.map((url, imgIdx) => ({
+                                           imageUrl: url,
+                                           isPrimary: imgIdx === 0,
+                                           sortOrder: imgIdx,
+                                         }))}
+                                         onChange={(uploadedList) => {
+                                           const urls = (uploadedList || []).map((item: UploadedMediaItem) => item.imageUrl);
+                                           handleUpdateVariantMultipleFields(idx, {
+                                             imageUrls: urls,
+                                             imageUrl: urls[0] || null,
+                                           });
+                                         }}
+                                       />
+                                     </>
+                                   );
+                                 })()}
                               </div>
                             </div>
                           ))}
