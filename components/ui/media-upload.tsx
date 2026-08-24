@@ -132,12 +132,17 @@ export const MediaUpload: React.FC<MediaUploadProps> = ({
   const handleSetPrimary = (index: number, e?: React.MouseEvent) => {
     e?.stopPropagation();
     e?.preventDefault();
-    if (!multiple) return;
-    const updated = items.map((item, idx) => ({
+    if (!multiple || index === 0) return;
+
+    const updated = [...items];
+    const [selected] = updated.splice(index, 1);
+    const reordered = [selected, ...updated].map((item, idx) => ({
       ...item,
-      isPrimary: idx === index,
+      isPrimary: idx === 0,
+      sortOrder: idx,
     }));
-    onChange?.(updated);
+    onChange?.(reordered);
+    toast.success('Set as primary image');
   };
 
   const handleMove = (index: number, direction: 'left' | 'right', e?: React.MouseEvent) => {
@@ -152,8 +157,12 @@ export const MediaUpload: React.FC<MediaUploadProps> = ({
     updated[index] = updated[newIdx];
     updated[newIdx] = temp;
 
-    // reassign sortOrder
-    const finalItems = updated.map((item, idx) => ({ ...item, sortOrder: idx }));
+    // reassign sortOrder and ensure first is primary if needed
+    const finalItems = updated.map((item, idx) => ({
+      ...item,
+      isPrimary: idx === 0,
+      sortOrder: idx,
+    }));
     onChange?.(finalItems);
   };
 
@@ -212,17 +221,31 @@ export const MediaUpload: React.FC<MediaUploadProps> = ({
           {items.map((item, index) => (
             <div
               key={item.imageUrl + index}
-              className={`group relative aspect-square rounded-2xl overflow-hidden bg-slate-100 border-2 transition shadow-xs ${
-                item.isPrimary ? 'border-indigo-600 ring-2 ring-indigo-600/20' : 'border-slate-200'
+              onClick={(e) => {
+                if (!item.isPrimary) {
+                  handleSetPrimary(index, e);
+                }
+              }}
+              className={`group relative aspect-square rounded-2xl overflow-hidden bg-slate-100 border-2 transition shadow-xs cursor-pointer ${
+                item.isPrimary ? 'border-indigo-600 ring-2 ring-indigo-600/20' : 'border-slate-200 hover:border-amber-400'
               }`}
             >
               <img src={item.imageUrl} alt="Uploaded Media" className="w-full h-full object-cover" />
 
-              {/* Primary Badge (Top Left) */}
-              {item.isPrimary && (
+              {/* Primary Badge or Make Primary Button (Top Left) */}
+              {item.isPrimary ? (
                 <span className="absolute top-2 left-2 z-10 bg-indigo-600 text-white text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-full shadow-md flex items-center gap-1 pointer-events-none">
                   <Star className="w-3 h-3 fill-white" /> Primary
                 </span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={(e) => handleSetPrimary(index, e)}
+                  className="absolute top-2 left-2 z-20 bg-amber-500 hover:bg-amber-600 text-white text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-full shadow-md flex items-center gap-1 transition-transform hover:scale-105"
+                  title="Click to set as primary image"
+                >
+                  <Star className="w-3 h-3 fill-white" /> Make Primary
+                </button>
               )}
 
               {/* Always-Visible Delete Button (Top Right) */}
@@ -235,22 +258,9 @@ export const MediaUpload: React.FC<MediaUploadProps> = ({
                 <Trash2 className="w-3.5 h-3.5" />
               </button>
 
-              {/* Actions Overlay for Reordering & Setting Primary (On Hover) */}
-              <div className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col justify-between p-2 z-10">
-                <div className="flex items-center justify-between">
-                  {!item.isPrimary && (
-                    <button
-                      type="button"
-                      onClick={(e) => handleSetPrimary(index, e)}
-                      className="p-1.5 rounded-lg bg-white/90 text-amber-500 hover:bg-white text-[10px] font-bold flex items-center gap-1 shadow-xs"
-                      title="Set as Primary Image"
-                    >
-                      <Star className="w-3.5 h-3.5" /> Make Primary
-                    </button>
-                  )}
-                </div>
-
-                <div className="flex items-center justify-between">
+              {/* Actions Overlay for Reordering (On Hover) */}
+              <div className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col justify-end p-2 z-10 pointer-events-none">
+                <div className="flex items-center justify-between pointer-events-auto">
                   <button
                     type="button"
                     disabled={index === 0}

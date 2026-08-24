@@ -112,6 +112,33 @@ export default function ProductDetailPage() {
     return allGalleryImages[0]?.imageUrl || null;
   }, [selectedVariant, product, allGalleryImages]);
 
+  const selectedVariantImageUrls = React.useMemo(() => {
+    if (!selectedVariant) return null;
+    const list: string[] = [];
+
+    // 1. Direct imageUrls array if present on variant
+    if (selectedVariant.imageUrls && selectedVariant.imageUrls.length > 0) {
+      selectedVariant.imageUrls.forEach((u) => {
+        if (u && !list.includes(u)) list.push(u);
+      });
+    }
+
+    // 2. ProductVariantImage relation array from backend (`images` field)
+    if ((selectedVariant as any).images && Array.isArray((selectedVariant as any).images)) {
+      (selectedVariant as any).images.forEach((imgObj: any) => {
+        const url = typeof imgObj === 'string' ? imgObj : imgObj?.imageUrl;
+        if (url && !list.includes(url)) list.push(url);
+      });
+    }
+
+    // 3. Fallback to main variant imageUrl if present
+    if (selectedVariant.imageUrl && !list.includes(selectedVariant.imageUrl)) {
+      list.unshift(selectedVariant.imageUrl);
+    }
+
+    return list.length > 0 ? list : null;
+  }, [selectedVariant]);
+
   if (isLoading) {
     return <ProductDetailSkeleton />;
   }
@@ -225,13 +252,7 @@ export default function ProductDetailPage() {
             images={allGalleryImages}
             productName={product.name}
             selectedImageOverride={selectedVariantImage}
-            selectedVariantImageUrls={
-              selectedVariant?.imageUrls && selectedVariant.imageUrls.length > 0
-                ? selectedVariant.imageUrls
-                : selectedVariant?.imageUrl
-                  ? [selectedVariant.imageUrl]
-                  : null
-            }
+            selectedVariantImageUrls={selectedVariantImageUrls}
             selectedColor={selectedVariant?.color}
           />
         </div>
