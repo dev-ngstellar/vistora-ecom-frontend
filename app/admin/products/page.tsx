@@ -215,6 +215,7 @@ export default function AdminProductsPage() {
     payload.images = masterImagesList;
 
     payload.variants = variants.map((v) => ({
+      id: (v as any).id || undefined,
       sku: v.sku || `${payload.sku}-${v.color || ''}-${v.size || ''}`,
       color: v.color || null,
       colorHex: v.colorHex || null,
@@ -348,8 +349,8 @@ export default function AdminProductsPage() {
 
   const handleAddVariant = () => {
     const defaultSku = `${form.getFieldValue('sku') || 'SKU'}-VAR-${variants.length + 1}`;
-    setVariants([
-      ...variants,
+    setVariants((prev) => [
+      ...prev,
       {
         sku: defaultSku,
         color: '',
@@ -357,6 +358,8 @@ export default function AdminProductsPage() {
         price: form.getFieldValue('price') || 0,
         stock: 10,
         status: 'ACTIVE',
+        imageUrl: null,
+        imageUrls: [],
       },
     ]);
   };
@@ -378,7 +381,7 @@ export default function AdminProductsPage() {
   };
 
   const handleRemoveVariant = (index: number) => {
-    setVariants(variants.filter((_, i) => i !== index));
+    setVariants((prev) => prev.filter((_, i) => i !== index));
   };
 
   // Bulk Actions
@@ -1105,7 +1108,9 @@ export default function AdminProductsPage() {
                                            sortOrder: imgIdx,
                                          }))}
                                          onChange={(uploadedList) => {
-                                           const urls = (uploadedList || []).map((item: UploadedMediaItem) => item.imageUrl);
+                                           const urls = (uploadedList || [])
+                                             .map((item: any) => (typeof item === 'string' ? item : item?.imageUrl || item))
+                                             .filter((u: any) => typeof u === 'string' && u.trim().length > 0);
                                            handleUpdateVariantMultipleFields(idx, {
                                              imageUrls: urls,
                                              imageUrl: urls[0] || null,

@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import { ProductImage } from '@/types/catalogue.types';
-import { Maximize2, X } from 'lucide-react';
+import { Maximize2, X, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface ProductGalleryProps {
   images?: ProductImage[];
@@ -18,8 +19,13 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({
   productName,
   selectedImageOverride,
   selectedVariantImageUrls,
-  selectedColor,
 }) => {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   const defaultImages = images.length > 0 ? images : [
     {
       id: 'default-1',
@@ -80,11 +86,31 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({
     }
   }, [selectedImageOverride, displayImages]);
 
-  // Close modal when pressing Escape key
+  const currentIndex = displayImages.findIndex((img) => img.imageUrl === selectedImage);
+  const activeIndex = currentIndex >= 0 ? currentIndex + 1 : 1;
+
+  const handlePrevImage = () => {
+    if (displayImages.length <= 1) return;
+    const prevIdx = (currentIndex - 1 + displayImages.length) % displayImages.length;
+    setSelectedImage(displayImages[prevIdx].imageUrl);
+  };
+
+  const handleNextImage = () => {
+    if (displayImages.length <= 1) return;
+    const nextIdx = (currentIndex + 1) % displayImages.length;
+    setSelectedImage(displayImages[nextIdx].imageUrl);
+  };
+
+  // Close modal when pressing Escape key & handle Arrow navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (!isZoomOpen) return;
       if (e.key === 'Escape') {
         setIsZoomOpen(false);
+      } else if (e.key === 'ArrowRight') {
+        handleNextImage();
+      } else if (e.key === 'ArrowLeft') {
+        handlePrevImage();
       }
     };
 
@@ -99,14 +125,11 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({
       document.body.style.overflow = 'unset';
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isZoomOpen]);
-
-  const currentIndex = displayImages.findIndex((img) => img.imageUrl === selectedImage);
-  const activeIndex = currentIndex >= 0 ? currentIndex + 1 : 1;
+  }, [isZoomOpen, currentIndex, displayImages]);
 
   return (
     <div className="flex flex-col sm:flex-row gap-2.5 items-start w-full">
-      {/* Vertical Thumbnails Column (Amazon/Flipkart Style) */}
+      {/* Vertical Thumbnails Column */}
       {displayImages.length > 1 && (
         <div className="flex sm:flex-col items-center gap-2 overflow-x-auto sm:overflow-y-auto max-h-[380px] w-full sm:w-14 shrink-0 order-2 sm:order-1 scrollbar-none pb-1 sm:pb-0">
           {displayImages.map((img, idx) => (
@@ -161,44 +184,82 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({
         </button>
       </div>
 
-      {/* Fullscreen Image Zoom Modal */}
-      {isZoomOpen && (
+      {/* Fullscreen Pure Product Image Lightbox Modal via React Portal */}
+      {isZoomOpen && isMounted && createPortal(
         <div
           onClick={() => setIsZoomOpen(false)}
-          className="fixed inset-0 z-[99999] bg-black/95 backdrop-blur-md flex flex-col items-center justify-center p-4 animate-in fade-in duration-200 cursor-pointer"
+          className="fixed inset-0 z-[9999999] bg-[#0A0A0C] flex flex-col items-center justify-between p-4 sm:p-6 animate-in fade-in duration-200 cursor-pointer select-none"
         >
-          {/* Top Floating Close Bar */}
-          <div className="fixed top-4 right-4 z-[100000] flex items-center gap-2">
+          {/* Top Header Bar: Image Counter & Close Button */}
+          <div className="w-full flex items-center justify-between z-[10000000] max-w-6xl">
+            {displayImages.length > 1 ? (
+              <div className="px-3.5 py-1.5 rounded-full bg-white/10 text-white text-xs font-bold tracking-wider border border-white/20">
+                {activeIndex} of {displayImages.length}
+              </div>
+            ) : (
+              <div />
+            )}
+
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 setIsZoomOpen(false);
               }}
-              className="p-3 rounded-full bg-[#A50025] text-white hover:bg-[#7D001C] hover:scale-110 transition-all duration-200 shadow-xl flex items-center justify-center gap-1.5 font-bold text-xs"
+              className="p-2.5 sm:px-4 sm:py-2 rounded-full bg-[#A50025] text-white hover:bg-[#7D001C] hover:scale-105 transition-all duration-200 shadow-xl flex items-center justify-center gap-2 font-bold text-xs"
               aria-label="Close Fullscreen View"
               title="Close (Esc)"
             >
-              <X className="w-5 h-5 text-white" />
+              <X className="w-4 h-4 text-white" />
               <span className="hidden sm:inline">Close (Esc)</span>
             </button>
           </div>
 
-          {/* Image Container */}
+          {/* Centered Main Image Box (100% Opaque Portal, Clean Product Image Only) */}
           <div
             onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-4xl h-[70vh] rounded-2xl overflow-hidden bg-transparent p-2 cursor-default flex items-center justify-center"
+            className="relative w-full max-w-5xl h-[78vh] my-auto rounded-2xl overflow-hidden bg-transparent cursor-default flex items-center justify-center"
           >
+            {/* Previous Image Arrow */}
+            {displayImages.length > 1 && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handlePrevImage();
+                }}
+                className="absolute left-2 sm:left-4 z-20 p-3 rounded-full bg-black/70 hover:bg-black text-white transition-all hover:scale-110 border border-white/20 shadow-lg"
+                title="Previous Image (Left Arrow)"
+              >
+                <ChevronLeft className="w-6 h-6" />
+              </button>
+            )}
+
+            {/* Pure Product Image */}
             <Image
               src={selectedImage}
               alt={productName}
               fill
+              priority
               sizes="100vw"
-              className="object-contain"
+              className="object-contain p-2"
             />
+
+            {/* Next Image Arrow */}
+            {displayImages.length > 1 && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleNextImage();
+                }}
+                className="absolute right-2 sm:right-4 z-20 p-3 rounded-full bg-black/70 hover:bg-black text-white transition-all hover:scale-110 border border-white/20 shadow-lg"
+                title="Next Image (Right Arrow)"
+              >
+                <ChevronRight className="w-6 h-6" />
+              </button>
+            )}
           </div>
 
-          {/* Bottom Close Button */}
-          <div className="mt-3 z-[100000]">
+          {/* Bottom Close Control */}
+          <div className="z-[10000000] flex items-center gap-3">
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -210,7 +271,8 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({
               <span>Close Fullscreen (Esc)</span>
             </button>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

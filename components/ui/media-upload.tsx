@@ -2,7 +2,7 @@
 
 import React, { useState, useRef } from 'react';
 import { uploadService } from '@/services/catalogue.service';
-import { Upload, X, Star, ArrowLeft, ArrowRight, Loader2, Image as ImageIcon, Plus } from 'lucide-react';
+import { Upload, X, Star, ArrowLeft, ArrowRight, Loader2, Image as ImageIcon, Plus, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export interface UploadedMediaItem {
@@ -90,6 +90,9 @@ export const MediaUpload: React.FC<MediaUploadProps> = ({
       toast.error(err.message || 'Image upload failed');
     } finally {
       setIsUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 
@@ -110,20 +113,25 @@ export const MediaUpload: React.FC<MediaUploadProps> = ({
     }
   };
 
-  const handleRemove = (index: number) => {
+  const handleRemove = (index: number, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    e?.preventDefault();
     if (!multiple) {
       onChange?.(null);
       return;
     }
     const updated = items.filter((_, idx) => idx !== index);
-    // Ensure primary item exists
+    // Ensure primary item exists if items remain
     if (updated.length > 0 && !updated.some((i) => i.isPrimary)) {
       updated[0].isPrimary = true;
     }
     onChange?.(updated);
+    toast.success('Image removed from gallery');
   };
 
-  const handleSetPrimary = (index: number) => {
+  const handleSetPrimary = (index: number, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    e?.preventDefault();
     if (!multiple) return;
     const updated = items.map((item, idx) => ({
       ...item,
@@ -132,7 +140,9 @@ export const MediaUpload: React.FC<MediaUploadProps> = ({
     onChange?.(updated);
   };
 
-  const handleMove = (index: number, direction: 'left' | 'right') => {
+  const handleMove = (index: number, direction: 'left' | 'right', e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    e?.preventDefault();
     if (!multiple) return;
     const newIdx = direction === 'left' ? index - 1 : index + 1;
     if (newIdx < 0 || newIdx >= items.length) return;
@@ -154,7 +164,10 @@ export const MediaUpload: React.FC<MediaUploadProps> = ({
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
-        onClick={() => fileInputRef.current?.click()}
+        onClick={(e) => {
+          e.stopPropagation();
+          fileInputRef.current?.click();
+        }}
         className={`relative border-2 border-dashed rounded-2xl p-5 text-center cursor-pointer transition-all duration-200 ${
           isDragging
             ? 'border-indigo-600 bg-indigo-50/50 scale-[1.01]'
@@ -166,6 +179,7 @@ export const MediaUpload: React.FC<MediaUploadProps> = ({
           type="file"
           accept={accept}
           multiple={multiple}
+          onClick={(e) => e.stopPropagation()}
           onChange={(e) => e.target.files && handleFiles(e.target.files)}
           className="hidden"
         />
@@ -204,41 +218,43 @@ export const MediaUpload: React.FC<MediaUploadProps> = ({
             >
               <img src={item.imageUrl} alt="Uploaded Media" className="w-full h-full object-cover" />
 
-              {/* Primary Badge */}
+              {/* Primary Badge (Top Left) */}
               {item.isPrimary && (
-                <span className="absolute top-1.5 left-1.5 bg-indigo-600 text-white text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-full shadow-xs flex items-center gap-1">
+                <span className="absolute top-2 left-2 z-10 bg-indigo-600 text-white text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-full shadow-md flex items-center gap-1 pointer-events-none">
                   <Star className="w-3 h-3 fill-white" /> Primary
                 </span>
               )}
 
-              {/* Actions Overlay */}
-              <div className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col justify-between p-2">
+              {/* Always-Visible Delete Button (Top Right) */}
+              <button
+                type="button"
+                onClick={(e) => handleRemove(index, e)}
+                className="absolute top-2 right-2 z-20 p-1.5 rounded-full bg-red-600 text-white hover:bg-red-700 shadow-md transition-transform hover:scale-110 focus:outline-none"
+                title="Delete Image"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+
+              {/* Actions Overlay for Reordering & Setting Primary (On Hover) */}
+              <div className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col justify-between p-2 z-10">
                 <div className="flex items-center justify-between">
                   {!item.isPrimary && (
                     <button
                       type="button"
-                      onClick={() => handleSetPrimary(index)}
+                      onClick={(e) => handleSetPrimary(index, e)}
                       className="p-1.5 rounded-lg bg-white/90 text-amber-500 hover:bg-white text-[10px] font-bold flex items-center gap-1 shadow-xs"
                       title="Set as Primary Image"
                     >
-                      <Star className="w-3.5 h-3.5" />
+                      <Star className="w-3.5 h-3.5" /> Make Primary
                     </button>
                   )}
-                  <button
-                    type="button"
-                    onClick={() => handleRemove(index)}
-                    className="p-1.5 rounded-lg bg-red-600 text-white hover:bg-red-700 shadow-xs ml-auto"
-                    title="Remove Image"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
                 </div>
 
                 <div className="flex items-center justify-between">
                   <button
                     type="button"
                     disabled={index === 0}
-                    onClick={() => handleMove(index, 'left')}
+                    onClick={(e) => handleMove(index, 'left', e)}
                     className="p-1 rounded-md bg-white/80 text-slate-800 disabled:opacity-30 hover:bg-white"
                     title="Move Left"
                   >
@@ -248,7 +264,7 @@ export const MediaUpload: React.FC<MediaUploadProps> = ({
                   <button
                     type="button"
                     disabled={index === items.length - 1}
-                    onClick={() => handleMove(index, 'right')}
+                    onClick={(e) => handleMove(index, 'right', e)}
                     className="p-1 rounded-md bg-white/80 text-slate-800 disabled:opacity-30 hover:bg-white"
                     title="Move Right"
                   >
@@ -267,11 +283,15 @@ export const MediaUpload: React.FC<MediaUploadProps> = ({
           <img src={value} alt="Media Preview" className="w-full h-full object-cover" />
           <button
             type="button"
-            onClick={() => onChange?.(null)}
-            className="absolute top-1.5 right-1.5 p-1 rounded-full bg-red-600 text-white hover:bg-red-700 shadow-md opacity-90 group-hover:opacity-100"
-            title="Remove Image"
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              onChange?.(null);
+            }}
+            className="absolute top-1.5 right-1.5 p-1.5 rounded-full bg-red-600 text-white hover:bg-red-700 shadow-md transition-transform hover:scale-110 z-20"
+            title="Delete Image"
           >
-            <X className="w-3.5 h-3.5" />
+            <Trash2 className="w-3.5 h-3.5" />
           </button>
         </div>
       )}
