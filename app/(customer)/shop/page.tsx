@@ -127,7 +127,7 @@ export default function ShopPage() {
   if (activeCategoryObj) {
     bannerTitle = activeCategoryObj.name;
     bannerDesc = activeCategoryObj.description || `Explore our high quality selection of ${activeCategoryObj.name.toLowerCase()} sourced directly from organic farms.`;
-    bannerImg = activeCategoryObj.coverImage || activeCategoryObj.image || "/products-image all/red_chilli_powder_bowl.jpg";
+    bannerImg = activeCategoryObj.imageUrl || "/products-image all/red_chilli_powder_bowl.jpg";
 
     const catSlug = activeCategoryObj.slug;
     if (catSlug.includes('rice') || catSlug.includes('grain')) {
