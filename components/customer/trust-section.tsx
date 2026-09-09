@@ -1,60 +1,99 @@
 'use client';
 
 import React from 'react';
-import { ShieldCheck, Store, Lock, Truck } from 'lucide-react';
+import { Leaf, ShieldCheck, Flame, PackageCheck, Award, Sparkles } from 'lucide-react';
 
 export const TrustSection: React.FC = () => {
-  const trustItems = [
+  const steps = [
     {
+      step: '01',
+      icon: Leaf,
+      title: 'Direct Organic Sourcing',
+      description: 'Cultivated naturally by traditional organic farmer collectives in Tamil Nadu & Andhra using heritage farming methods.',
+      badge: 'Single Origin',
+      color: '#15803D',
+      bgLight: '#F0FDF4',
+    },
+    {
+      step: '02',
+      icon: Flame,
+      title: 'Slow Cold Stone Grinding',
+      description: 'Traditional slow-speed stone mills keep milling temperatures below 40°C, preserving 100% of volatile aromatic oils & nutrients.',
+      badge: 'Essential Oils Locked',
+      color: '#C2410C',
+      bgLight: '#FFF7ED',
+    },
+    {
+      step: '03',
       icon: ShieldCheck,
-      title: 'Curated Products',
-      description: 'Thoughtfully selected products from our marketplace.',
+      title: 'Zero Fillers or Additives',
+      description: 'Zero MSG, zero sawdust/starch fillers, zero added synthetic dyes. Tested rigorously in certified food labs for purity.',
+      badge: '100% Pure & Lab Tested',
+      color: '#A50025',
+      bgLight: '#FFF0F3',
     },
     {
-      icon: Store,
-      title: 'Trusted Sellers',
-      description: 'Products sourced from verified marketplace sellers.',
-    },
-    {
-      icon: Lock,
-      title: 'Secure Payments',
-      description: 'Safe and encrypted checkout experience.',
-    },
-    {
-      icon: Truck,
-      title: 'Reliable Delivery',
-      description: 'Your order delivered safely to your doorstep.',
+      step: '04',
+      icon: PackageCheck,
+      title: 'Aroma-Lock Fresh Packing',
+      description: 'Packaged in multi-layer food-grade barrier pouches directly after milling to deliver farm-fresh scent to your kitchen.',
+      badge: 'Freshness Guaranteed',
+      color: '#1E293B',
+      bgLight: '#F8FAFC',
     },
   ];
 
   return (
-    <section className="bg-white rounded-2xl p-6 sm:p-8 border border-[#E5E7EB] shadow-xs my-6">
-      <div className="text-center max-w-xl mx-auto mb-6 sm:mb-8 space-y-1">
-        <span className="text-[11px] font-black uppercase tracking-widest text-[#A50025]">
-          The Vistora Guarantee
+    <section className="bg-white rounded-3xl p-6 sm:p-10 border border-[#E7E0D6] shadow-xs my-8 space-y-8">
+      <div className="text-center max-w-2xl mx-auto space-y-2">
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-widest bg-[#15803D]/10 text-[#15803D]">
+          <Sparkles className="w-3.5 h-3.5" /> The Vistora Purity Standard
         </span>
-        <h2 className="text-xl sm:text-2xl font-black text-[#111827] tracking-tight">
-          Why Shop With Vistora?
+        <h2 className="text-2xl sm:text-4xl font-black text-[#1C1917] tracking-tight">
+          How We Bring Authentic Purity To Your Kitchen
         </h2>
+        <p className="text-xs sm:text-sm text-[#78716C] font-medium">
+          Say goodbye to stale supermarket chemicals. Every grain, spice batch, and porridge mix adheres to uncompromised traditional standards.
+        </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {trustItems.map((item, idx) => {
-          const IconComp = item.icon;
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        {steps.map((item, idx) => {
+          const IconComponent = item.icon;
           return (
             <div
               key={idx}
-              className="flex flex-col items-center text-center p-4 rounded-xl bg-[#F7F8FA] border border-[#E5E7EB] hover:border-[#A50025]/30 transition-all duration-200"
+              className="relative flex flex-col justify-between p-5 rounded-2xl border border-[#E7E0D6] bg-[#FAF7F2] hover:bg-white hover:border-[#1C1917]/30 hover:shadow-lg transition-all duration-300 group"
             >
-              <div className="w-12 h-12 rounded-full bg-[#FFF0F3] text-[#A50025] flex items-center justify-center mb-3">
-                <IconComp className="w-6 h-6" />
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div
+                    className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-xs transition-transform duration-300 group-hover:scale-110"
+                    style={{ backgroundColor: item.bgLight, color: item.color }}
+                  >
+                    <IconComponent className="w-6 h-6" />
+                  </div>
+                  <span className="font-mono text-2xl font-black text-[#D6CEBF] group-hover:text-[#1C1917] transition-colors">
+                    {item.step}
+                  </span>
+                </div>
+
+                <div className="space-y-1 pt-1">
+                  <span
+                    className="inline-block px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider"
+                    style={{ backgroundColor: item.bgLight, color: item.color }}
+                  >
+                    {item.badge}
+                  </span>
+                  <h3 className="text-base font-black text-[#1C1917] tracking-tight leading-snug">
+                    {item.title}
+                  </h3>
+                </div>
+
+                <p className="text-xs text-[#57534E] font-medium leading-relaxed">
+                  {item.description}
+                </p>
               </div>
-              <h3 className="text-sm font-extrabold text-[#111827] mb-1">
-                {item.title}
-              </h3>
-              <p className="text-xs text-[#64748B] font-normal leading-relaxed">
-                {item.description}
-              </p>
             </div>
           );
         })}

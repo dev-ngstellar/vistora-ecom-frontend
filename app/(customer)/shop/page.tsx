@@ -130,12 +130,14 @@ export default function ShopPage() {
     bannerImg = activeCategoryObj.imageUrl || "/products-image all/red_chilli_powder_bowl.jpg";
 
     const catSlug = activeCategoryObj.slug;
-    if (catSlug.includes('rice') || catSlug.includes('grain')) {
-      bannerImg = "/products-image all/raw_white_rice_grains.jpg";
+    if (catSlug.includes('millet') || catSlug.includes('grain')) {
+      bannerImg = "/products-image all/millets/Thinai front image_11zon.jpg.jpeg";
+    } else if (catSlug.includes('rice')) {
+      bannerImg = "/products-image all/millets/Black rice front image.jpg.jpeg";
     } else if (catSlug.includes('spice') || catSlug.includes('chilli') || catSlug.includes('turmeric') || catSlug.includes('masala')) {
-      bannerImg = "/products-image all/red_chilli_powder_bowl.jpg";
+      bannerImg = "/products-image all/millets/Red cholam front image_11zon.jpg.jpeg";
     } else if (catSlug.includes('health') || catSlug.includes('mix') || catSlug.includes('nutrition')) {
-      bannerImg = "/products-image all/health_mix_sathu_maavu.jpg";
+      bannerImg = "/products-image all/millets/kambu front image.webp";
     }
   }
 
