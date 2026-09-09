@@ -5,11 +5,11 @@ import { Instagram } from 'lucide-react';
 
 export const InstagramGrid: React.FC = () => {
   const images = [
-    { url: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=600&auto=format&fit=crop', tag: '#VistoraCouture' },
-    { url: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=600&auto=format&fit=crop', tag: '#ItalianSilk' },
-    { url: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=600&auto=format&fit=crop', tag: '#BespokeTailoring' },
-    { url: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=600&auto=format&fit=crop', tag: '#HighFashion' },
-    { url: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&auto=format&fit=crop', tag: '#AutumnRunway' },
+    { url: '/products-image all/health_mix_sathu_maavu.jpg', tag: '#SathuMaavu' },
+    { url: '/products-image all/raw_white_rice_grains.jpg', tag: '#OrganicRice' },
+    { url: '/products-image all/red_chilli_powder_bowl.jpg', tag: '#PureSpices' },
+    { url: '/products-image all/turmeric_powder_bowl.jpg', tag: '#SalemTurmeric' },
+    { url: '/products-image all/coriander_powder_bowl.jpg', tag: '#FreshMasalas' },
   ];
 
   return (

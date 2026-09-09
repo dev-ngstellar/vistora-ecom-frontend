@@ -24,9 +24,9 @@ export const navigationConfig = {
       title: 'Catalog',
       links: [
         { label: 'Shop All', href: '/shop' },
-        { label: 'Women\'s Couture', href: '/shop?category=women' },
-        { label: 'Men\'s Apparel', href: '/shop?category=men' },
-        { label: 'Luxury Accessories', href: '/shop?category=accessories' },
+        { label: 'Rice & Grains', href: '/shop?category=rice-grains' },
+        { label: 'Spices & Masala Powders', href: '/shop?category=spices-masala-powders' },
+        { label: 'Health Mix & Nutrition', href: '/shop?category=health-mix-nutrition' },
         { label: 'Saved Wishlist', href: '/wishlist' },
       ],
     },

@@ -10,9 +10,9 @@ export const MinimalHero: React.FC = () => {
   const { data: bannersData } = useBanners({ position: 'HERO_SLIDER', isActive: true });
   const banner = bannersData?.banners?.[0] || {
     title: `Discover ${brandConfig.name}`,
-    subtitle: 'Essential collections engineered with clean aesthetics and timeless design.',
-    imageUrl: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1600&auto=format&fit=crop',
-    buttonText: 'Browse Shop Catalog',
+    subtitle: 'Organic grains, stone-ground spices, and traditional superfood nutrition.',
+    imageUrl: '/products-image all/raw_white_rice_grains.jpg',
+    buttonText: 'Browse Store Catalog',
     buttonLink: '/shop',
   };
 
@@ -25,7 +25,7 @@ export const MinimalHero: React.FC = () => {
       />
       <div className="relative z-10 max-w-xl space-y-6">
         <span className="text-[10px] font-mono uppercase tracking-widest text-slate-300 border border-slate-700 px-3 py-1 rounded-full">
-          Minimal Edition
+          Farm Fresh Collection
         </span>
         <h1 className="text-4xl sm:text-6xl font-bold tracking-tight text-white leading-tight">
           {banner.title}

@@ -86,7 +86,7 @@ export const CustomerFooter: React.FC = () => {
               One Destination. Endless Choices.
             </p>
             <p className="text-xs text-slate-300 font-normal leading-relaxed">
-              Centralized marketplace for curated cosmetics, lip colors, skincare, and traditional sarees.
+              Centralized marketplace for organic rice, farm-fresh spices, masala powders, and traditional health mixes.
             </p>
           </div>
 
@@ -98,11 +98,9 @@ export const CustomerFooter: React.FC = () => {
             </div>
             <ul className="space-y-2 text-xs text-slate-200 font-medium">
               <li><Link href="/shop" className="hover:text-[#E66001] transition-colors flex items-center gap-1.5"><ArrowRight className="w-3 h-3 text-slate-500" /> All Products</Link></li>
-              <li><Link href="/shop?category=lipsticks" className="hover:text-[#E66001] transition-colors flex items-center gap-1.5"><ArrowRight className="w-3 h-3 text-slate-500" /> Lipsticks & Lip Colors</Link></li>
-              <li><Link href="/shop?category=lip-gloss" className="hover:text-[#E66001] transition-colors flex items-center gap-1.5"><ArrowRight className="w-3 h-3 text-slate-500" /> Lip Gloss & Shimmer</Link></li>
-              <li><Link href="/shop?category=kajal-eyeliner" className="hover:text-[#E66001] transition-colors flex items-center gap-1.5"><ArrowRight className="w-3 h-3 text-slate-500" /> Kajal & Eyeliners</Link></li>
-              <li><Link href="/shop?category=skincare" className="hover:text-[#E66001] transition-colors flex items-center gap-1.5"><ArrowRight className="w-3 h-3 text-slate-500" /> Skincare & Eye Care</Link></li>
-              <li><Link href="/shop?category=sarees-handloom" className="hover:text-[#E66001] transition-colors flex items-center gap-1.5"><ArrowRight className="w-3 h-3 text-slate-500" /> Sarees & Handloom</Link></li>
+              <li><Link href="/shop?category=rice-grains" className="hover:text-[#E66001] transition-colors flex items-center gap-1.5"><ArrowRight className="w-3 h-3 text-slate-500" /> Rice & Grains</Link></li>
+              <li><Link href="/shop?category=spices-masala-powders" className="hover:text-[#E66001] transition-colors flex items-center gap-1.5"><ArrowRight className="w-3 h-3 text-slate-500" /> Spices & Masalas</Link></li>
+              <li><Link href="/shop?category=health-mix-nutrition" className="hover:text-[#E66001] transition-colors flex items-center gap-1.5"><ArrowRight className="w-3 h-3 text-slate-500" /> Health Mix & Nutrition</Link></li>
             </ul>
           </div>
 

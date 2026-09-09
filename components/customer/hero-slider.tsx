@@ -14,37 +14,37 @@ export const HeroSlider: React.FC = () => {
   const fallbackBanners = [
     {
       id: 'fb-1',
-      title: 'Discover Vistora',
-      subtitle: 'One destination. Endless choices across beauty, cosmetics, and handloom couture.',
-      imageUrl: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=1920&auto=format&fit=crop&q=80',
-      mobileImageUrl: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=800&auto=format&fit=crop&q=80',
-      buttonText: 'Shop Now',
-      buttonLink: '/shop',
-      badge: 'Vistora Marketplace',
+      title: 'Fresh Rice & Organic Grains',
+      subtitle: 'Premium Royal Basmati, organic Sona Masoori, red rice, and unrefined grains delivered fresh.',
+      imageUrl: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=1920&auto=format&fit=crop&q=80',
+      mobileImageUrl: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=800&auto=format&fit=crop&q=80',
+      buttonText: 'Shop Rice & Grains',
+      buttonLink: '/shop?category=rice-grains',
+      badge: '100% Organic & Fresh',
     },
     {
       id: 'fb-2',
-      title: 'Celebrate Indian Handloom',
-      subtitle: 'Discover traditional South Indian sarees, zari borders, and handcrafted collections.',
-      imageUrl: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=1920&auto=format&fit=crop&q=80',
-      mobileImageUrl: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800&auto=format&fit=crop&q=80',
-      buttonText: 'Explore Handlooms',
-      buttonLink: '/shop?category=sarees-handloom',
-      badge: 'Handcrafted Heritage',
+      title: 'Authentic Spices & Masalas',
+      subtitle: 'Pure Guntur chilli powder, Salem turmeric, roasted coriander, and rich home-style sambar masala.',
+      imageUrl: 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=1920&auto=format&fit=crop&q=80',
+      mobileImageUrl: 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=800&auto=format&fit=crop&q=80',
+      buttonText: 'Explore Spices',
+      buttonLink: '/shop?category=spices-masala-powders',
+      badge: 'Stone Ground Spices',
     },
     {
       id: 'fb-3',
-      title: 'Beauty Essentials',
-      subtitle: 'Rich lip colors, Ayurvedic kajal, under-eye care, and non-sticky lip glosses.',
-      imageUrl: 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=1920&auto=format&fit=crop&q=80',
-      mobileImageUrl: 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=800&auto=format&fit=crop&q=80',
-      buttonText: 'Shop Beauty',
-      buttonLink: '/shop?category=lipsticks',
-      badge: 'Botanical & Beauty',
+      title: 'Health Mix & Multigrain Nutrition',
+      subtitle: 'Traditional Sathu Maavu, sprouted millet drinks, and special nutrition mixes for kids and family.',
+      imageUrl: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=1920&auto=format&fit=crop&q=80',
+      mobileImageUrl: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&auto=format&fit=crop&q=80',
+      buttonText: 'Shop Health Mix',
+      buttonLink: '/shop?category=health-mix-nutrition',
+      badge: 'Traditional Superfoods',
     },
   ];
 
-  const banners = fallbackBanners; // Prefer clean Vistora catalog banners
+  const banners = fallbackBanners;
 
   useEffect(() => {
     if (banners.length <= 1) return;

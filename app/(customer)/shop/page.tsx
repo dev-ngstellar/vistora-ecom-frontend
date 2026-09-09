@@ -116,27 +116,50 @@ export default function ShopPage() {
     router.push(queryString ? `/shop?${queryString}` : '/shop');
   };
 
+  // Find active category detail for dynamic hero banner
+  const activeCategoryObj = categories?.find((c) => c.id === filters.categoryId || c.slug === filters.categoryId);
+
+  // Dynamic banner logic based on active category
+  let bannerTitle = "Farm Fresh Rice, Spices & Superfoods";
+  let bannerDesc = "Explore our collection of premium unpolished rice varieties, stone-ground masala powders, and traditional nutrient-rich health mixes.";
+  let bannerImg = "/products-image all/red_chilli_powder_bowl.jpg";
+
+  if (activeCategoryObj) {
+    bannerTitle = activeCategoryObj.name;
+    bannerDesc = activeCategoryObj.description || `Explore our high quality selection of ${activeCategoryObj.name.toLowerCase()} sourced directly from organic farms.`;
+    bannerImg = activeCategoryObj.coverImage || activeCategoryObj.image || "/products-image all/red_chilli_powder_bowl.jpg";
+
+    const catSlug = activeCategoryObj.slug;
+    if (catSlug.includes('rice') || catSlug.includes('grain')) {
+      bannerImg = "/products-image all/raw_white_rice_grains.jpg";
+    } else if (catSlug.includes('spice') || catSlug.includes('chilli') || catSlug.includes('turmeric') || catSlug.includes('masala')) {
+      bannerImg = "/products-image all/red_chilli_powder_bowl.jpg";
+    } else if (catSlug.includes('health') || catSlug.includes('mix') || catSlug.includes('nutrition')) {
+      bannerImg = "/products-image all/health_mix_sathu_maavu.jpg";
+    }
+  }
+
   return (
     <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 space-y-10 pb-20 pt-4">
-      {/* Editorial Luxury Collection Hero Banner */}
+      {/* Dynamic Organic Food Catalogue Hero Banner */}
       <div className="relative rounded-[20px] overflow-hidden shadow-xl min-h-[300px] sm:min-h-[360px] flex items-center p-8 sm:p-14 border border-[#ECECEC] group">
         {/* Background Image */}
-        <div className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 ease-out group-hover:scale-105" style={{ backgroundImage: `url('https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1600&auto=format&fit=crop&q=80')` }} />
-        {/* Dark Luxury Overlay Gradient */}
+        <div className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 ease-out group-hover:scale-105" style={{ backgroundImage: `url('${bannerImg}')` }} />
+        {/* Dark Overlay Gradient */}
         <div className="absolute inset-0 bg-gradient-to-r from-[#111827]/95 via-[#111827]/80 to-transparent" />
 
         {/* Content */}
         <div className="relative z-10 space-y-4 max-w-xl text-white">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs font-semibold tracking-wider text-amber-300">
-            <span>✨ VISTORA CURATED CATALOGUE</span>
+            <span>✨ VISTORA ORGANIC CATALOGUE</span>
           </div>
 
           <h1 className="text-3xl sm:text-5xl font-black tracking-tight leading-tight">
-            Discover Signature Beauty & Luxury.
+            {bannerTitle}
           </h1>
 
           <p className="text-sm text-slate-300 font-normal leading-relaxed">
-            Explore our handcrafted luxury lipsticks, herbal kajals, under eye treatments, and authentic South Indian silk sarees.
+            {bannerDesc}
           </p>
         </div>
       </div>
