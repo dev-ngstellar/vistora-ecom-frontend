@@ -45,38 +45,6 @@ import { TableToolbar } from '@/components/admin/table-toolbar';
 
 const { RangePicker } = DatePicker;
 
-const getRetailerDetails = (item: any) => {
-  const brandName = item.product?.brand?.name || '';
-  const productName = item.productName.toLowerCase();
-
-  let name = 'Vistora Retailer Partner';
-  let address = item.product?.brand?.address || 'Vistora HQ, Plot 12, HSR Layout, Bengaluru, Karnataka - 560102';
-
-  if (brandName.toLowerCase().includes('luxe') || productName.includes('lakme') || productName.includes('powerplay')) {
-    name = 'Vistora Luxe Cosmetics';
-    if (!item.product?.brand?.address) {
-      address = 'Vistora Luxe Chambers, 3rd Floor, Brigade Road, Bengaluru, Karnataka - 560001';
-    }
-  } else if (brandName.toLowerCase().includes('vnatura') || productName.includes('eyetex') || productName.includes('kajal') || productName.includes('bbloom')) {
-    name = 'Bbloom VNatura';
-    if (!item.product?.brand?.address) {
-      address = 'Auroville Nature Care, 18, Temple Road, Auroville, Pondicherry - 605101';
-    }
-  } else if (brandName.toLowerCase().includes('mst') || productName.includes('mst') || productName.includes('saree') || productName.includes('handloom')) {
-    name = 'MST / MTS Handlooms';
-    if (!item.product?.brand?.address) {
-      address = 'MST Handloom Chambers, 45, Nethaji Road, Coimbatore, Tamil Nadu - 641001';
-    }
-  } else if (brandName) {
-    name = brandName;
-    if (!item.product?.brand?.address) {
-      address = `${brandName} Hub, Industrial Area Phase II, Chennai, Tamil Nadu - 600001`;
-    }
-  }
-
-  return { name, address };
-};
-
 export default function AdminOrdersPage() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string | undefined>(undefined);
@@ -356,7 +324,7 @@ export default function AdminOrdersPage() {
               {pendingOrdersCount}
             </h3>
             <span className="text-[10px] text-amber-600 font-semibold block">
-              Awaiting retailer dispatch
+              Awaiting warehouse dispatch
             </span>
           </div>
           <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600 shrink-0">
@@ -401,8 +369,8 @@ export default function AdminOrdersPage() {
 
       {/* Page Header */}
       <PageHeader
-        title="Orders & Retailer Fulfillment"
-        subtitle="Manage customer purchases, multi-retailer partner fulfillment, and dispatch statuses."
+        title="Orders & Fulfillment"
+        subtitle="Manage customer orders, warehouse inventory fulfillment, and delivery statuses."
         action={
           <Button
             type="primary"
@@ -582,74 +550,53 @@ export default function AdminOrdersPage() {
               </div>
             </div>
 
-            {/* Multi-Retailer Order Fulfillment Breakdown */}
+            {/* Direct Warehouse Order Fulfillment Breakdown */}
             <div>
               <div className="flex items-center justify-between mb-2">
                 <h4 className="font-extrabold text-[#111827] text-xs uppercase tracking-wider">
-                  Item Fulfillment & Partner Ownership
+                  Ordered Items & Fulfillment
                 </h4>
-                <span className="text-[10px] font-bold text-[#A50025] bg-[#FFF0F3] px-2 py-0.5 rounded-full border border-[#A50025]/20">
-                  Vistora Enterprise Admin View Only
+                <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                  Vistora Central Warehouse Inventory
                 </span>
               </div>
 
               <div className="space-y-2.5">
-                {selectedOrder.items.map((item) => {
-                  const retailer = getRetailerDetails(item);
-                  return (
-                    <div
-                      key={item.id}
-                      className="p-3 bg-white rounded-xl border border-[#E5E7EB] shadow-2xs space-y-2.5"
-                    >
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-3">
-                          {item.product?.images?.[0]?.imageUrl ? (
-                            <img
-                              src={item.product.images[0].imageUrl}
-                              alt={item.productName}
-                              className="w-10 h-10 rounded-lg object-cover border border-[#E5E7EB] shrink-0"
-                            />
-                          ) : (
-                            <div className="w-10 h-10 rounded-lg bg-[#F7F8FA] border border-[#E5E7EB] flex items-center justify-center font-bold text-[#64748B] shrink-0">
-                              📦
-                            </div>
-                          )}
-                          <div>
-                            <span className="font-bold text-[#111827] block text-xs">{item.productName}</span>
-                            <span className="text-[11px] text-[#64748B] font-mono">SKU: {item.sku}</span>
+                {selectedOrder.items.map((item) => (
+                  <div
+                    key={item.id}
+                    className="p-3 bg-white rounded-xl border border-[#E5E7EB] shadow-2xs space-y-2.5"
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        {item.product?.images?.[0]?.imageUrl ? (
+                          <img
+                            src={item.product.images[0].imageUrl}
+                            alt={item.productName}
+                            className="w-10 h-10 rounded-lg object-cover border border-[#E5E7EB] shrink-0"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 rounded-lg bg-[#F7F8FA] border border-[#E5E7EB] flex items-center justify-center font-bold text-[#64748B] shrink-0">
+                            📦
                           </div>
-                        </div>
-
-                        <div className="text-right">
-                          <span className="font-black text-[#111827] block">
-                            ₹{Number(item.total).toLocaleString('en-IN')}
-                          </span>
-                          <span className="text-[10px] text-[#64748B]">
-                            {item.quantity} × ₹{Number(item.unitPrice).toLocaleString('en-IN')}
-                          </span>
+                        )}
+                        <div>
+                          <span className="font-bold text-[#111827] block text-xs">{item.productName}</span>
+                          <span className="text-[11px] text-[#64748B] font-mono">SKU: {item.sku}</span>
                         </div>
                       </div>
 
-                      {/* Retailer Partner Confidential Ownership Tag & Address */}
-                      <div className="pt-2 border-t border-[#F3F4F6] space-y-1.5 text-[11px]">
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="flex items-center gap-2">
-                            <span className="px-2.5 py-0.5 rounded-md bg-[#FFF0F3] text-[#A50025] font-bold border border-[#A50025]/20">
-                              Retailer Partner: {retailer.name}
-                            </span>
-                          </div>
-                          <span className="text-[#16A34A] font-bold">
-                            Pending Retailer Dispatch
-                          </span>
-                        </div>
-                        <div className="text-[#64748B] font-medium pl-0.5 flex flex-wrap items-center gap-x-1.5">
-                          <span className="font-extrabold uppercase text-[9px] tracking-wider text-slate-400 dark:text-slate-500">Retailer Address:</span>
-                          <span className="text-slate-700 font-semibold">{retailer.address}</span>
-                        </div>
+                      <div className="text-right">
+                        <span className="font-black text-[#111827] block">
+                          ₹{Number(item.total).toLocaleString('en-IN')}
+                        </span>
+                        <span className="text-[10px] text-[#64748B]">
+                          {item.quantity} × ₹{Number(item.unitPrice).toLocaleString('en-IN')}
+                        </span>
                       </div>
                     </div>
-                  );
-                })}
+                  </div>
+                ))}
               </div>
             </div>
 

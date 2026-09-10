@@ -194,11 +194,15 @@ export const useCollectionMutations = () => {
   return { createCollection, updateCollection, deleteCollection };
 };
 
-// ==================== PRODUCTS HOOKS ====================
-export const useProducts = (filters?: ProductQueryFilters) => {
+export const useProducts = (
+  filters?: ProductQueryFilters,
+  options?: { enabled?: boolean; staleTime?: number }
+) => {
   return useQuery({
     queryKey: ['products', filters],
     queryFn: () => productService.list(filters),
+    enabled: options?.enabled !== undefined ? options.enabled : true,
+    staleTime: options?.staleTime,
   });
 };
 

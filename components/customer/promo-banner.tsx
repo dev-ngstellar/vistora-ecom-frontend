@@ -8,7 +8,7 @@ export const PromoBanner: React.FC = () => {
   return (
     <section className="relative overflow-hidden rounded-3xl bg-[#14261C] text-white my-8 min-h-[260px] sm:min-h-[300px] flex items-center shadow-lg border border-emerald-900/40 group">
       <img
-        src="/products-image all/millets/maapillai samba front.webp"
+        src="https://res.cloudinary.com/ggvs7siw/image/upload/v1789017711/maapillai_samba_front.webp"
         alt="Vistora Organic Grains & Millets"
         className="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:scale-105 transition-transform duration-1000 ease-out"
       />

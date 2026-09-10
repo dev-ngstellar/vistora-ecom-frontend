@@ -18,8 +18,6 @@ export const CataloguePagination: React.FC<CataloguePaginationProps> = ({
 
   const handlePageClick = (p: number) => {
     onPageChange(p);
-    // Scroll smoothly to top of product grid
-    window.scrollTo({ top: 300, behavior: 'smooth' });
   };
 
   return (

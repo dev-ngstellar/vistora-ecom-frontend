@@ -13,7 +13,6 @@ import { useCart, useCartMutations, useWishlist, useWishlistMutations } from '@/
 import {
   ShoppingBag,
   Heart,
-  ChevronDown,
   ShieldCheck,
   Truck,
   RotateCcw,
@@ -23,6 +22,8 @@ import {
   CheckCircle2,
   Lock,
   Check,
+  Leaf,
+  Info,
 } from 'lucide-react';
 import { useAuth } from '@/context/auth-context';
 import { brandConfig } from '@/config';
@@ -41,13 +42,15 @@ export default function ProductDetailPage() {
 
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
   const [quantity, setQuantity] = useState<number>(1);
-  const [openAccordion, setOpenAccordion] = useState<string | null>('details');
 
-  // Fetch recommendations from same category
-  const { data: recsData } = useProducts({
-    categoryId: product?.categoryId,
-    limit: 5,
-  });
+  // Fetch recommendations from same category only when product categoryId is loaded
+  const { data: recsData } = useProducts(
+    {
+      categoryId: product?.categoryId,
+      limit: 5,
+    },
+    { enabled: Boolean(product?.categoryId) }
+  );
   const recommendations = (recsData?.items || []).filter((p) => p.id !== product?.id).slice(0, 4);
 
   const wishlistItem = wishlistData?.items?.find((item) => item.productId === product?.id);
@@ -234,10 +237,6 @@ export default function ProductDetailPage() {
         addToWishlist.mutate({ productId: product.id, variantId: selectedVariant?.id || null });
       }
     });
-  };
-
-  const toggleAccordion = (key: string) => {
-    setOpenAccordion(openAccordion === key ? null : key);
   };
 
   return (
@@ -483,92 +482,134 @@ export default function ProductDetailPage() {
 
       </div>
 
-      {/* COMPACT PRODUCT DETAILS ACCORDION SECTION */}
-      <div className="bg-white rounded-2xl border border-[#E5E7EB] shadow-2xs overflow-hidden divide-y divide-[#E5E7EB]">
-
-        {/* Accordion 1: Product Details */}
-        <div>
-          <button
-            onClick={() => toggleAccordion('details')}
-            className="w-full px-5 py-3.5 flex items-center justify-between text-left hover:bg-[#FAFBFD] transition"
-          >
-            <span className="text-xs sm:text-sm font-black text-[#111827] uppercase tracking-wider">Product Details</span>
-            <ChevronDown className={`w-4 h-4 text-[#64748B] transition-transform duration-200 ${openAccordion === 'details' ? 'rotate-180 text-[#A50025]' : ''}`} />
-          </button>
-          {openAccordion === 'details' && (
-            <div className="px-5 pb-4 text-xs text-[#64748B] font-medium leading-relaxed space-y-2 border-t border-[#F3F4F6] pt-3">
-              <p>{product.description || product.shortDescription || 'Crafted with premium materials and traditional artisan formulations designed for daily beauty, comfort, and safety.'}</p>
-            </div>
-          )}
-        </div>
-
-        {/* Accordion 2: Specifications */}
-        <div>
-          <button
-            onClick={() => toggleAccordion('specs')}
-            className="w-full px-5 py-3.5 flex items-center justify-between text-left hover:bg-[#FAFBFD] transition"
-          >
-            <span className="text-xs sm:text-sm font-black text-[#111827] uppercase tracking-wider">Specifications</span>
-            <ChevronDown className={`w-4 h-4 text-[#64748B] transition-transform duration-200 ${openAccordion === 'specs' ? 'rotate-180 text-[#A50025]' : ''}`} />
-          </button>
-          {openAccordion === 'specs' && (
-            <div className="px-5 pb-4 border-t border-[#F3F4F6] pt-3">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
-                <div className="p-2.5 rounded-xl bg-[#F7F8FA] border border-[#E5E7EB] flex justify-between items-center">
-                  <span className="font-bold text-[#64748B]">Category</span>
-                  <span className="font-black text-[#111827]">{product.category?.name || 'Vistora Selection'}</span>
-                </div>
-                <div className="p-2.5 rounded-xl bg-[#F7F8FA] border border-[#E5E7EB] flex justify-between items-center">
-                  <span className="font-bold text-[#64748B]">SKU Code</span>
-                  <span className="font-mono font-black text-[#111827]">{currentSku}</span>
-                </div>
-                <div className="p-2.5 rounded-xl bg-[#F7F8FA] border border-[#E5E7EB] flex justify-between items-center">
-                  <span className="font-bold text-[#64748B]">Authenticity</span>
-                  <span className="font-black text-emerald-700">100% Guaranteed</span>
-                </div>
-                <div className="p-2.5 rounded-xl bg-[#F7F8FA] border border-[#E5E7EB] flex justify-between items-center">
-                  <span className="font-bold text-[#64748B]">Shipping</span>
-                  <span className="font-black text-[#A50025]">Express Doorstep Shipping</span>
-                </div>
+      {/* 2X2 RESPONSIVE PRODUCT INFORMATION GRID */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+        
+        {/* Card 1: Product Overview & Purity Highlights */}
+        <div className="bg-white rounded-2xl border border-[#E5E7EB] p-5 sm:p-6 shadow-2xs hover:shadow-xs transition-shadow flex flex-col justify-between">
+          <div>
+            <div className="flex items-center gap-3 mb-3.5">
+              <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 shrink-0">
+                <Leaf className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-xs sm:text-sm font-black text-[#111827] uppercase tracking-wider">Product Overview</h3>
+                <p className="text-[11px] text-[#64748B] font-medium">Purity & Origin Assurance</p>
               </div>
             </div>
-          )}
+            <p className="text-xs sm:text-[13px] text-[#475569] font-medium leading-relaxed mb-4">
+              {product.description || product.shortDescription || '100% natural, unpolished whole grains sourced directly from certified organic farmer collectives, packed fresh to retain all essential micro-nutrients.'}
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2 pt-3 border-t border-[#F1F5F9]">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 text-[11px] font-bold">
+              <CheckCircle2 className="w-3.5 h-3.5" /> 100% Unpolished
+            </span>
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#FAF7F2] text-[#78350F] text-[11px] font-bold">
+              <CheckCircle2 className="w-3.5 h-3.5" /> Single Origin
+            </span>
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#F8FAFC] text-[#475569] text-[11px] font-bold">
+              <CheckCircle2 className="w-3.5 h-3.5" /> Zero Additives
+            </span>
+          </div>
         </div>
 
-        {/* Accordion 3: Care & Usage Instructions */}
-        <div>
-          <button
-            onClick={() => toggleAccordion('care')}
-            className="w-full px-5 py-3.5 flex items-center justify-between text-left hover:bg-[#FAFBFD] transition"
-          >
-            <span className="text-xs sm:text-sm font-black text-[#111827] uppercase tracking-wider">Care & Usage Instructions</span>
-            <ChevronDown className={`w-4 h-4 text-[#64748B] transition-transform duration-200 ${openAccordion === 'care' ? 'rotate-180 text-[#A50025]' : ''}`} />
-          </button>
-          {openAccordion === 'care' && (
-            <div className="px-5 pb-4 text-xs text-[#64748B] font-medium leading-relaxed border-t border-[#F3F4F6] pt-3">
-              <ul className="list-disc pl-4 space-y-1">
-                <li>Store in a cool, dry place away from direct heat or sunlight.</li>
-                <li>Keep container cap tightly closed after each use.</li>
-                <li>Patch test recommended for sensitive skin.</li>
-              </ul>
+        {/* Card 2: Technical Specifications */}
+        <div className="bg-white rounded-2xl border border-[#E5E7EB] p-5 sm:p-6 shadow-2xs hover:shadow-xs transition-shadow flex flex-col justify-between">
+          <div>
+            <div className="flex items-center gap-3 mb-3.5">
+              <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600 shrink-0">
+                <Sparkles className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-xs sm:text-sm font-black text-[#111827] uppercase tracking-wider">Specifications</h3>
+                <p className="text-[11px] text-[#64748B] font-medium">Standards & Identification</p>
+              </div>
             </div>
-          )}
+            
+            <div className="grid grid-cols-2 gap-2.5 text-xs">
+              <div className="p-2.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
+                <span className="block text-[10px] font-bold text-[#64748B] uppercase tracking-wider mb-0.5">Category</span>
+                <span className="font-bold text-[#111827] truncate block">{product.category?.name || 'Millets & Grains'}</span>
+              </div>
+              <div className="p-2.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
+                <span className="block text-[10px] font-bold text-[#64748B] uppercase tracking-wider mb-0.5">SKU Code</span>
+                <span className="font-mono font-bold text-[#111827] truncate block">{currentSku}</span>
+              </div>
+              <div className="p-2.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
+                <span className="block text-[10px] font-bold text-[#64748B] uppercase tracking-wider mb-0.5">Authenticity</span>
+                <span className="font-bold text-emerald-700 flex items-center gap-1">
+                  <Check className="w-3.5 h-3.5 stroke-[3]" /> 100% Pure
+                </span>
+              </div>
+              <div className="p-2.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
+                <span className="block text-[10px] font-bold text-[#64748B] uppercase tracking-wider mb-0.5">Shelf Life</span>
+                <span className="font-bold text-[#A50025]">12 Months</span>
+              </div>
+            </div>
+          </div>
+          <div className="text-[11px] text-[#64748B] font-medium pt-3 mt-3 border-t border-[#F1F5F9] flex items-center justify-between">
+            <span>FSSAI Quality Checked</span>
+            <span className="text-emerald-700 font-bold">Standard Grade A</span>
+          </div>
         </div>
 
-        {/* Accordion 4: Shipping & Returns */}
-        <div>
-          <button
-            onClick={() => toggleAccordion('shipping')}
-            className="w-full px-5 py-3.5 flex items-center justify-between text-left hover:bg-[#FAFBFD] transition"
-          >
-            <span className="text-xs sm:text-sm font-black text-[#111827] uppercase tracking-wider">Shipping & Easy Returns</span>
-            <ChevronDown className={`w-4 h-4 text-[#64748B] transition-transform duration-200 ${openAccordion === 'shipping' ? 'rotate-180 text-[#A50025]' : ''}`} />
-          </button>
-          {openAccordion === 'shipping' && (
-            <div className="px-5 pb-4 text-xs text-[#64748B] font-medium leading-relaxed border-t border-[#F3F4F6] pt-3">
-              <p>Hassle-free 7-day return policy. Items must be unused and in original packaging.</p>
+        {/* Card 3: Storage & Usage Guide */}
+        <div className="bg-white rounded-2xl border border-[#E5E7EB] p-5 sm:p-6 shadow-2xs hover:shadow-xs transition-shadow flex flex-col justify-between">
+          <div>
+            <div className="flex items-center gap-3 mb-3.5">
+              <div className="w-10 h-10 rounded-xl bg-sky-50 border border-sky-100 flex items-center justify-center text-sky-600 shrink-0">
+                <ShieldCheck className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-xs sm:text-sm font-black text-[#111827] uppercase tracking-wider">Care & Usage Guide</h3>
+                <p className="text-[11px] text-[#64748B] font-medium">Storage & Preparation Tips</p>
+              </div>
             </div>
-          )}
+            <ul className="space-y-2 text-xs sm:text-[13px] text-[#475569] font-medium leading-relaxed">
+              <li className="flex items-start gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-sky-500 mt-1.5 shrink-0" />
+                <span>Store in a cool, dry place in an airtight container away from moisture.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-sky-500 mt-1.5 shrink-0" />
+                <span>Rinse gently 2–3 times with clean water before cooking or soaking.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-sky-500 mt-1.5 shrink-0" />
+                <span>Perfect for healthy porridge, steaming with meals, and traditional idli/dosa batters.</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        {/* Card 4: Shipping & Freshness Guarantee */}
+        <div className="bg-white rounded-2xl border border-[#E5E7EB] p-5 sm:p-6 shadow-2xs hover:shadow-xs transition-shadow flex flex-col justify-between">
+          <div>
+            <div className="flex items-center gap-3 mb-3.5">
+              <div className="w-10 h-10 rounded-xl bg-[#FDF2F4] border border-[#FCE7EB] flex items-center justify-center text-[#A50025] shrink-0">
+                <Truck className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-xs sm:text-sm font-black text-[#111827] uppercase tracking-wider">Shipping & Returns</h3>
+                <p className="text-[11px] text-[#64748B] font-medium">Doorstep Freshness Promise</p>
+              </div>
+            </div>
+            <ul className="space-y-2 text-xs sm:text-[13px] text-[#475569] font-medium leading-relaxed">
+              <li className="flex items-start gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#A50025] mt-1.5 shrink-0" />
+                <span><strong>Express Dispatch:</strong> Dispatched within 24–48 hours in sealed aroma-lock pouches.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#A50025] mt-1.5 shrink-0" />
+                <span><strong>Doorstep Delivery:</strong> Live order tracking with end-to-end delivery updates.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#A50025] mt-1.5 shrink-0" />
+                <span><strong>7-Day Purity Guarantee:</strong> Instant replacement if packaging seal is compromised.</span>
+              </li>
+            </ul>
+          </div>
         </div>
 
       </div>

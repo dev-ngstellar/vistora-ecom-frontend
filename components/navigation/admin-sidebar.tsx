@@ -49,7 +49,6 @@ export const adminNavGroups: AdminNavGroup[] = [
     items: [
       { label: 'Products', href: '/admin/products', icon: Package },
       { label: 'Categories', href: '/admin/categories', icon: FolderTree },
-      { label: 'Retailers', href: '/admin/brands', icon: Award },
       { label: 'Collections', href: '/admin/collections', icon: Layers },
       { label: 'Inventory', href: '/admin/inventory', icon: Boxes },
     ],

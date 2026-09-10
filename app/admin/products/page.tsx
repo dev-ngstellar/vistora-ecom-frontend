@@ -459,16 +459,12 @@ export default function AdminProductsPage() {
       },
     },
     {
-      title: 'Retailer & Category',
-      key: 'brand_category',
+      title: 'Category',
+      key: 'category',
       render: (_: any, record: Product) => (
         <div className="space-y-0.5 text-xs">
-          <div className="font-bold text-slate-800 flex items-center gap-1">
-            <Award className="w-3.5 h-3.5 text-indigo-600" />
-            <span>{record.brand?.name || 'Unassigned Retailer'}</span>
-          </div>
-          <div className="text-slate-500 font-semibold flex items-center gap-1">
-            <Layers className="w-3.5 h-3.5 text-slate-400" />
+          <div className="text-slate-800 font-bold flex items-center gap-1.5">
+            <Layers className="w-3.5 h-3.5 text-[#A50025]" />
             <span>{record.category?.name || 'General'}</span>
           </div>
         </div>
@@ -594,16 +590,8 @@ export default function AdminProductsPage() {
                   placeholder="Category"
                   value={query.categoryId}
                   onChange={(val) => setQuery((prev) => ({ ...prev, categoryId: val, page: 1 }))}
-                  className="w-36 text-xs"
+                  className="w-40 text-xs"
                   options={categories?.map((c) => ({ label: c.name, value: c.id }))}
-                />
-                <Select
-                  allowClear
-                  placeholder="Retailer"
-                  value={query.brandId}
-                  onChange={(val) => setQuery((prev) => ({ ...prev, brandId: val, page: 1 }))}
-                  className="w-36 text-xs"
-                  options={brands?.map((b) => ({ label: b.name, value: b.id }))}
                 />
                 <Select
                   allowClear
@@ -652,13 +640,6 @@ export default function AdminProductsPage() {
               icon={<FolderPlus className="w-3.5 h-3.5 text-indigo-600" />}
             >
               Assign Category
-            </Button>
-            <Button
-              size="small"
-              onClick={() => handleExecuteBulk('ASSIGN_BRAND')}
-              icon={<Award className="w-3.5 h-3.5 text-purple-600" />}
-            >
-              Assign Retailer
             </Button>
             <Button
               size="small"
@@ -763,8 +744,8 @@ export default function AdminProductsPage() {
                       </Form.Item>
                     </div>
 
-                    {/* Catalog & Retailer Assignment */}
-                    <div className="grid grid-cols-3 gap-4">
+                    {/* Catalog Assignment */}
+                    <div className="grid grid-cols-2 gap-4">
                       <Form.Item
                         name="categoryId"
                         label={<span className="font-bold text-xs">Category</span>}
@@ -773,14 +754,6 @@ export default function AdminProductsPage() {
                         <Select
                           placeholder="Select Category"
                           options={categories?.map((c) => ({ label: c.name, value: c.id }))}
-                        />
-                      </Form.Item>
-
-                      <Form.Item name="brandId" label={<span className="font-bold text-xs">Retailer / Brand</span>}>
-                        <Select
-                          allowClear
-                          placeholder="Select Retailer"
-                          options={brands?.map((b) => ({ label: b.name, value: b.id }))}
                         />
                       </Form.Item>
 
@@ -1153,35 +1126,24 @@ export default function AdminProductsPage() {
         </Form>
       </Drawer>
 
-      {/* Bulk Target Assignment Modal */}
+      {/* Bulk Category Assignment Modal */}
       <Modal
-        title={`Bulk Assign ${bulkAssignModal.type === 'CATEGORY' ? 'Category' : 'Retailer'}`}
+        title="Bulk Assign Category"
         open={bulkAssignModal.open}
         onOk={handleConfirmBulkAssign}
         onCancel={() => setBulkAssignModal({ open: false, type: 'CATEGORY' })}
       >
         <div className="py-4 space-y-3">
           <p className="text-xs text-slate-600 font-semibold">
-            Select target {bulkAssignModal.type === 'CATEGORY' ? 'category' : 'retailer'} to assign to all {selectedRowKeys.length} selected products:
+            Select target category to assign to all {selectedRowKeys.length} selected products:
           </p>
-
-          {bulkAssignModal.type === 'CATEGORY' ? (
-            <Select
-              className="w-full"
-              placeholder="Select Category"
-              value={bulkTargetId}
-              onChange={(val) => setBulkTargetId(val)}
-              options={categories?.map((c) => ({ label: c.name, value: c.id }))}
-            />
-          ) : (
-            <Select
-              className="w-full"
-              placeholder="Select Retailer"
-              value={bulkTargetId}
-              onChange={(val) => setBulkTargetId(val)}
-              options={brands?.map((b) => ({ label: b.name, value: b.id }))}
-            />
-          )}
+          <Select
+            className="w-full"
+            placeholder="Select Category"
+            value={bulkTargetId}
+            onChange={(val) => setBulkTargetId(val)}
+            options={categories?.map((c) => ({ label: c.name, value: c.id }))}
+          />
         </div>
       </Modal>
     </div>

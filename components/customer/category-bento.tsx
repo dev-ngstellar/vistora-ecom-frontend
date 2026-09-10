@@ -31,7 +31,7 @@ export const CategoryBento: React.FC = () => {
         {/* Bento 1 (Large - 5 cols): HERITAGE RICE */}
         <div className="md:col-span-5 relative rounded-3xl overflow-hidden min-h-[360px] md:min-h-[440px] flex flex-col justify-between p-6 sm:p-8 border border-[#E5E7EB] shadow-xs group bg-[#1C1917] text-white">
           <img
-            src="/products-image all/millets/Black rice front image.jpg.jpeg"
+            src="https://res.cloudinary.com/ggvs7siw/image/upload/v1789017708/Black_rice_front_image.jpg.jpg"
             alt="Heritage Rice - Karuppu Kavuni & Mappillai Samba"
             className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-108 transition-transform duration-1000 ease-out"
           />
@@ -87,7 +87,7 @@ export const CategoryBento: React.FC = () => {
           {/* Bento 2: NATIVE MILLETS */}
           <div className="relative rounded-3xl overflow-hidden min-h-[200px] sm:min-h-[210px] flex flex-col justify-between p-6 sm:p-7 border border-[#E5E7EB] shadow-xs group bg-[#312E81] text-white">
             <img
-              src="/products-image all/millets/kambu front image.webp"
+              src="https://res.cloudinary.com/ggvs7siw/image/upload/v1789017709/kambu_front_image.webp"
               alt="Native Millets - Thinai, Saamai, Kambu, Varagu"
               className="absolute inset-0 w-full h-full object-cover opacity-55 group-hover:scale-108 transition-transform duration-1000 ease-out"
             />
@@ -124,7 +124,7 @@ export const CategoryBento: React.FC = () => {
           {/* Bento 3: SUPER-PULSES & CHOLAM */}
           <div className="relative rounded-3xl overflow-hidden min-h-[200px] sm:min-h-[210px] flex flex-col justify-between p-6 sm:p-7 border border-[#E5E7EB] shadow-xs group bg-[#14532D] text-white">
             <img
-              src="/products-image all/millets/kollu frontside.webp"
+              src="https://res.cloudinary.com/ggvs7siw/image/upload/v1789017711/kollu_frontside.webp"
               alt="Super Pulses - Horse Gram Kollu & Cholam"
               className="absolute inset-0 w-full h-full object-cover opacity-55 group-hover:scale-108 transition-transform duration-1000 ease-out"
             />

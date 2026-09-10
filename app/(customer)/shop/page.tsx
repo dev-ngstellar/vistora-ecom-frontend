@@ -77,12 +77,25 @@ export default function ShopPage() {
   const products = productsData?.items || [];
   const meta = productsData?.meta || { total: 0, page: 1, limit: 12, totalPages: 1 };
 
+  const catalogSectionRef = React.useRef<HTMLDivElement>(null);
+
+  const scrollToCatalog = () => {
+    if (catalogSectionRef.current) {
+      const navOffset = 90;
+      const elementTop = catalogSectionRef.current.getBoundingClientRect().top + window.scrollY;
+      window.scrollTo({
+        top: Math.max(0, elementTop - navOffset),
+        behavior: 'smooth',
+      });
+    }
+  };
+
   // Sync state changes to URL search params
   const handleFilterChange = (newFilters: Partial<ProductQueryFilters>) => {
     const targetPage = newFilters.page !== undefined ? newFilters.page : 1;
     const updated = { ...filters, ...newFilters, page: targetPage };
     setFilters(updated);
-    updateUrlParams(updated);
+    updateUrlParams(updated, true);
   };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -94,10 +107,10 @@ export default function ShopPage() {
     const cleared: ProductQueryFilters = { page: 1, limit: 12, sort: 'created_at_desc' };
     setSearchInput('');
     setFilters(cleared);
-    updateUrlParams(cleared);
+    updateUrlParams(cleared, true);
   };
 
-  const updateUrlParams = (updatedFilters: ProductQueryFilters) => {
+  const updateUrlParams = (updatedFilters: ProductQueryFilters, shouldScroll = false) => {
     const params = new URLSearchParams();
     if (updatedFilters.q) params.set('q', updatedFilters.q);
     if (updatedFilters.categoryId) {
@@ -113,7 +126,13 @@ export default function ShopPage() {
     if (updatedFilters.page && updatedFilters.page > 1) params.set('page', String(updatedFilters.page));
 
     const queryString = params.toString();
-    router.push(queryString ? `/shop?${queryString}` : '/shop');
+    router.push(queryString ? `/shop?${queryString}` : '/shop', { scroll: false });
+
+    if (shouldScroll) {
+      setTimeout(() => {
+        scrollToCatalog();
+      }, 50);
+    }
   };
 
   // Find active category detail for dynamic hero banner
@@ -131,13 +150,13 @@ export default function ShopPage() {
 
     const catSlug = activeCategoryObj.slug;
     if (catSlug.includes('millet') || catSlug.includes('grain')) {
-      bannerImg = "/products-image all/millets/Thinai front image_11zon.jpg.jpeg";
+      bannerImg = "https://res.cloudinary.com/ggvs7siw/image/upload/v1789017709/Thinai_front_image_11zon.jpg.jpg";
     } else if (catSlug.includes('rice')) {
-      bannerImg = "/products-image all/millets/Black rice front image.jpg.jpeg";
+      bannerImg = "https://res.cloudinary.com/ggvs7siw/image/upload/v1789017708/Black_rice_front_image.jpg.jpg";
     } else if (catSlug.includes('spice') || catSlug.includes('chilli') || catSlug.includes('turmeric') || catSlug.includes('masala')) {
-      bannerImg = "/products-image all/millets/Red cholam front image_11zon.jpg.jpeg";
+      bannerImg = "https://res.cloudinary.com/ggvs7siw/image/upload/v1789017712/Red_cholam_front.jpg.jpg";
     } else if (catSlug.includes('health') || catSlug.includes('mix') || catSlug.includes('nutrition')) {
-      bannerImg = "/products-image all/millets/kambu front image.webp";
+      bannerImg = "https://res.cloudinary.com/ggvs7siw/image/upload/v1789017709/kambu_front_image.webp";
     }
   }
 
@@ -167,7 +186,7 @@ export default function ShopPage() {
       </div>
 
       {/* Main Two-Column Shop Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+      <div ref={catalogSectionRef} id="catalog-section" className="grid grid-cols-1 lg:grid-cols-4 gap-8 scroll-mt-24">
         
         {/* Left Desktop Sidebar Filter / Mobile Drawer */}
         <div className="hidden lg:block">

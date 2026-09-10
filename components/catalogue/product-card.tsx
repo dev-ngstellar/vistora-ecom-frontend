@@ -17,8 +17,6 @@ interface ProductCardProps {
 export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const router = useRouter();
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
-  
   const { data: cartData } = useCart();
   const { data: wishlistData } = useWishlist();
   const { addToWishlist, removeFromWishlist } = useWishlistMutations();
@@ -35,9 +33,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     product.images?.find((img) => img.isPrimary)?.imageUrl ||
     product.images?.[0]?.imageUrl ||
     'https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&q=80&w=800';
-
-  const secondaryImage =
-    product.images?.find((img) => !img.isPrimary)?.imageUrl || primaryImage;
 
   const priceNum = typeof product.price === 'string' ? parseFloat(product.price) : product.price;
   const compareAtPriceNum = product.compareAtPrice
@@ -86,8 +81,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   return (
     <>
       <div
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
         className="group relative rounded-2xl bg-white p-3 border border-[#E5E7EB] shadow-xs hover:shadow-lg transition-all duration-300 flex flex-col justify-between overflow-hidden h-full"
       >
         {/* Product Image Frame */}
@@ -96,9 +89,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           className="block relative w-full aspect-[3/4] rounded-xl overflow-hidden bg-[#F7F8FA] mb-3 cursor-pointer group/img"
         >
           <img
-            src={isHovered && secondaryImage ? secondaryImage : primaryImage}
+            src={primaryImage}
             alt={product.name}
-            className={`w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-500 ease-out cursor-pointer ${
+            className={`w-full h-full object-cover group-hover/img:scale-106 group-hover:scale-106 transition-transform duration-500 ease-out cursor-pointer ${
               isOutOfStock ? 'grayscale opacity-75' : ''
             }`}
           />
