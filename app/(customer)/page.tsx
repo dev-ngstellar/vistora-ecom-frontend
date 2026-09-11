@@ -10,8 +10,7 @@ import { HealthGoalsSection } from '@/components/customer/health-goals-section';
 import { DealsOfTheDay } from '@/components/customer/deals-of-the-day';
 import { CollectionsSection } from '@/components/customer/collections-section';
 import { PromoBanner } from '@/components/customer/promo-banner';
-import { TrustSection } from '@/components/customer/trust-section';
-import { TestimonialsSection } from '@/components/customer/testimonials-section';
+// import { TestimonialsSection } from '@/components/customer/testimonials-section';
 import { NewsletterSection } from '@/components/customer/newsletter-section';
 import { ProductGridSkeleton } from '@/components/catalogue/skeleton-loaders';
 import { Flame, Sparkles, Heart } from 'lucide-react';
@@ -86,9 +85,6 @@ export default function HomePage() {
       {/* 7. PROMOTIONAL / FARM HARVEST BANNER */}
       <PromoBanner />
 
-      {/* 8. THE VISTORA PURITY PROMISE (Artisanal 4-Step Process) */}
-      <TrustSection />
-
       {/* 9. TOP RATED CUSTOMER PICKS */}
       {favouritesProducts.length > 0 && (
         <section className="space-y-4 pt-2">
@@ -123,7 +119,7 @@ export default function HomePage() {
       )}
 
       {/* 10. VERIFIED CUSTOMER REVIEWS */}
-      <TestimonialsSection />
+      {/* <TestimonialsSection /> */}
 
       {/* 11. NEWSLETTER & FRESH BATCH ALERTS */}
       <NewsletterSection />

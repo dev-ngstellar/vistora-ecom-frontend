@@ -44,7 +44,7 @@ export const PromoBanner: React.FC = () => {
             href="/about"
             className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-black uppercase tracking-wider transition-all border border-white/15"
           >
-            <span>Our Farm Story</span>
+            <span>About Us</span>
           </Link>
         </div>
       </div>
