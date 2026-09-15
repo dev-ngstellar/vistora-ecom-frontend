@@ -17,7 +17,7 @@ export default function AboutPage() {
           Redefining Modern Marketplace Shopping
         </h1>
         <p className="text-base text-slate-600 max-w-2xl mx-auto leading-relaxed">
-          {brandConfig.tagline || 'One Destination. Endless Choices... Discover premium luxury collections across apparel, electronics, accessories, and home decor.'}
+          {brandConfig.tagline || 'One Destination. Endless Choices... Discover pure organic grains, stone-ground spices, traditional health nutrition mixes, and heritage foods.'}
         </p>
       </div>
 

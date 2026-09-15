@@ -13,22 +13,22 @@ interface CategoryCardProps {
 export const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
   const getCategoryFallbackImage = (name: string) => {
     const lower = name.toLowerCase();
-    if (lower.includes('lipstick') || lower.includes('lip color')) {
-      return 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=1000&auto=format&fit=crop&q=80';
+    if (lower.includes('rice') || lower.includes('grain') || lower.includes('kavuni') || lower.includes('samba') || lower.includes('hand-pounded')) {
+      return '/products-image all/hand_pounded_lean_rice_banner_showcase.webp';
     }
-    if (lower.includes('gloss') || lower.includes('shimmer')) {
-      return 'https://images.unsplash.com/photo-1625093742435-6fa192b6fb10?w=1000&auto=format&fit=crop&q=80';
+    if (lower.includes('millet') || lower.includes('ragi') || lower.includes('kambu') || lower.includes('thinai') || lower.includes('saamai') || lower.includes('varagu')) {
+      return '/products-image all/ragi_banner_showcase.webp';
     }
-    if (lower.includes('kajal') || lower.includes('eyeliner') || lower.includes('eye')) {
-      return 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=1000&auto=format&fit=crop&q=80';
+    if (lower.includes('spice') || lower.includes('masala') || lower.includes('chilli') || lower.includes('turmeric') || lower.includes('coriander')) {
+      return '/products-image all/red_chilli_powder_bowl.jpg';
     }
-    if (lower.includes('skincare') || lower.includes('care') || lower.includes('cream')) {
-      return 'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=1000&auto=format&fit=crop&q=80';
+    if (lower.includes('health') || lower.includes('nutrition') || lower.includes('sathu')) {
+      return '/products-image all/health_mix_sathu_maavu.jpg';
     }
-    if (lower.includes('saree') || lower.includes('handloom')) {
-      return 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=1000&auto=format&fit=crop&q=80';
+    if (lower.includes('oil') || lower.includes('ghee')) {
+      return 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=1000&auto=format&fit=crop&q=80';
     }
-    return 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=1000&auto=format&fit=crop&q=80';
+    return '/products-image all/hand_pounded_lean_rice_front_image.webp';
   };
 
   const bgImage = category.imageUrl || getCategoryFallbackImage(category.name);

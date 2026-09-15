@@ -11,7 +11,15 @@ interface SearchBarProps {
   className?: string;
 }
 
-const POPULAR_SEARCH_TAGS = ['Lipsticks', 'Lip Gloss', 'Kajal Stick', 'Under Eye Cream', 'Handloom Saree'];
+const POPULAR_SEARCH_TAGS = [
+  'Karuppu Kavuni',
+  'Mappillai Samba',
+  'Sathu Maavu',
+  'Salem Turmeric',
+  'Guntur Chilli',
+  'Basmati Rice',
+  'Sprouted Millet',
+];
 
 export const SearchBar: React.FC<SearchBarProps> = ({
   placeholder = 'Search products, categories & items...',
@@ -111,7 +119,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
                     const img =
                       prod.images?.find((i) => i.isPrimary)?.imageUrl ||
                       prod.images?.[0]?.imageUrl ||
-                      'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=400&auto=format&fit=crop';
+                      'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=400&auto=format&fit=crop';
                     const priceNum = typeof prod.price === 'string' ? parseFloat(prod.price) : prod.price;
 
                     return (
@@ -128,7 +136,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
                             {prod.name}
                           </h4>
                           <span className="text-[10px] text-slate-500 font-medium block">
-                            {prod.category?.name || 'Luxury Apparel'}
+                            {prod.category?.name || 'Organic Foods'}
                           </span>
                         </div>
                         <div className="text-right flex-shrink-0">

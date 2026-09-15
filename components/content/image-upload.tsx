@@ -14,11 +14,11 @@ interface ImageUploadProps {
 }
 
 const PRESET_IMAGES = [
-  { label: 'Couture Silk Gown', url: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1600&auto=format&fit=crop' },
-  { label: 'Tailored Suit', url: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=1600&auto=format&fit=crop' },
-  { label: 'Luxury Handbag', url: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=1600&auto=format&fit=crop' },
-  { label: 'Jewelry & Accessories', url: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=1600&auto=format&fit=crop' },
-  { label: 'Runway Fashion', url: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=1600&auto=format&fit=crop' },
+  { label: 'Royal Ancient Grains & Rice', url: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=1600&auto=format&fit=crop' },
+  { label: 'Authentic Indian Spices', url: 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=1600&auto=format&fit=crop' },
+  { label: 'Health Mix & Sathu Maavu', url: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=1600&auto=format&fit=crop' },
+  { label: 'Millets & Wholesome Harvest', url: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=1600&auto=format&fit=crop' },
+  { label: 'Cold-Pressed Oils & Ghee', url: 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=1600&auto=format&fit=crop' },
 ];
 
 export const ImageUpload: React.FC<ImageUploadProps> = ({
