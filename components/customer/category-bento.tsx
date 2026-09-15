@@ -106,14 +106,14 @@ export const CategoryBento: React.FC = () => {
             </div>
           </Link>
 
-          {/* Bento 3: SPICES & MASALAS */}
+          {/* Bento 3: ANCIENT HERITAGE RICE & SUPER-PULSES */}
           <Link
-            href="/shop?category=spices-masala-powders"
+            href="/shop?category=rice-grains"
             className="relative rounded-2xl sm:rounded-3xl overflow-hidden min-h-[190px] sm:min-h-[200px] flex flex-col justify-between p-6 sm:p-7 border border-neutral-200/80 shadow-sm group bg-[#2A0808] text-white cursor-pointer"
           >
             <img
-              src="https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=1000&auto=format&fit=crop&q=80"
-              alt="Authentic Spices & Masala"
+              src="/products-image all/kambu_kurunai_banner_showcase.webp"
+              alt="Ancient Heritage Rice & Super-Pulses"
               className="absolute inset-0 w-full h-full object-cover opacity-55 group-hover:scale-105 transition-transform duration-700 ease-out"
             />
             <div className="absolute inset-0 bg-gradient-to-r from-neutral-950/95 via-neutral-950/65 to-transparent" />
@@ -121,21 +121,21 @@ export const CategoryBento: React.FC = () => {
             {/* Top Badge */}
             <div className="relative z-10 flex items-center">
               <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[11px] font-semibold tracking-wide bg-[#A50025] text-white shadow-xs">
-                <Sparkles className="w-3 h-3 text-amber-300" /> Pure & Stone-Ground
+                <Sparkles className="w-3 h-3 text-amber-300" /> Traditional & Pure
               </span>
             </div>
 
             {/* Bottom Content */}
             <div className="relative z-10 space-y-1.5">
               <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-white leading-tight">
-                Spices & Masala Powders
+                Ancient Heritage & Super-Pulses
               </h3>
               <p className="text-xs sm:text-sm text-slate-200 font-normal">
-                Salem turmeric, Guntur chilli & traditional blends.
+                Karuppu Kavuni, Mappillai Samba & Native Kollu Horse Gram.
               </p>
               <div className="pt-1.5">
                 <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-md text-white text-xs font-bold tracking-wide transition-colors border border-white/20 group-hover:bg-[#A50025] group-hover:border-[#A50025]">
-                  <span>Explore Spices</span>
+                  <span>Explore Heritage Grains</span>
                   <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                 </span>
               </div>

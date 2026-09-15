@@ -24,9 +24,9 @@ export const navigationConfig = {
       title: 'Catalog',
       links: [
         { label: 'Shop All', href: '/shop' },
-        { label: 'Rice & Grains', href: '/shop?category=rice-grains' },
-        { label: 'Spices & Masala Powders', href: '/shop?category=spices-masala-powders' },
-        { label: 'Health Mix & Nutrition', href: '/shop?category=health-mix-nutrition' },
+        { label: 'Varieties of Rice', href: '/shop?category=varieties-of-rice' },
+        { label: 'Native Millets & Supergrains', href: '/shop?category=other-grains-millets' },
+        { label: 'Heritage Rice', href: '/shop?category=rice-grains' },
         { label: 'Saved Wishlist', href: '/wishlist' },
       ],
     },

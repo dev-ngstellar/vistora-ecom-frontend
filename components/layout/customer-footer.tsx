@@ -99,8 +99,8 @@ export const CustomerFooter: React.FC = () => {
             <ul className="space-y-2 text-xs text-slate-200 font-medium">
               <li><Link href="/shop" className="hover:text-[#E66001] transition-colors flex items-center gap-1.5"><ArrowRight className="w-3 h-3 text-slate-500" /> All Products</Link></li>
               <li><Link href="/shop?category=rice-grains" className="hover:text-[#E66001] transition-colors flex items-center gap-1.5"><ArrowRight className="w-3 h-3 text-slate-500" /> Rice & Grains</Link></li>
-              <li><Link href="/shop?category=spices-masala-powders" className="hover:text-[#E66001] transition-colors flex items-center gap-1.5"><ArrowRight className="w-3 h-3 text-slate-500" /> Spices & Masalas</Link></li>
-              <li><Link href="/shop?category=health-mix-nutrition" className="hover:text-[#E66001] transition-colors flex items-center gap-1.5"><ArrowRight className="w-3 h-3 text-slate-500" /> Health Mix & Nutrition</Link></li>
+              <li><Link href="/shop?category=varieties-of-rice" className="hover:text-[#E66001] transition-colors flex items-center gap-1.5"><ArrowRight className="w-3 h-3 text-slate-500" /> Varieties of Rice</Link></li>
+              <li><Link href="/shop?category=other-grains-millets" className="hover:text-[#E66001] transition-colors flex items-center gap-1.5"><ArrowRight className="w-3 h-3 text-slate-500" /> Native Millets</Link></li>
             </ul>
           </div>
 

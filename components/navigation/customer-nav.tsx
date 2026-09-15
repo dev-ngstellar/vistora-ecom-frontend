@@ -118,19 +118,11 @@ export const CustomerNav: React.FC = () => {
                   <ArrowRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-[#A50025] group-hover:translate-x-1 transition-all" />
                 </Link>
                 <Link
-                  href="/shop?category=spices-masala-powders"
+                  href="/shop?category=varieties-of-rice"
                   onClick={() => setIsDeptOpen(false)}
                   className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-extrabold text-[#111827] hover:bg-[#FFF0F3] hover:text-[#A50025] transition-all group"
                 >
-                  <span>Spices & Masala Powders</span>
-                  <ArrowRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-[#A50025] group-hover:translate-x-1 transition-all" />
-                </Link>
-                <Link
-                  href="/shop?category=health-mix-nutrition"
-                  onClick={() => setIsDeptOpen(false)}
-                  className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-extrabold text-[#111827] hover:bg-[#FFF0F3] hover:text-[#A50025] transition-all group"
-                >
-                  <span>Health Mix & Sathu Maavu</span>
+                  <span>Varieties of Rice</span>
                   <ArrowRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-[#A50025] group-hover:translate-x-1 transition-all" />
                 </Link>
                 <Link
@@ -138,15 +130,7 @@ export const CustomerNav: React.FC = () => {
                   onClick={() => setIsDeptOpen(false)}
                   className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-extrabold text-[#111827] hover:bg-[#FFF0F3] hover:text-[#A50025] transition-all group"
                 >
-                  <span>Millets & Wholesome Grains</span>
-                  <ArrowRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-[#A50025] group-hover:translate-x-1 transition-all" />
-                </Link>
-                <Link
-                  href="/shop?category=varieties-of-rice"
-                  onClick={() => setIsDeptOpen(false)}
-                  className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-extrabold text-[#111827] hover:bg-[#FFF0F3] hover:text-[#A50025] transition-all group"
-                >
-                  <span>Karuppu Kavuni & Basmati</span>
+                  <span>Millets & Native Super-Grains</span>
                   <ArrowRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-[#A50025] group-hover:translate-x-1 transition-all" />
                 </Link>
               </>
