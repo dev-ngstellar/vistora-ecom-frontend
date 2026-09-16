@@ -36,7 +36,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
   };
 
   return (
-    <aside className="w-full bg-white rounded-[20px] p-6 border border-[#ECECEC] shadow-xs space-y-6 sticky top-24">
+    <aside className="w-full bg-white rounded-[20px] p-6 border border-[#ECECEC] shadow-xs space-y-6 sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto overscroll-contain">
       {/* Header */}
       <div className="flex items-center justify-between pb-4 border-b border-[#ECECEC]">
         <div className="flex items-center gap-2">
@@ -75,7 +75,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
           </button>
 
           {openSections.categories && (
-            <div className="space-y-1 pt-1 max-h-72 overflow-y-auto pr-1">
+            <div className="space-y-1 pt-1">
               <button
                 onClick={() => onFilterChange({ categoryId: undefined })}
                 className={`w-full text-left px-3.5 py-2 rounded-[10px] text-xs transition-all flex items-center justify-between ${!filters.categoryId
@@ -191,7 +191,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
           </button>
 
           {openSections.collections && (
-            <div className="space-y-1 pt-1 max-h-48 overflow-y-auto pr-1">
+            <div className="space-y-1 pt-1">
               <button
                 onClick={() => onFilterChange({ collectionId: undefined })}
                 className={`w-full text-left px-3.5 py-2 rounded-[10px] text-xs transition-all flex items-center justify-between ${!filters.collectionId

@@ -90,12 +90,14 @@ export default function ShopPage() {
     }
   };
 
-  // Sync state changes to URL search params
+  // Sync state changes to URL search params without scrolling to top
   const handleFilterChange = (newFilters: Partial<ProductQueryFilters>) => {
+    const isPageChange = newFilters.page !== undefined && newFilters.page !== filters.page;
     const targetPage = newFilters.page !== undefined ? newFilters.page : 1;
     const updated = { ...filters, ...newFilters, page: targetPage };
     setFilters(updated);
-    updateUrlParams(updated, true);
+    // Only scroll if explicit pagination page change was clicked
+    updateUrlParams(updated, isPageChange);
   };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -107,7 +109,7 @@ export default function ShopPage() {
     const cleared: ProductQueryFilters = { page: 1, limit: 12, sort: 'created_at_desc' };
     setSearchInput('');
     setFilters(cleared);
-    updateUrlParams(cleared, true);
+    updateUrlParams(cleared, false);
   };
 
   const updateUrlParams = (updatedFilters: ProductQueryFilters, shouldScroll = false) => {
