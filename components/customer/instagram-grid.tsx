@@ -5,11 +5,11 @@ import { Instagram } from 'lucide-react';
 
 export const InstagramGrid: React.FC = () => {
   const images = [
-    { url: '/products-image all/health_mix_sathu_maavu.jpg', tag: '#SathuMaavu' },
-    { url: '/products-image all/raw_white_rice_grains.jpg', tag: '#OrganicRice' },
-    { url: '/products-image all/red_chilli_powder_bowl.jpg', tag: '#PureSpices' },
-    { url: '/products-image all/turmeric_powder_bowl.jpg', tag: '#SalemTurmeric' },
-    { url: '/products-image all/coriander_powder_bowl.jpg', tag: '#FreshMasalas' },
+    { url: 'https://res.cloudinary.com/ggvs7siw/image/upload/v1789621719/ragi_front_image.webp', tag: '#RagiMillet' },
+    { url: 'https://res.cloudinary.com/ggvs7siw/image/upload/v1789621806/kambu_kurunai_front_image.webp', tag: '#KambuKurunai' },
+    { url: 'https://res.cloudinary.com/ggvs7siw/image/upload/v1789621837/hand_pounded_lean_rice_front_image.webp', tag: '#LeanRice' },
+    { url: 'https://res.cloudinary.com/ggvs7siw/image/upload/v1789622123/black-rice-hero-banner.jpg', tag: '#BlackRice' },
+    { url: 'https://res.cloudinary.com/ggvs7siw/image/upload/v1789622140/millets-hero-banner.jpg', tag: '#NativeMillets' },
   ];
 
   return (

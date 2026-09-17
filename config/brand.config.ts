@@ -3,7 +3,7 @@ export const brandConfig = {
   shortName: process.env.NEXT_PUBLIC_BRAND_SHORT_NAME || 'VISTORA',
   tagline: process.env.NEXT_PUBLIC_BRAND_TAGLINE || 'One Destination. Endless Choices...',
   logoLetter: process.env.NEXT_PUBLIC_BRAND_LOGO_LETTER || 'V',
-  logoUrl: '/logo.png',
+  logoUrl: 'https://res.cloudinary.com/ggvs7siw/image/upload/v1789622236/logo.png',
   supportEmail: process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'support@vistoracommerce.com',
   contactPhone: process.env.NEXT_PUBLIC_CONTACT_PHONE || '+1 (800) 200-9000',
   copyright: `© ${new Date().getFullYear()} ${process.env.NEXT_PUBLIC_BRAND_NAME || 'Vistora Commerce, Inc.'} All rights reserved.`,

@@ -31,7 +31,7 @@ export const HealthGoalsSection: React.FC = () => {
       badge: 'Diabetic Friendly',
       href: '/shop?category=other-grains-millets',
       highlights: ['Unpolished Varagu & Little Millet', 'Foxtail Millet (Thinai)', 'Zero Chemical Polishing'],
-      image: '/products-image all/kambu_kurunai_banner_showcase.webp',
+      image: 'https://res.cloudinary.com/ggvs7siw/image/upload/v1789621806/kambu_kurunai_banner_showcase.webp',
     },
     {
       id: 'immunity',
@@ -43,7 +43,7 @@ export const HealthGoalsSection: React.FC = () => {
       badge: 'High Antioxidants & Iron',
       href: '/shop?category=rice-grains',
       highlights: ['Hand-Pounded Lean Rice', 'Karuppu Kavuni Black Rice', 'Mappillai Samba Heritage Rice'],
-      image: '/products-image all/hand_pounded_lean_rice_banner_showcase.webp',
+      image: 'https://res.cloudinary.com/ggvs7siw/image/upload/v1789621837/hand_pounded_lean_rice_banner_showcase.webp',
     },
     {
       id: 'growth',
@@ -55,7 +55,7 @@ export const HealthGoalsSection: React.FC = () => {
       badge: 'High Calcium & Plant Protein',
       href: '/shop?category=other-grains-millets',
       highlights: ['Traditional Organic Ragi', 'Pearl Millet Grits (Kambu Kurunai)', 'Organic Native Kollu (Horse Gram)'],
-      image: '/products-image all/ragi_banner_showcase.webp',
+      image: 'https://res.cloudinary.com/ggvs7siw/image/upload/v1789621719/ragi_banner_showcase.webp',
     },
   ];
 

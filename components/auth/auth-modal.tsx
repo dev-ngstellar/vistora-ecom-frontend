@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { authService } from '@/services/auth.service';
+import { brandConfig } from '@/config';
 import { AuthResponseData } from '@/types/auth.types';
 import toast from 'react-hot-toast';
 import { X, Lock, Mail, User, Phone, Loader2, ArrowRight, CheckCircle2 } from 'lucide-react';
@@ -111,7 +112,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         {/* Modal Header */}
         <div className="text-center space-y-2 pt-2">
           <div className="flex items-center justify-center gap-2">
-            <Image src="/logo.png" alt="Vistora" width={36} height={36} className="object-contain" />
+            <Image src={brandConfig.logoUrl} alt="Vistora" width={36} height={36} className="object-contain" />
             <span className="text-xl font-black text-maroon tracking-tight">VISTORA</span>
           </div>
           <p className="text-xs text-slate-500 font-medium">One Destination. Endless Choices...</p>

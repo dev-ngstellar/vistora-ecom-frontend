@@ -11,7 +11,7 @@ export const MinimalHero: React.FC = () => {
   const banner = bannersData?.banners?.[0] || {
     title: `Discover ${brandConfig.name}`,
     subtitle: 'Organic grains, stone-ground spices, and traditional superfood nutrition.',
-    imageUrl: '/products-image all/raw_white_rice_grains.jpg',
+    imageUrl: 'https://res.cloudinary.com/ggvs7siw/image/upload/v1789622202/organic-farm-hero-banner.jpg',
     buttonText: 'Browse Store Catalog',
     buttonLink: '/shop',
   };

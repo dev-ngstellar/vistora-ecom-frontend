@@ -14,21 +14,21 @@ export const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
   const getCategoryFallbackImage = (name: string) => {
     const lower = name.toLowerCase();
     if (lower.includes('rice') || lower.includes('grain') || lower.includes('kavuni') || lower.includes('samba') || lower.includes('hand-pounded')) {
-      return '/products-image all/hand_pounded_lean_rice_banner_showcase.webp';
+      return 'https://res.cloudinary.com/ggvs7siw/image/upload/v1789621837/hand_pounded_lean_rice_banner_showcase.webp';
     }
     if (lower.includes('millet') || lower.includes('ragi') || lower.includes('kambu') || lower.includes('thinai') || lower.includes('saamai') || lower.includes('varagu')) {
-      return '/products-image all/ragi_banner_showcase.webp';
+      return 'https://res.cloudinary.com/ggvs7siw/image/upload/v1789621719/ragi_banner_showcase.webp';
     }
     if (lower.includes('spice') || lower.includes('masala') || lower.includes('chilli') || lower.includes('turmeric') || lower.includes('coriander')) {
-      return '/products-image all/red_chilli_powder_bowl.jpg';
+      return 'https://res.cloudinary.com/ggvs7siw/image/upload/v1789621837/hand_pounded_lean_rice_banner_showcase.webp';
     }
     if (lower.includes('health') || lower.includes('nutrition') || lower.includes('sathu')) {
-      return '/products-image all/health_mix_sathu_maavu.jpg';
+      return 'https://res.cloudinary.com/ggvs7siw/image/upload/v1789621806/kambu_kurunai_banner_showcase.webp';
     }
     if (lower.includes('oil') || lower.includes('ghee')) {
       return 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=1000&auto=format&fit=crop&q=80';
     }
-    return '/products-image all/hand_pounded_lean_rice_front_image.webp';
+    return 'https://res.cloudinary.com/ggvs7siw/image/upload/v1789621837/hand_pounded_lean_rice_front_image.webp';
   };
 
   const bgImage = category.imageUrl || getCategoryFallbackImage(category.name);

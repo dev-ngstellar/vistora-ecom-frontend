@@ -36,7 +36,7 @@ export const CategoryBento: React.FC = () => {
           className="md:col-span-5 relative rounded-2xl sm:rounded-3xl overflow-hidden min-h-[320px] md:min-h-[420px] flex flex-col justify-between p-6 sm:p-8 border border-neutral-200/80 shadow-sm group bg-[#111827] text-white cursor-pointer"
         >
           <img
-            src="/products-image all/hand_pounded_lean_rice_front_image.webp"
+            src="https://res.cloudinary.com/ggvs7siw/image/upload/v1789621837/hand_pounded_lean_rice_front_image.webp"
             alt="Ancient Heritage Rice"
             className="absolute inset-0 w-full h-full object-cover opacity-65 group-hover:scale-105 transition-transform duration-700 ease-out"
           />
@@ -76,7 +76,7 @@ export const CategoryBento: React.FC = () => {
             className="relative rounded-2xl sm:rounded-3xl overflow-hidden min-h-[190px] sm:min-h-[200px] flex flex-col justify-between p-6 sm:p-7 border border-neutral-200/80 shadow-sm group bg-[#0F172A] text-white cursor-pointer"
           >
             <img
-              src="/products-image all/ragi_banner_showcase.webp"
+              src="https://res.cloudinary.com/ggvs7siw/image/upload/v1789621719/ragi_banner_showcase.webp"
               alt="Native Millets & Ragi"
               className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-700 ease-out"
             />
@@ -112,7 +112,7 @@ export const CategoryBento: React.FC = () => {
             className="relative rounded-2xl sm:rounded-3xl overflow-hidden min-h-[190px] sm:min-h-[200px] flex flex-col justify-between p-6 sm:p-7 border border-neutral-200/80 shadow-sm group bg-[#2A0808] text-white cursor-pointer"
           >
             <img
-              src="/products-image all/kambu_kurunai_banner_showcase.webp"
+              src="https://res.cloudinary.com/ggvs7siw/image/upload/v1789621806/kambu_kurunai_banner_showcase.webp"
               alt="Ancient Heritage Rice & Super-Pulses"
               className="absolute inset-0 w-full h-full object-cover opacity-55 group-hover:scale-105 transition-transform duration-700 ease-out"
             />

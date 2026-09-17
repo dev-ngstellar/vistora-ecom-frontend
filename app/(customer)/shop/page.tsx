@@ -8,7 +8,7 @@ import { FilterSidebar } from '@/components/catalogue/filter-sidebar';
 import { CataloguePagination } from '@/components/catalogue/catalogue-pagination';
 import { ProductGridSkeleton } from '@/components/catalogue/skeleton-loaders';
 import { ProductQueryFilters } from '@/types/catalogue.types';
-import { Search, SlidersHorizontal, ArrowUpDown, X } from 'lucide-react';
+import { Search, SlidersHorizontal, ArrowUpDown, X, ArrowUp } from 'lucide-react';
 
 export default function ShopPage() {
   const searchParams = useSearchParams();
@@ -17,6 +17,20 @@ export default function ShopPage() {
   const { data: categories } = useCategories();
   const { data: brands } = useBrands();
   const { data: collections } = useCollections();
+
+  const [showScrollTop, setShowScrollTop] = useState<boolean>(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 300) {
+        setShowScrollTop(true);
+      } else {
+        setShowScrollTop(false);
+      }
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const [filters, setFilters] = useState<ProductQueryFilters>({
     q: searchParams.get('q') || undefined,
@@ -81,35 +95,35 @@ export default function ShopPage() {
 
   const scrollToCatalog = () => {
     if (catalogSectionRef.current) {
-      const navOffset = 90;
+      const headerOffset = 115;
       const elementTop = catalogSectionRef.current.getBoundingClientRect().top + window.scrollY;
       window.scrollTo({
-        top: Math.max(0, elementTop - navOffset),
+        top: Math.max(0, elementTop - headerOffset),
         behavior: 'smooth',
       });
     }
   };
 
-  // Sync state changes to URL search params without scrolling to top
+  // Sync state changes to URL search params and smoothly scroll to filter catalog
   const handleFilterChange = (newFilters: Partial<ProductQueryFilters>) => {
     const isPageChange = newFilters.page !== undefined && newFilters.page !== filters.page;
     const targetPage = newFilters.page !== undefined ? newFilters.page : 1;
     const updated = { ...filters, ...newFilters, page: targetPage };
     setFilters(updated);
-    // Only scroll if explicit pagination page change was clicked
-    updateUrlParams(updated, isPageChange);
+    updateUrlParams(updated, true);
   };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     handleFilterChange({ q: searchInput || undefined });
+    scrollToCatalog();
   };
 
   const handleClearFilters = () => {
     const cleared: ProductQueryFilters = { page: 1, limit: 12, sort: 'created_at_desc' };
     setSearchInput('');
     setFilters(cleared);
-    updateUrlParams(cleared, false);
+    updateUrlParams(cleared, true);
   };
 
   const updateUrlParams = (updatedFilters: ProductQueryFilters, shouldScroll = false) => {
@@ -143,12 +157,12 @@ export default function ShopPage() {
   // Dynamic banner logic based on active category
   let bannerTitle = "Farm Fresh Rice, Spices & Superfoods";
   let bannerDesc = "Explore our collection of premium unpolished rice varieties, stone-ground masala powders, and traditional nutrient-rich health mixes.";
-  let bannerImg = "/products-image all/red_chilli_powder_bowl.jpg";
+  let bannerImg = "https://res.cloudinary.com/ggvs7siw/image/upload/v1789622202/organic-farm-hero-banner.jpg";
 
   if (activeCategoryObj) {
     bannerTitle = activeCategoryObj.name;
     bannerDesc = activeCategoryObj.description || `Explore our high quality selection of ${activeCategoryObj.name.toLowerCase()} sourced directly from organic farms.`;
-    bannerImg = activeCategoryObj.imageUrl || "/products-image all/red_chilli_powder_bowl.jpg";
+    bannerImg = activeCategoryObj.imageUrl || "https://res.cloudinary.com/ggvs7siw/image/upload/v1789622202/organic-farm-hero-banner.jpg";
 
     const catSlug = activeCategoryObj.slug;
     if (catSlug.includes('millet') || catSlug.includes('grain')) {
@@ -189,7 +203,7 @@ export default function ShopPage() {
 
       {/* Main Two-Column Shop Section */}
       <div ref={catalogSectionRef} id="catalog-section" className="grid grid-cols-1 lg:grid-cols-4 gap-8 scroll-mt-24">
-        
+
         {/* Left Desktop Sidebar Filter / Mobile Drawer */}
         <div className="hidden lg:block">
           <FilterSidebar
@@ -204,10 +218,10 @@ export default function ShopPage() {
 
         {/* Right Content Column */}
         <div className="lg:col-span-3 space-y-6">
-          
+
           {/* Top Control Bar */}
           <div className="bg-white rounded-[16px] p-4 border border-[#ECECEC] shadow-2xs flex flex-col sm:flex-row items-center justify-between gap-4">
-            
+
             {/* Search Input Bar inside Shop */}
             <form onSubmit={handleSearchSubmit} className="relative w-full sm:w-80">
               <input
@@ -251,7 +265,7 @@ export default function ShopPage() {
           {(filters.categoryId || filters.brandId || filters.collectionId || filters.q || filters.featured) && (
             <div className="flex items-center gap-2 flex-wrap bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs">
               <span className="font-bold text-slate-500">Active Filters:</span>
-              
+
               {filters.q && (
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-slate-300 font-semibold text-slate-800">
                   Search: "{filters.q}"
@@ -349,6 +363,18 @@ export default function ShopPage() {
             />
           </div>
         </div>
+      )}
+
+      {/* Floating Scroll-to-Top Button */}
+      {showScrollTop && (
+        <button
+          onClick={scrollToCatalog}
+          aria-label="Scroll to top"
+          className="fixed bottom-8 right-8 z-40 p-3.5 rounded-full bg-[#A50025] hover:bg-[#83001D] text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-110 flex items-center gap-1.5 font-bold text-xs group cursor-pointer"
+        >
+          <ArrowUp className="w-4 h-4 group-hover:-translate-y-0.5 transition-transform" />
+          <span className="hidden sm:inline pr-1">Top</span>
+        </button>
       )}
     </div>
   );
