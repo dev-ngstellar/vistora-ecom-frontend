@@ -87,6 +87,18 @@ export default function ShopPage() {
     }
   }, [searchParams, categories]);
 
+  const isFirstMount = React.useRef(true);
+  useEffect(() => {
+    if (searchParams.get('category') || searchParams.get('categoryId') || searchParams.get('q') || searchParams.get('page')) {
+      if (isFirstMount.current) {
+        isFirstMount.current = false;
+        setTimeout(() => {
+          scrollToCatalog();
+        }, 350);
+      }
+    }
+  }, [searchParams]);
+
   const { data: productsData, isLoading } = useProducts(filters);
   const products = productsData?.items || [];
   const meta = productsData?.meta || { total: 0, page: 1, limit: 12, totalPages: 1 };
@@ -94,9 +106,11 @@ export default function ShopPage() {
   const catalogSectionRef = React.useRef<HTMLDivElement>(null);
 
   const scrollToCatalog = () => {
-    if (catalogSectionRef.current) {
+    if (typeof window === 'undefined') return;
+    const el = catalogSectionRef.current || document.getElementById('catalog-section');
+    if (el) {
       const headerOffset = 115;
-      const elementTop = catalogSectionRef.current.getBoundingClientRect().top + window.scrollY;
+      const elementTop = el.getBoundingClientRect().top + window.scrollY;
       window.scrollTo({
         top: Math.max(0, elementTop - headerOffset),
         behavior: 'smooth',
@@ -106,27 +120,33 @@ export default function ShopPage() {
 
   // Sync state changes to URL search params and smoothly scroll to filter catalog
   const handleFilterChange = (newFilters: Partial<ProductQueryFilters>) => {
-    const isPageChange = newFilters.page !== undefined && newFilters.page !== filters.page;
     const targetPage = newFilters.page !== undefined ? newFilters.page : 1;
     const updated = { ...filters, ...newFilters, page: targetPage };
     setFilters(updated);
-    updateUrlParams(updated, true);
+    updateUrlParams(updated);
+    
+    // Immediate and delayed scroll to overcome Next.js router transition scroll reset
+    scrollToCatalog();
+    setTimeout(() => scrollToCatalog(), 120);
+    setTimeout(() => scrollToCatalog(), 300);
   };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     handleFilterChange({ q: searchInput || undefined });
-    scrollToCatalog();
   };
 
   const handleClearFilters = () => {
     const cleared: ProductQueryFilters = { page: 1, limit: 12, sort: 'created_at_desc' };
     setSearchInput('');
     setFilters(cleared);
-    updateUrlParams(cleared, true);
+    updateUrlParams(cleared);
+    scrollToCatalog();
+    setTimeout(() => scrollToCatalog(), 120);
+    setTimeout(() => scrollToCatalog(), 300);
   };
 
-  const updateUrlParams = (updatedFilters: ProductQueryFilters, shouldScroll = false) => {
+  const updateUrlParams = (updatedFilters: ProductQueryFilters) => {
     const params = new URLSearchParams();
     if (updatedFilters.q) params.set('q', updatedFilters.q);
     if (updatedFilters.categoryId) {
@@ -142,13 +162,12 @@ export default function ShopPage() {
     if (updatedFilters.page && updatedFilters.page > 1) params.set('page', String(updatedFilters.page));
 
     const queryString = params.toString();
-    router.push(queryString ? `/shop?${queryString}` : '/shop', { scroll: false });
+    const newUrl = queryString ? `/shop?${queryString}` : '/shop';
 
-    if (shouldScroll) {
-      setTimeout(() => {
-        scrollToCatalog();
-      }, 50);
+    if (typeof window !== 'undefined') {
+      window.history.replaceState(null, '', newUrl);
     }
+    router.replace(newUrl, { scroll: false });
   };
 
   // Find active category detail for dynamic hero banner
