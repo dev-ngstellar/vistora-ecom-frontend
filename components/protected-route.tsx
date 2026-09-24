@@ -12,7 +12,7 @@ interface ProtectedRouteProps {
 }
 
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRoles }) => {
-  const { user, isAuthenticated, isLoading, openAuthModal } = useAuth();
+  const { user, isAuthenticated, isLoading, isAuthModalOpen, openAuthModal } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -20,13 +20,11 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowe
     if (!isLoading && !isAuthenticated) {
       if (pathname.startsWith('/admin')) {
         router.push(`/auth/login?redirect=${encodeURIComponent(pathname)}`);
-      } else {
-        openAuthModal('login', () => {
-          // Action callback on modal login completion
-        });
+      } else if (!isAuthModalOpen) {
+        openAuthModal('login');
       }
     }
-  }, [isLoading, isAuthenticated, router, pathname, openAuthModal]);
+  }, [isLoading, isAuthenticated, isAuthModalOpen, router, pathname, openAuthModal]);
 
   if (isLoading) {
     return (

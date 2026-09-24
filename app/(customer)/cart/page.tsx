@@ -10,10 +10,15 @@ import Link from 'next/link';
 import { ProtectedRoute } from '@/components/protected-route';
 
 export default function CartPage() {
+  const [mounted, setMounted] = React.useState(false);
   const { data: cartSummary, isLoading } = useCart();
   const { updateCartItem, removeCartItem, clearCart } = useCartMutations();
 
-  if (isLoading) {
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted || isLoading) {
     return (
       <div className="py-16 text-center space-y-4 animate-pulse">
         <div className="w-12 h-12 bg-slate-200 rounded-full mx-auto" />

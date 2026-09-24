@@ -8,6 +8,7 @@ import { AuthContextType, AuthResponseData, User } from '@/types/auth.types';
 import { AuthModal } from '@/components/auth/auth-modal';
 
 import { getGuestCartFromStorage, saveGuestCartToStorage } from '@/hooks/use-shopping';
+import { queryClient } from '@/lib/react-query';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -25,8 +26,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const syncGuestCart = async () => {
     const guestItems = getGuestCartFromStorage();
     if (guestItems.length > 0) {
+      saveGuestCartToStorage([]); // Clear immediately to prevent duplicate concurrent merge calls
       try {
-        await authService.getCurrentUser(); // verify session
         const { cartService } = await import('@/services/shopping.service');
         await cartService.mergeGuestCart(
           guestItems.map((i) => ({
@@ -35,9 +36,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             quantity: i.quantity,
           }))
         );
-        saveGuestCartToStorage([]);
-      } catch {
-        // Suppress guest cart merge error if any
+      } catch (err) {
+        console.error('Failed to sync guest cart on login:', err);
       }
     }
   };
@@ -48,6 +48,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (token) {
         try {
           const currentUser = await authService.getCurrentUser();
+          await syncGuestCart();
           setUser(currentUser);
         } catch {
           sessionStorage.removeItem('accessToken');
@@ -61,16 +62,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     initAuth();
   }, []);
 
-  const login = (data: AuthResponseData) => {
+  const login = React.useCallback(async (data: AuthResponseData) => {
     if (typeof window !== 'undefined') {
       sessionStorage.setItem('accessToken', data.accessToken);
       sessionStorage.setItem('refreshToken', data.refreshToken);
     }
+    await syncGuestCart();
     setUser(data.user);
-    syncGuestCart();
-  };
+    queryClient.invalidateQueries({ queryKey: ['cart'] });
+    queryClient.invalidateQueries({ queryKey: ['wishlist'] });
+  }, []);
 
-  const logout = async () => {
+  const logout = React.useCallback(async () => {
     try {
       await authService.logout();
     } catch {
@@ -81,70 +84,90 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         sessionStorage.removeItem('refreshToken');
       }
       setUser(null);
+      queryClient.clear();
       toast.success('Logged out successfully');
       router.push('/');
     }
-  };
+  }, [router]);
 
-  const updateUser = (updatedFields: Partial<User>) => {
+  const updateUser = React.useCallback((updatedFields: Partial<User>) => {
     setUser((prevUser) => (prevUser ? { ...prevUser, ...updatedFields } : null));
-  };
+  }, []);
 
-  const openAuthModal = (
-    tab: 'login' | 'register' | 'forgot' = 'login',
-    onSuccess?: () => void
-  ) => {
-    setAuthModalTab(tab);
-    if (onSuccess) {
-      setPendingAction(() => onSuccess);
-    }
-    setIsAuthModalOpen(true);
-  };
+  const openAuthModal = React.useCallback(
+    (tab: 'login' | 'register' | 'forgot' = 'login', onSuccess?: () => void) => {
+      setAuthModalTab(tab);
+      if (onSuccess) {
+        setPendingAction(() => onSuccess);
+      } else {
+        setPendingAction(null);
+      }
+      setIsAuthModalOpen(true);
+    },
+    []
+  );
 
-  const closeAuthModal = () => {
+  const closeAuthModal = React.useCallback(() => {
     setIsAuthModalOpen(false);
     setPendingAction(null);
-  };
+  }, []);
 
-  const requireCustomerAuth = (
-    actionCallback: () => void,
-    tab: 'login' | 'register' | 'forgot' = 'login'
-  ) => {
-    if (user) {
-      // Authenticated user: execute action immediately
-      actionCallback();
-    } else {
-      // Guest user: open Auth Modal and save callback for execution on success
-      openAuthModal(tab, actionCallback);
-    }
-  };
+  const requireCustomerAuth = React.useCallback(
+    (actionCallback: () => void, tab: 'login' | 'register' | 'forgot' = 'login') => {
+      if (user) {
+        // Authenticated user: execute action immediately
+        actionCallback();
+      } else {
+        // Guest user: open Auth Modal and save callback for execution on success
+        openAuthModal(tab, actionCallback);
+      }
+    },
+    [user, openAuthModal]
+  );
 
-  const handleModalSuccess = (data: AuthResponseData) => {
-    login(data);
-    setIsAuthModalOpen(false);
+  const handleModalSuccess = React.useCallback(
+    async (data: AuthResponseData) => {
+      await login(data);
+      setIsAuthModalOpen(false);
 
-    if (pendingAction) {
-      pendingAction();
-      setPendingAction(null);
-    }
-  };
+      if (pendingAction) {
+        pendingAction();
+        setPendingAction(null);
+      }
+    },
+    [login, pendingAction]
+  );
+
+  const contextValue = React.useMemo<AuthContextType>(
+    () => ({
+      user,
+      isAuthenticated: !!user,
+      isLoading,
+      isAuthModalOpen,
+      authModalTab,
+      login,
+      logout,
+      updateUser,
+      openAuthModal,
+      closeAuthModal,
+      requireCustomerAuth,
+    }),
+    [
+      user,
+      isLoading,
+      isAuthModalOpen,
+      authModalTab,
+      login,
+      logout,
+      updateUser,
+      openAuthModal,
+      closeAuthModal,
+      requireCustomerAuth,
+    ]
+  );
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isAuthenticated: !!user,
-        isLoading,
-        isAuthModalOpen,
-        authModalTab,
-        login,
-        logout,
-        updateUser,
-        openAuthModal,
-        closeAuthModal,
-        requireCustomerAuth,
-      }}
-    >
+    <AuthContext.Provider value={contextValue}>
       {children}
       <AuthModal
         isOpen={isAuthModalOpen}

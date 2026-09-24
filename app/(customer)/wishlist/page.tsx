@@ -9,10 +9,15 @@ import { Heart, ArrowLeft, ShoppingBag } from 'lucide-react';
 import Link from 'next/link';
 
 export default function WishlistPage() {
+  const [mounted, setMounted] = React.useState(false);
   const { data: wishlistSummary, isLoading } = useWishlist();
   const { removeFromWishlist, moveToCart } = useWishlistMutations();
 
-  if (isLoading) {
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted || isLoading) {
     return (
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-6">
         <div className="h-20 bg-slate-100 rounded-2xl animate-pulse" />

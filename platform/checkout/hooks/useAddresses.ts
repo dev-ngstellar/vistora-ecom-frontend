@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import { addressService } from '../services/address.service';
 import { AddressInput, AddressResponse } from '../types/address.types';
 import { useAuth } from '@/platform/context';
+import { getErrorMessage } from '@/lib/axios';
 
 export const useAddresses = () => {
   const { isAuthenticated } = useAuth();
@@ -36,8 +37,8 @@ export const useAddresses = () => {
       setSelectedBillingAddressId(newAddr.id);
       toast.success('Address saved successfully');
     },
-    onError: (err: Error) => {
-      toast.error(err.message || 'Failed to save address');
+    onError: (err: any) => {
+      toast.error(getErrorMessage(err, 'Failed to save address'));
     },
   });
 
@@ -48,8 +49,8 @@ export const useAddresses = () => {
       queryClient.invalidateQueries({ queryKey: ['checkout', 'addresses'] });
       toast.success('Address updated successfully');
     },
-    onError: (err: Error) => {
-      toast.error(err.message || 'Failed to update address');
+    onError: (err: any) => {
+      toast.error(getErrorMessage(err, 'Failed to update address'));
     },
   });
 

@@ -36,8 +36,8 @@ export default function LoginPage() {
 
   const loginMutation = useMutation({
     mutationFn: (data: LoginInput) => authService.login(data),
-    onSuccess: (data) => {
-      login(data);
+    onSuccess: async (data) => {
+      await login(data);
       toast.success('Welcome back to Vistora Commerce!');
       router.push(redirectUrl);
     },

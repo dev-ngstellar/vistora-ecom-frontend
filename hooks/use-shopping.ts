@@ -15,6 +15,7 @@ import {
   WishlistSummaryResponse,
 } from '@/types/shopping.types';
 import { useAuth } from '@/context/auth-context';
+import { getErrorMessage } from '@/lib/axios';
 
 const GUEST_CART_KEY = 'vistora_guest_cart';
 
@@ -215,8 +216,8 @@ export const useCartMutations = () => {
       queryClient.invalidateQueries({ queryKey: ['cart'] });
       toast.success('Item added to shopping cart!');
     },
-    onError: (err: Error) => {
-      toast.error(err.message || 'Failed to add item to cart');
+    onError: (err: any) => {
+      toast.error(getErrorMessage(err, 'Failed to add item to cart'));
     },
   });
 
@@ -238,8 +239,8 @@ export const useCartMutations = () => {
       queryClient.invalidateQueries({ queryKey: ['cart'] });
       toast.success('Cart updated');
     },
-    onError: (err: Error) => {
-      toast.error(err.message || 'Failed to update item quantity');
+    onError: (err: any) => {
+      toast.error(getErrorMessage(err, 'Failed to update item quantity'));
     },
   });
 
@@ -257,8 +258,8 @@ export const useCartMutations = () => {
       queryClient.invalidateQueries({ queryKey: ['cart'] });
       toast.success('Item removed from cart');
     },
-    onError: (err: Error) => {
-      toast.error(err.message || 'Failed to remove item');
+    onError: (err: any) => {
+      toast.error(getErrorMessage(err, 'Failed to remove item'));
     },
   });
 
@@ -275,8 +276,8 @@ export const useCartMutations = () => {
       queryClient.invalidateQueries({ queryKey: ['cart'] });
       toast.success('Shopping cart cleared');
     },
-    onError: (err: Error) => {
-      toast.error(err.message || 'Failed to clear cart');
+    onError: (err: any) => {
+      toast.error(getErrorMessage(err, 'Failed to clear cart'));
     },
   });
 
@@ -286,8 +287,8 @@ export const useCartMutations = () => {
       queryClient.invalidateQueries({ queryKey: ['cart'] });
       toast.success('Coupon code applied successfully!');
     },
-    onError: (err: Error) => {
-      toast.error(err.message || 'Failed to apply coupon code');
+    onError: (err: any) => {
+      toast.error(getErrorMessage(err, 'Failed to apply coupon code'));
     },
   });
 
@@ -297,8 +298,8 @@ export const useCartMutations = () => {
       queryClient.invalidateQueries({ queryKey: ['cart'] });
       toast.success('Coupon code removed');
     },
-    onError: (err: Error) => {
-      toast.error(err.message || 'Failed to remove coupon code');
+    onError: (err: any) => {
+      toast.error(getErrorMessage(err, 'Failed to remove coupon code'));
     },
   });
 
@@ -341,8 +342,8 @@ export const useWishlistMutations = () => {
       queryClient.invalidateQueries({ queryKey: ['wishlist'] });
       toast.success('Item saved to your wishlist!');
     },
-    onError: (err: Error) => {
-      toast.error(err.message || 'Failed to save to wishlist');
+    onError: (err: any) => {
+      toast.error(getErrorMessage(err, 'Failed to save to wishlist'));
     },
   });
 
@@ -352,8 +353,8 @@ export const useWishlistMutations = () => {
       queryClient.invalidateQueries({ queryKey: ['wishlist'] });
       toast.success('Item removed from wishlist');
     },
-    onError: (err: Error) => {
-      toast.error(err.message || 'Failed to remove item');
+    onError: (err: any) => {
+      toast.error(getErrorMessage(err, 'Failed to remove item'));
     },
   });
 
@@ -364,8 +365,8 @@ export const useWishlistMutations = () => {
       queryClient.invalidateQueries({ queryKey: ['cart'] });
       toast.success('Item moved to shopping cart!');
     },
-    onError: (err: Error) => {
-      toast.error(err.message || 'Failed to move item to cart');
+    onError: (err: any) => {
+      toast.error(getErrorMessage(err, 'Failed to move item to cart'));
     },
   });
 
@@ -393,8 +394,8 @@ export const useCouponMutations = () => {
       queryClient.invalidateQueries({ queryKey: ['coupons'] });
       toast.success('Coupon created successfully!');
     },
-    onError: (err: Error) => {
-      toast.error(err.message || 'Failed to create coupon');
+    onError: (err: any) => {
+      toast.error(getErrorMessage(err, 'Failed to create coupon'));
     },
   });
 
@@ -405,8 +406,8 @@ export const useCouponMutations = () => {
       queryClient.invalidateQueries({ queryKey: ['coupons'] });
       toast.success('Coupon updated successfully!');
     },
-    onError: (err: Error) => {
-      toast.error(err.message || 'Failed to update coupon');
+    onError: (err: any) => {
+      toast.error(getErrorMessage(err, 'Failed to update coupon'));
     },
   });
 
@@ -416,8 +417,8 @@ export const useCouponMutations = () => {
       queryClient.invalidateQueries({ queryKey: ['coupons'] });
       toast.success('Coupon deleted successfully!');
     },
-    onError: (err: Error) => {
-      toast.error(err.message || 'Failed to delete coupon');
+    onError: (err: any) => {
+      toast.error(getErrorMessage(err, 'Failed to delete coupon'));
     },
   });
 

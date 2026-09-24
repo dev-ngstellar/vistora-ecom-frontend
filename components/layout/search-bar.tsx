@@ -30,10 +30,17 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const { data: searchResults, isLoading } = useProducts({
-    q: query.trim().length >= 2 ? query.trim() : undefined,
-    limit: 5,
-  });
+  const hasValidQuery = isFocused && query.trim().length >= 2;
+
+  const { data: searchResults, isLoading } = useProducts(
+    {
+      q: hasValidQuery ? query.trim() : undefined,
+      limit: 5,
+    },
+    {
+      enabled: hasValidQuery,
+    }
+  );
 
   const matchingProducts = searchResults?.items || [];
 

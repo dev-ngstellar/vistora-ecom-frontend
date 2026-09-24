@@ -66,32 +66,36 @@ export default function AdminCouponsPage() {
 
   const { createCoupon, updateCoupon, deleteCoupon } = useCouponMutations();
 
-  const handleOpenModal = (coupon?: Coupon) => {
-    if (coupon) {
-      setEditingCoupon(coupon);
-      form.setFieldsValue({
-        code: coupon.code,
-        title: coupon.title,
-        description: coupon.description,
-        type: coupon.type,
-        value: Number(coupon.value),
-        minimumOrderAmount: coupon.minimumOrderAmount ? Number(coupon.minimumOrderAmount) : undefined,
-        maximumDiscount: coupon.maximumDiscount ? Number(coupon.maximumDiscount) : undefined,
-        usageLimit: coupon.usageLimit,
-        startDate: dayjs(coupon.startDate),
-        endDate: dayjs(coupon.endDate),
-        status: coupon.status,
-      });
-    } else {
-      setEditingCoupon(null);
-      form.resetFields();
-      form.setFieldsValue({
-        type: 'PERCENTAGE',
-        status: 'ACTIVE',
-        startDate: dayjs(),
-        endDate: dayjs().add(30, 'day'),
-      });
+  React.useEffect(() => {
+    if (isModalOpen) {
+      if (editingCoupon) {
+        form.setFieldsValue({
+          code: editingCoupon.code,
+          title: editingCoupon.title,
+          description: editingCoupon.description,
+          type: editingCoupon.type,
+          value: Number(editingCoupon.value),
+          minimumOrderAmount: editingCoupon.minimumOrderAmount ? Number(editingCoupon.minimumOrderAmount) : undefined,
+          maximumDiscount: editingCoupon.maximumDiscount ? Number(editingCoupon.maximumDiscount) : undefined,
+          usageLimit: editingCoupon.usageLimit,
+          startDate: dayjs(editingCoupon.startDate),
+          endDate: dayjs(editingCoupon.endDate),
+          status: editingCoupon.status,
+        });
+      } else {
+        form.resetFields();
+        form.setFieldsValue({
+          type: 'PERCENTAGE',
+          status: 'ACTIVE',
+          startDate: dayjs(),
+          endDate: dayjs().add(30, 'day'),
+        });
+      }
     }
+  }, [isModalOpen, editingCoupon, form]);
+
+  const handleOpenModal = (coupon?: Coupon) => {
+    setEditingCoupon(coupon || null);
     setIsModalOpen(true);
   };
 
@@ -357,7 +361,7 @@ export default function AdminCouponsPage() {
         onCancel={() => setIsModalOpen(false)}
         onOk={() => form.submit()}
         confirmLoading={createCoupon.isPending || updateCoupon.isPending}
-        destroyOnHidden
+        forceRender
       >
         <Form form={form} layout="vertical" onFinish={handleFormSubmit} className="mt-4">
           <div className="grid grid-cols-2 gap-4">

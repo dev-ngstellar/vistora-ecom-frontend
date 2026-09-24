@@ -4,23 +4,22 @@ import { useState } from 'react';
 import { PaymentGatewayType } from '../types/payment.types';
 import { openRazorpayModal } from '../payments/razorpay.adapter';
 import { processCodPayment } from '../payments/cod.adapter';
-import { processStripePayment } from '../payments/stripe.adapter';
-import { paymentService } from '../services/payment.service';
+import { paymentService, CreateRazorpayOrderInput } from '../services/payment.service';
 import { brandConfig } from '@/config';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '@/lib/axios';
 
 export const usePayment = () => {
-  const [selectedGateway, setSelectedGateway] = useState<PaymentGatewayType>('COD');
+  const [selectedGateway, setSelectedGateway] = useState<PaymentGatewayType>('RAZORPAY');
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
 
   const processPayment = async (params: {
-    orderId: string;
-    amount: number;
+    orderPayload: CreateRazorpayOrderInput;
     userEmail?: string;
     userName?: string;
     userPhone?: string;
-  }): Promise<{ success: boolean; transactionReference?: string }> => {
+  }): Promise<{ success: boolean; orderId?: string; transactionReference?: string }> => {
     setIsProcessing(true);
     setPaymentError(null);
 
@@ -32,13 +31,17 @@ export const usePayment = () => {
       }
 
       if (selectedGateway === 'RAZORPAY') {
+        // 1. Create Razorpay Order on server
+        const rzpOrder = await paymentService.createRazorpayOrder(params.orderPayload);
+
         return new Promise((resolve) => {
           openRazorpayModal({
-            key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_mock_key',
-            amount: Math.round(params.amount * 100), // in paise
-            currency: brandConfig.currency.code,
+            key: rzpOrder.keyId || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_mock_key',
+            amount: rzpOrder.amountInPaise,
+            currency: rzpOrder.currency || 'INR',
             name: brandConfig.name,
-            description: `Payment for Order #${params.orderId}`,
+            description: `Payment for Order #${rzpOrder.orderNumber}`,
+            order_id: rzpOrder.razorpayOrderId,
             prefill: {
               email: params.userEmail,
               name: params.userName,
@@ -47,57 +50,50 @@ export const usePayment = () => {
             handler: async (response) => {
               try {
                 const verifyRes = await paymentService.verifyPayment({
-                  orderId: params.orderId,
+                  orderId: rzpOrder.orderId,
                   gateway: 'RAZORPAY',
                   razorpayPaymentId: response.razorpay_payment_id,
-                  razorpayOrderId: response.razorpay_order_id,
+                  razorpayOrderId: response.razorpay_order_id || rzpOrder.razorpayOrderId,
                   razorpaySignature: response.razorpay_signature,
                 });
+
                 setIsProcessing(false);
-                resolve({ success: true, transactionReference: verifyRes.transactionReference || response.razorpay_payment_id });
+                resolve({
+                  success: true,
+                  orderId: rzpOrder.orderId,
+                  transactionReference: verifyRes.transactionReference || response.razorpay_payment_id,
+                });
               } catch (err: any) {
                 setIsProcessing(false);
-                const msg = err.message || 'Payment verification failed';
+                const msg = getErrorMessage(err, 'Payment verification failed');
                 setPaymentError(msg);
                 toast.error(msg);
-                resolve({ success: false });
+                resolve({ success: false, orderId: rzpOrder.orderId });
               }
             },
             modal: {
               ondismiss: () => {
                 setIsProcessing(false);
-                setPaymentError('Payment window closed by user.');
-                resolve({ success: false });
+                setPaymentError('Payment window closed before completing.');
+                toast('Payment cancelled or window closed.', { icon: 'ℹ️' });
+                resolve({ success: false, orderId: rzpOrder.orderId });
               },
             },
           }).catch((err) => {
             setIsProcessing(false);
-            setPaymentError(err.message);
-            toast.error(err.message);
+            const msg = getErrorMessage(err, 'Could not launch payment gateway');
+            setPaymentError(msg);
+            toast.error(msg);
             resolve({ success: false });
           });
         });
-      }
-
-      if (selectedGateway === 'STRIPE') {
-        const stripeRes = await processStripePayment({
-          clientSecret: 'mock_stripe_client_secret',
-          publishableKey: process.env.NEXT_PUBLIC_STRIPE_KEY || 'pk_test_mock',
-        });
-        setIsProcessing(false);
-        if (stripeRes.success) {
-          return { success: true, transactionReference: stripeRes.paymentIntentId };
-        } else {
-          setPaymentError(stripeRes.error || 'Stripe payment failed.');
-          return { success: false };
-        }
       }
 
       setIsProcessing(false);
       return { success: false };
     } catch (err: any) {
       setIsProcessing(false);
-      const msg = err.message || 'Payment processing error';
+      const msg = getErrorMessage(err, 'Payment processing error');
       setPaymentError(msg);
       toast.error(msg);
       return { success: false };

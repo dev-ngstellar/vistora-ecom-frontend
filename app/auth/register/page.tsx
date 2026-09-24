@@ -30,8 +30,8 @@ export default function RegisterPage() {
 
   const registerMutation = useMutation({
     mutationFn: (data: RegisterInput) => authService.register(data),
-    onSuccess: (data) => {
-      login(data);
+    onSuccess: async (data) => {
+      await login(data);
       toast.success('Account created successfully! Welcome to Vistora Commerce.');
       router.push('/dashboard');
     },

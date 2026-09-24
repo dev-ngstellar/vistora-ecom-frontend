@@ -11,6 +11,19 @@ export const apiClient = axios.create({
   withCredentials: true,
 });
 
+export const getErrorMessage = (err: any, fallback: string = 'An unexpected error occurred'): string => {
+  if (typeof err === 'string') return err;
+  return (
+    err?.response?.data?.message ||
+    err?.response?.data?.errors?.[0]?.message ||
+    (err?.response?.data?.errors?.[0]?.field
+      ? `${err.response.data.errors[0].field}: ${err.response.data.errors[0].message}`
+      : undefined) ||
+    err?.message ||
+    fallback
+  );
+};
+
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
 

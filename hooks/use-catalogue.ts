@@ -18,12 +18,15 @@ import {
   ProductQueryFilters,
   PaginatedMeta,
 } from '@/types/catalogue.types';
+import { getErrorMessage } from '@/lib/axios';
 
 // ==================== CATEGORIES HOOKS ====================
-export const useCategories = () => {
+export const useCategories = (options?: { enabled?: boolean; staleTime?: number }) => {
   return useQuery<Category[]>({
     queryKey: ['categories'],
     queryFn: () => categoryService.list(),
+    enabled: options?.enabled !== undefined ? options.enabled : true,
+    staleTime: options?.staleTime ?? 1000 * 60 * 30,
   });
 };
 
@@ -51,8 +54,8 @@ export const useCategoryMutations = () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] });
       toast.success('Category created successfully');
     },
-    onError: (err: Error) => {
-      toast.error(err.message || 'Failed to create category');
+    onError: (err: any) => {
+      toast.error(getErrorMessage(err, 'Failed to create category'));
     },
   });
 
@@ -63,8 +66,8 @@ export const useCategoryMutations = () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] });
       toast.success('Category updated successfully');
     },
-    onError: (err: Error) => {
-      toast.error(err.message || 'Failed to update category');
+    onError: (err: any) => {
+      toast.error(getErrorMessage(err, 'Failed to update category'));
     },
   });
 
@@ -74,8 +77,8 @@ export const useCategoryMutations = () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] });
       toast.success('Category deleted successfully');
     },
-    onError: (err: Error) => {
-      toast.error(err.message || 'Failed to delete category');
+    onError: (err: any) => {
+      toast.error(getErrorMessage(err, 'Failed to delete category'));
     },
   });
 
@@ -107,8 +110,8 @@ export const useBrandMutations = () => {
       queryClient.invalidateQueries({ queryKey: ['brands'] });
       toast.success('Brand created successfully');
     },
-    onError: (err: Error) => {
-      toast.error(err.message || 'Failed to create brand');
+    onError: (err: any) => {
+      toast.error(getErrorMessage(err, 'Failed to create brand'));
     },
   });
 
@@ -119,8 +122,8 @@ export const useBrandMutations = () => {
       queryClient.invalidateQueries({ queryKey: ['brands'] });
       toast.success('Brand updated successfully');
     },
-    onError: (err: Error) => {
-      toast.error(err.message || 'Failed to update brand');
+    onError: (err: any) => {
+      toast.error(getErrorMessage(err, 'Failed to update brand'));
     },
   });
 
@@ -130,8 +133,8 @@ export const useBrandMutations = () => {
       queryClient.invalidateQueries({ queryKey: ['brands'] });
       toast.success('Brand deleted successfully');
     },
-    onError: (err: Error) => {
-      toast.error(err.message || 'Failed to delete brand');
+    onError: (err: any) => {
+      toast.error(getErrorMessage(err, 'Failed to delete brand'));
     },
   });
 
@@ -163,8 +166,8 @@ export const useCollectionMutations = () => {
       queryClient.invalidateQueries({ queryKey: ['collections'] });
       toast.success('Collection created successfully');
     },
-    onError: (err: Error) => {
-      toast.error(err.message || 'Failed to create collection');
+    onError: (err: any) => {
+      toast.error(getErrorMessage(err, 'Failed to create collection'));
     },
   });
 
@@ -175,8 +178,8 @@ export const useCollectionMutations = () => {
       queryClient.invalidateQueries({ queryKey: ['collections'] });
       toast.success('Collection updated successfully');
     },
-    onError: (err: Error) => {
-      toast.error(err.message || 'Failed to update collection');
+    onError: (err: any) => {
+      toast.error(getErrorMessage(err, 'Failed to update collection'));
     },
   });
 
@@ -186,8 +189,8 @@ export const useCollectionMutations = () => {
       queryClient.invalidateQueries({ queryKey: ['collections'] });
       toast.success('Collection deleted successfully');
     },
-    onError: (err: Error) => {
-      toast.error(err.message || 'Failed to delete collection');
+    onError: (err: any) => {
+      toast.error(getErrorMessage(err, 'Failed to delete collection'));
     },
   });
 
@@ -212,18 +215,6 @@ export const useProduct = (idOrSlug: string) => {
     queryFn: () => productService.getByIdOrSlug(idOrSlug),
     enabled: !!idOrSlug,
   });
-};
-
-const getErrorMessage = (err: any, fallback: string): string => {
-  return (
-    err?.response?.data?.errors?.[0]?.message ||
-    (err?.response?.data?.errors?.[0]?.field
-      ? `${err.response.data.errors[0].field}: ${err.response.data.errors[0].message}`
-      : undefined) ||
-    err?.response?.data?.message ||
-    err?.message ||
-    fallback
-  );
 };
 
 export const useProductMutations = () => {
@@ -321,8 +312,8 @@ export const useInventoryMutations = () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
       toast.success('Inventory stock adjusted successfully');
     },
-    onError: (err: Error) => {
-      toast.error(err.message || 'Failed to adjust stock');
+    onError: (err: any) => {
+      toast.error(getErrorMessage(err, 'Failed to adjust stock'));
     },
   });
 

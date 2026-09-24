@@ -9,13 +9,14 @@ import { checkoutService, CreateOrderPayload } from '../services/checkout.servic
 import { isStepValid } from '../validators/checkout.validator';
 import { useAuth } from '@/platform/context';
 import { useCart } from '@/platform/hooks';
+import { getErrorMessage } from '@/lib/axios';
 
 export const useCheckout = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
-  const { user, isAuthenticated } = useAuth();
-  const { data: cartSummary } = useCart();
+  const { user, isAuthenticated, isLoading: isAuthLoading } = useAuth();
+  const { data: cartSummary, isLoading: isCartLoading } = useCart();
 
   const isBuyNow = searchParams?.get('buyNow') === 'true';
 
@@ -78,8 +79,8 @@ export const useCheckout = () => {
       setCurrentStep(CheckoutStep.CONFIRMATION);
       toast.success(`Order #${order.orderNumber} created successfully!`);
     },
-    onError: (err: Error) => {
-      toast.error(err.message || 'Failed to place order. Please try again.');
+    onError: (err: any) => {
+      toast.error(getErrorMessage(err, 'Failed to place order. Please try again.'));
     },
   });
 
@@ -134,6 +135,9 @@ export const useCheckout = () => {
     user,
     isAuthenticated,
     hasItemsInCart,
+    isLoading: isAuthLoading || isCartLoading,
+    isAuthLoading,
+    isCartLoading,
     isStepValid: checkStepValidity,
     goToStep,
     nextStep,

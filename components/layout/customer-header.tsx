@@ -13,13 +13,18 @@ import { useRouter } from 'next/navigation';
 import { brandConfig } from '@/config';
 
 export const CustomerHeader: React.FC = () => {
+  const [mounted, setMounted] = React.useState(false);
   const { data: cartSummary } = useCart();
   const { data: wishlistCount } = useWishlistCount();
   const { requireCustomerAuth } = useAuth();
   const router = useRouter();
 
-  const cartItemCount = cartSummary?.itemCount || 0;
-  const wishCount = wishlistCount || 0;
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const cartItemCount = mounted ? cartSummary?.itemCount || 0 : 0;
+  const wishCount = mounted ? wishlistCount || 0 : 0;
 
   return (
     <header className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-md border-b border-[#E5E7EB] transition-all duration-300 shadow-xs">

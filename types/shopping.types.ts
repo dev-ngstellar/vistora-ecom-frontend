@@ -14,11 +14,20 @@ export interface CartItemResponse {
   availableStock: number;
 }
 
+export interface AppliedCouponInfo {
+  code: string;
+  title: string;
+  type: string;
+  value: number;
+  discountAmount: number;
+}
+
 export interface CartSummaryResponse {
   id: string;
   userId: string;
   status: string;
   couponCode: string | null;
+  coupon?: AppliedCouponInfo | null;
   items: CartItemResponse[];
   subtotal: number;
   discount: number;

@@ -23,8 +23,8 @@ export const customerNavItems = [
 
 export const CustomerNav: React.FC = () => {
   const pathname = usePathname();
-  const { data: categories = [] } = useCategories();
   const [isDeptOpen, setIsDeptOpen] = useState(false);
+  const { data: categories = [] } = useCategories({ enabled: isDeptOpen });
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
