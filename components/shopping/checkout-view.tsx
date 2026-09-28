@@ -6,7 +6,6 @@ import Image from 'next/image';
 import {
   useCheckout,
   useAddresses,
-  useShipping,
   useCoupons,
   usePayment,
   useOrderSummary,
@@ -15,9 +14,9 @@ import {
 } from '@/platform/checkout';
 import toast from 'react-hot-toast';
 import { brandConfig } from '@/config';
+import { InvoiceModal } from '@/components/sales/invoice-modal';
 import {
   MapPin,
-  Truck,
   CreditCard,
   CheckCircle2,
   ChevronRight,
@@ -60,6 +59,7 @@ export const CheckoutView: React.FC = () => {
     nextStep,
     prevStep,
     submitOrder,
+    handleOrderSuccess,
     isSubmittingOrder,
     createdOrderId,
   } = useCheckout();
@@ -75,18 +75,15 @@ export const CheckoutView: React.FC = () => {
 
   const selectedAddress = addresses.find((a) => a.id === selectedAddressId) || null;
 
-  const { methods: shippingMethods, selectedMethod, setSelectedMethodId, shippingCost } = useShipping(
-    cartSummary?.subtotal || 0,
-    selectedAddress,
-  );
-
   const { couponCode, coupon, discountAmount, applyCoupon, removeCoupon, isApplying, isRemoving } = useCoupons();
   const [couponInput, setCouponInput] = useState('');
   const [isItemsExpanded, setIsItemsExpanded] = useState(true);
 
   const { selectedGateway, setSelectedGateway, processPayment, isProcessing, paymentError } = usePayment();
 
-  const summary = useOrderSummary(shippingCost);
+  const summary = useOrderSummary();
+  const [confirmationInvoiceOrder, setConfirmationInvoiceOrder] = useState<any | null>(null);
+  const [isConfirmationInvoiceOpen, setIsConfirmationInvoiceOpen] = useState(false);
 
   // Address modal/form state
   const [showAddressForm, setShowAddressForm] = useState(false);
@@ -165,18 +162,13 @@ export const CheckoutView: React.FC = () => {
           couponCode: cartSummary?.couponCode || null,
           notes: notes || undefined,
         },
-        userEmail: user?.email,
-        userName: user?.fullName || selectedAddress?.fullName,
-        userPhone: selectedAddress?.phone || user?.phone,
+        userEmail: user?.email || undefined,
+        userName: user?.fullName || selectedAddress?.fullName || undefined,
+        userPhone: selectedAddress?.phone || user?.phone || undefined,
       });
 
       if (res.success && res.orderId) {
-        toast.success('Payment verified! Order confirmed.');
-        submitOrder({
-          addressId: selectedAddressId,
-          paymentMethod: 'RAZORPAY',
-          notes,
-        });
+        handleOrderSuccess(res.orderId);
       }
     } else {
       // Execute COD Flow
@@ -243,17 +235,19 @@ export const CheckoutView: React.FC = () => {
           <button
             onClick={async () => {
               try {
-                toast.loading('Generating invoice...', { id: 'inv' });
-                await checkoutService.downloadInvoice(createdOrderId);
-                toast.success('Invoice receipt ready!', { id: 'inv' });
+                toast.loading('Fetching invoice...', { id: 'inv' });
+                const orderData = await checkoutService.getOrderDetails(createdOrderId);
+                setConfirmationInvoiceOrder(orderData);
+                setIsConfirmationInvoiceOpen(true);
+                toast.dismiss('inv');
               } catch {
-                toast.error('Invoice currently generating, please check orders history', { id: 'inv' });
+                toast.error('Unable to fetch invoice details', { id: 'inv' });
               }
             }}
-            className="px-6 py-3.5 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition flex items-center gap-2"
+            className="px-6 py-3.5 rounded-2xl bg-slate-900 hover:bg-[#A50025] text-white font-bold text-xs transition flex items-center gap-2 cursor-pointer shadow-xs"
           >
             <FileText className="w-4 h-4" />
-            <span>Download Invoice</span>
+            <span>View & Download Invoice</span>
           </button>
           <Link
             href="/shop"
@@ -262,6 +256,13 @@ export const CheckoutView: React.FC = () => {
             Continue Shopping
           </Link>
         </div>
+
+        {/* Confirmation Screen Invoice Modal */}
+        <InvoiceModal
+          order={confirmationInvoiceOrder}
+          open={isConfirmationInvoiceOpen}
+          onClose={() => setIsConfirmationInvoiceOpen(false)}
+        />
       </div>
     );
   }
@@ -327,26 +328,24 @@ export const CheckoutView: React.FC = () => {
 
       {/* Modern Connected Step Progress Bar */}
       <div className="bg-white p-3 rounded-2xl border border-slate-200 shadow-xs">
-        <div className="grid grid-cols-3 gap-2 sm:gap-4">
+        <div className="grid grid-cols-2 gap-2 sm:gap-4">
           {/* Step 1 Tab */}
           <button
             onClick={() => goToStep(CheckoutStep.SHIPPING_ADDRESS)}
-            className={`flex items-center justify-center sm:justify-start gap-2.5 p-2.5 sm:px-4 sm:py-3 rounded-xl transition cursor-pointer text-left ${
-              currentStep === CheckoutStep.SHIPPING_ADDRESS
-                ? 'bg-[#A50025] text-white shadow-xs font-bold'
-                : selectedAddressId
-                  ? 'bg-emerald-50 text-emerald-900 hover:bg-emerald-100 font-semibold'
-                  : 'bg-slate-50 text-slate-600 hover:bg-slate-100 font-medium'
-            }`}
+            className={`flex items-center justify-center sm:justify-start gap-2.5 p-2.5 sm:px-4 sm:py-3 rounded-xl transition cursor-pointer text-left ${currentStep === CheckoutStep.SHIPPING_ADDRESS
+              ? 'bg-[#A50025] text-white shadow-xs font-bold'
+              : selectedAddressId
+                ? 'bg-emerald-50 text-emerald-900 hover:bg-emerald-100 font-semibold'
+                : 'bg-slate-50 text-slate-600 hover:bg-slate-100 font-medium'
+              }`}
           >
             <div
-              className={`w-6 h-6 rounded-full flex items-center justify-center text-xs shrink-0 ${
-                currentStep === CheckoutStep.SHIPPING_ADDRESS
-                  ? 'bg-white text-[#A50025] font-black'
-                  : selectedAddressId
-                    ? 'bg-emerald-600 text-white'
-                    : 'bg-slate-200 text-slate-700'
-              }`}
+              className={`w-6 h-6 rounded-full flex items-center justify-center text-xs shrink-0 ${currentStep === CheckoutStep.SHIPPING_ADDRESS
+                ? 'bg-white text-[#A50025] font-black'
+                : selectedAddressId
+                  ? 'bg-emerald-600 text-white'
+                  : 'bg-slate-200 text-slate-700'
+                }`}
             >
               {selectedAddressId && currentStep > CheckoutStep.SHIPPING_ADDRESS ? (
                 <Check className="w-3.5 h-3.5" />
@@ -365,64 +364,25 @@ export const CheckoutView: React.FC = () => {
           {/* Step 2 Tab */}
           <button
             onClick={() => {
-              if (selectedAddressId) goToStep(CheckoutStep.SHIPPING_METHOD);
-            }}
-            disabled={!selectedAddressId}
-            className={`flex items-center justify-center sm:justify-start gap-2.5 p-2.5 sm:px-4 sm:py-3 rounded-xl transition cursor-pointer text-left disabled:cursor-not-allowed disabled:opacity-50 ${
-              currentStep === CheckoutStep.SHIPPING_METHOD
-                ? 'bg-[#A50025] text-white shadow-xs font-bold'
-                : currentStep > CheckoutStep.SHIPPING_METHOD
-                  ? 'bg-emerald-50 text-emerald-900 hover:bg-emerald-100 font-semibold'
-                  : 'bg-slate-50 text-slate-600 hover:bg-slate-100 font-medium'
-            }`}
-          >
-            <div
-              className={`w-6 h-6 rounded-full flex items-center justify-center text-xs shrink-0 ${
-                currentStep === CheckoutStep.SHIPPING_METHOD
-                  ? 'bg-white text-[#A50025] font-black'
-                  : currentStep > CheckoutStep.SHIPPING_METHOD
-                    ? 'bg-emerald-600 text-white'
-                    : 'bg-slate-200 text-slate-700'
-              }`}
-            >
-              {currentStep > CheckoutStep.SHIPPING_METHOD ? (
-                <Check className="w-3.5 h-3.5" />
-              ) : (
-                '2'
-              )}
-            </div>
-            <div className="hidden sm:block">
-              <div className="text-xs leading-none">Shipping Speed</div>
-              <div className="text-[10px] opacity-75 mt-0.5">
-                {selectedMethod ? selectedMethod.name : 'Standard delivery'}
-              </div>
-            </div>
-          </button>
-
-          {/* Step 3 Tab */}
-          <button
-            onClick={() => {
               if (selectedAddressId) goToStep(CheckoutStep.PAYMENT_METHOD);
             }}
             disabled={!selectedAddressId}
-            className={`flex items-center justify-center sm:justify-start gap-2.5 p-2.5 sm:px-4 sm:py-3 rounded-xl transition cursor-pointer text-left disabled:cursor-not-allowed disabled:opacity-50 ${
-              currentStep === CheckoutStep.PAYMENT_METHOD
-                ? 'bg-[#A50025] text-white shadow-xs font-bold'
-                : 'bg-slate-50 text-slate-600 hover:bg-slate-100 font-medium'
-            }`}
+            className={`flex items-center justify-center sm:justify-start gap-2.5 p-2.5 sm:px-4 sm:py-3 rounded-xl transition cursor-pointer text-left disabled:cursor-not-allowed disabled:opacity-50 ${currentStep === CheckoutStep.PAYMENT_METHOD
+              ? 'bg-[#A50025] text-white shadow-xs font-bold'
+              : 'bg-slate-50 text-slate-600 hover:bg-slate-100 font-medium'
+              }`}
           >
             <div
-              className={`w-6 h-6 rounded-full flex items-center justify-center text-xs shrink-0 ${
-                currentStep === CheckoutStep.PAYMENT_METHOD
-                  ? 'bg-white text-[#A50025] font-black'
-                  : 'bg-slate-200 text-slate-700'
-              }`}
+              className={`w-6 h-6 rounded-full flex items-center justify-center text-xs shrink-0 ${currentStep === CheckoutStep.PAYMENT_METHOD
+                ? 'bg-white text-[#A50025] font-black'
+                : 'bg-slate-200 text-slate-700'
+                }`}
             >
-              3
+              2
             </div>
             <div className="hidden sm:block">
               <div className="text-xs leading-none">Payment & Review</div>
-              <div className="text-[10px] opacity-75 mt-0.5">Razorpay / COD</div>
+              <div className="text-[10px] opacity-75 mt-0.5">Razorpay</div>
             </div>
           </button>
         </div>
@@ -471,21 +431,19 @@ export const CheckoutView: React.FC = () => {
                       <div
                         key={addr.id}
                         onClick={() => setSelectedAddressId(addr.id)}
-                        className={`relative p-5 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between space-y-3.5 ${
-                          isSelected
-                            ? 'border-[#A50025] bg-[#A50025]/5 shadow-xs ring-4 ring-[#A50025]/10'
-                            : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/50'
-                        }`}
+                        className={`relative p-5 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between space-y-3.5 ${isSelected
+                          ? 'border-[#A50025] bg-[#A50025]/5 shadow-xs ring-4 ring-[#A50025]/10'
+                          : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/50'
+                          }`}
                       >
                         {/* Radio Checkmark Header */}
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <div
-                              className={`w-5 h-5 rounded-full flex items-center justify-center border-2 transition ${
-                                isSelected
-                                  ? 'border-[#A50025] bg-[#A50025] text-white'
-                                  : 'border-slate-300 bg-white'
-                              }`}
+                              className={`w-5 h-5 rounded-full flex items-center justify-center border-2 transition ${isSelected
+                                ? 'border-[#A50025] bg-[#A50025] text-white'
+                                : 'border-slate-300 bg-white'
+                                }`}
                             >
                               {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
                             </div>
@@ -679,7 +637,7 @@ export const CheckoutView: React.FC = () => {
                   disabled={!selectedAddressId}
                   className="px-7 py-3.5 rounded-2xl bg-[#A50025] hover:bg-[#80001D] disabled:opacity-50 text-white font-black text-xs transition shadow-md hover:shadow-lg flex items-center gap-2 cursor-pointer disabled:cursor-not-allowed"
                 >
-                  <span>Continue to Shipping Method</span>
+                  <span>Continue to Payment</span>
                   <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
@@ -687,9 +645,9 @@ export const CheckoutView: React.FC = () => {
           )}
 
           {/* ============================================================
-              STEP 2: SHIPPING METHOD
+              STEP 2: PAYMENT METHOD & REVIEW
           ============================================================ */}
-          {currentStep === CheckoutStep.SHIPPING_METHOD && (
+          {currentStep === CheckoutStep.PAYMENT_METHOD && (
             <div className="bg-white p-6 sm:p-7 rounded-3xl border border-slate-200/80 shadow-xs space-y-6">
               {/* Selected Address Summary Card */}
               {selectedAddress && (
@@ -715,130 +673,6 @@ export const CheckoutView: React.FC = () => {
                   </button>
                 </div>
               )}
-
-              <div className="space-y-0.5 border-b border-slate-100 pb-4">
-                <h2 className="text-lg font-black text-slate-900 flex items-center gap-2">
-                  <Truck className="w-5 h-5 text-[#A50025]" />
-                  <span>Choose Delivery Speed</span>
-                </h2>
-                <p className="text-xs text-slate-500">
-                  Select your preferred shipping carrier tier for this order.
-                </p>
-              </div>
-
-              {/* Shipping Method Cards */}
-              <div className="space-y-3.5">
-                {shippingMethods.map((m) => {
-                  const isSelected = selectedMethod?.id === m.id;
-                  return (
-                    <div
-                      key={m.id}
-                      onClick={() => setSelectedMethodId(m.id)}
-                      className={`p-5 rounded-2xl border-2 cursor-pointer transition-all flex items-center justify-between ${
-                        isSelected
-                          ? 'border-[#A50025] bg-[#A50025]/5 shadow-xs ring-4 ring-[#A50025]/10'
-                          : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/50'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3.5">
-                        <div
-                          className={`w-5 h-5 rounded-full flex items-center justify-center border-2 transition ${
-                            isSelected
-                              ? 'border-[#A50025] bg-[#A50025] text-white'
-                              : 'border-slate-300 bg-white'
-                          }`}
-                        >
-                          {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
-                        </div>
-                        <div>
-                          <div className="text-xs font-black text-slate-900 flex items-center gap-2">
-                            <span>{m.name}</span>
-                            {m.isFree && (
-                              <span className="text-[10px] font-black uppercase text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
-                                Free Shipping Eligible
-                              </span>
-                            )}
-                          </div>
-                          <div className="text-[11px] text-slate-500 mt-0.5">
-                            {m.description} • Est. Arrival: <strong className="text-slate-700">{m.estimatedDays}</strong>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="text-right">
-                        <div className="text-xs font-black text-slate-900">
-                          {m.isFree ? (
-                            <span className="text-emerald-700 font-extrabold">FREE</span>
-                          ) : (
-                            `${brandConfig.currency.symbol}${m.cost.toFixed(2)}`
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Step Navigation Buttons */}
-              <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-                <button
-                  onClick={prevStep}
-                  className="px-5 py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition flex items-center gap-1.5"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  <span>Back to Address</span>
-                </button>
-                <button
-                  onClick={nextStep}
-                  className="px-7 py-3.5 rounded-2xl bg-[#A50025] hover:bg-[#80001D] text-white font-black text-xs transition shadow-md hover:shadow-lg flex items-center gap-2 cursor-pointer"
-                >
-                  <span>Continue to Payment</span>
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* ============================================================
-              STEP 3: PAYMENT METHOD & REVIEW
-          ============================================================ */}
-          {currentStep === CheckoutStep.PAYMENT_METHOD && (
-            <div className="bg-white p-6 sm:p-7 rounded-3xl border border-slate-200/80 shadow-xs space-y-6">
-              {/* Summaries of Previous Choices */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {selectedAddress && (
-                  <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 text-xs flex items-center justify-between">
-                    <div>
-                      <div className="font-bold text-slate-900 text-[11px]">1. Delivery To:</div>
-                      <div className="text-slate-600 truncate max-w-[180px] font-medium">
-                        {selectedAddress.fullName}, {selectedAddress.city}
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => goToStep(CheckoutStep.SHIPPING_ADDRESS)}
-                      className="text-[11px] font-bold text-[#A50025] hover:underline"
-                    >
-                      Change
-                    </button>
-                  </div>
-                )}
-                {selectedMethod && (
-                  <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 text-xs flex items-center justify-between">
-                    <div>
-                      <div className="font-bold text-slate-900 text-[11px]">2. Shipping Method:</div>
-                      <div className="text-slate-600 font-medium">
-                        {selectedMethod.name} ({selectedMethod.isFree ? 'FREE' : `${brandConfig.currency.symbol}${selectedMethod.cost}`})
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => goToStep(CheckoutStep.SHIPPING_METHOD)}
-                      className="text-[11px] font-bold text-[#A50025] hover:underline"
-                    >
-                      Change
-                    </button>
-                  </div>
-                )}
-              </div>
 
               <div className="space-y-0.5 border-b border-slate-100 pb-4">
                 <h2 className="text-lg font-black text-slate-900 flex items-center gap-2">
@@ -869,20 +703,18 @@ export const CheckoutView: React.FC = () => {
                     setSelectedPaymentMethod('RAZORPAY');
                     setSelectedGateway('RAZORPAY');
                   }}
-                  className={`p-5 rounded-2xl border-2 cursor-pointer transition-all ${
-                    selectedPaymentMethod === 'RAZORPAY'
-                      ? 'border-[#A50025] bg-[#A50025]/5 shadow-xs ring-4 ring-[#A50025]/10'
-                      : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/50'
-                  }`}
+                  className={`p-5 rounded-2xl border-2 cursor-pointer transition-all ${selectedPaymentMethod === 'RAZORPAY'
+                    ? 'border-[#A50025] bg-[#A50025]/5 shadow-xs ring-4 ring-[#A50025]/10'
+                    : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/50'
+                    }`}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-start gap-3.5">
                       <div
-                        className={`w-5 h-5 rounded-full flex items-center justify-center border-2 mt-0.5 transition ${
-                          selectedPaymentMethod === 'RAZORPAY'
-                            ? 'border-[#A50025] bg-[#A50025] text-white'
-                            : 'border-slate-300 bg-white'
-                        }`}
+                        className={`w-5 h-5 rounded-full flex items-center justify-center border-2 mt-0.5 transition ${selectedPaymentMethod === 'RAZORPAY'
+                          ? 'border-[#A50025] bg-[#A50025] text-white'
+                          : 'border-slate-300 bg-white'
+                          }`}
                       >
                         {selectedPaymentMethod === 'RAZORPAY' && <Check className="w-3 h-3 stroke-[3]" />}
                       </div>
@@ -913,7 +745,7 @@ export const CheckoutView: React.FC = () => {
                 </div>
 
                 {/* 2. Cash on Delivery (COD) Option */}
-                <div
+                {/* <div
                   onClick={() => {
                     setSelectedPaymentMethod('COD');
                     setSelectedGateway('COD');
@@ -948,7 +780,7 @@ export const CheckoutView: React.FC = () => {
                       </div>
                     </div>
                   </div>
-                </div>
+                </div> */}
               </div>
 
               {/* Delivery Instructions / Notes Input */}
@@ -969,21 +801,20 @@ export const CheckoutView: React.FC = () => {
               {/* Step Navigation & Submit Action */}
               <div className="flex items-center justify-between pt-4 border-t border-slate-100">
                 <button
-                  onClick={prevStep}
-                  className="px-5 py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition flex items-center gap-1.5"
+                  onClick={() => goToStep(CheckoutStep.SHIPPING_ADDRESS)}
+                  className="px-5 py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition flex items-center gap-1.5 cursor-pointer"
                 >
                   <ArrowLeft className="w-4 h-4" />
-                  <span>Back to Shipping</span>
+                  <span>Back to Address</span>
                 </button>
 
                 <button
                   onClick={handleFinalOrder}
                   disabled={isSubmittingOrder || isProcessing}
-                  className={`px-8 py-4 rounded-2xl text-white font-black text-xs transition shadow-lg flex items-center gap-2 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 ${
-                    selectedPaymentMethod === 'RAZORPAY'
-                      ? 'bg-gradient-to-r from-blue-600 via-indigo-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800'
-                      : 'bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800'
-                  }`}
+                  className={`px-8 py-4 rounded-2xl text-white font-black text-xs transition shadow-lg flex items-center gap-2 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 ${selectedPaymentMethod === 'RAZORPAY'
+                    ? 'bg-gradient-to-r from-blue-600 via-indigo-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800'
+                    : 'bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800'
+                    }`}
                 >
                   {isSubmittingOrder || isProcessing ? (
                     <Loader2 className="w-4 h-4 animate-spin" />

@@ -16,9 +16,9 @@ export const usePayment = () => {
 
   const processPayment = async (params: {
     orderPayload: CreateRazorpayOrderInput;
-    userEmail?: string;
-    userName?: string;
-    userPhone?: string;
+    userEmail?: string | null;
+    userName?: string | null;
+    userPhone?: string | null;
   }): Promise<{ success: boolean; orderId?: string; transactionReference?: string }> => {
     setIsProcessing(true);
     setPaymentError(null);
@@ -43,9 +43,9 @@ export const usePayment = () => {
             description: `Payment for Order #${rzpOrder.orderNumber}`,
             order_id: rzpOrder.razorpayOrderId,
             prefill: {
-              email: params.userEmail,
-              name: params.userName,
-              contact: params.userPhone,
+              email: params.userEmail || undefined,
+              name: params.userName || undefined,
+              contact: params.userPhone || undefined,
             },
             handler: async (response) => {
               try {

@@ -1,7 +1,9 @@
 'use client';
 
 import React from 'react';
-import { Button, Dropdown, message } from 'antd';
+import { Button, Dropdown } from 'antd';
+import { message } from '@/lib/antd';
+
 import { Download, Printer, FileSpreadsheet, FileText, FileCode } from 'lucide-react';
 
 interface ReportExportBarProps {

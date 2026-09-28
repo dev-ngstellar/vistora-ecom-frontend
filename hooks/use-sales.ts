@@ -1,7 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { salesService } from '@/services/sales.service';
 import { Coupon } from '@/types/sales.types';
-import { message } from 'antd';
+import { message } from '@/lib/antd';
+
 
 // Query Keys
 export const salesKeys = {

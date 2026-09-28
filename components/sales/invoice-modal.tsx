@@ -137,7 +137,7 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({ order, open, onClose
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {order.items.map((item) => {
+              {(order.items || []).map((item) => {
                 return (
                   <tr key={item.id}>
                     <td className="p-2.5 font-semibold text-slate-900">

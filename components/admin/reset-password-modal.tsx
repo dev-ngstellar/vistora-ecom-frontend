@@ -1,7 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Modal, Form, Input, Button, message } from 'antd';
+import { Modal, Form, Input, Button } from 'antd';
+import { message } from '@/lib/antd';
+
 import { KeyRound, Sparkles, Copy, Check } from 'lucide-react';
 
 interface ResetPasswordModalProps {

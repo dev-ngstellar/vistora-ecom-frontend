@@ -1,7 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Button, Modal, Tag, Input, message } from 'antd';
+import { Button, Modal, Tag, Input } from 'antd';
+import { message } from '@/lib/antd';
+
 import { Star, Check, X, MessageSquare, ShieldCheck } from 'lucide-react';
 import dayjs from 'dayjs';
 import { useReviewMutations, useReviews } from '@/hooks/use-sales';

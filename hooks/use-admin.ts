@@ -1,7 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { adminService } from '@/services/admin.service';
 import { Role, StaffUser } from '@/types/admin.types';
-import { message } from 'antd';
+import { message } from '@/lib/antd';
+
 
 export const adminKeys = {
   allUsers: ['admin', 'users'] as const,

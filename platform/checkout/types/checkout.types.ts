@@ -1,10 +1,9 @@
 export enum CheckoutStep {
   CUSTOMER_DETAILS = 0,
   SHIPPING_ADDRESS = 1,
-  SHIPPING_METHOD = 2,
-  PAYMENT_METHOD = 3,
-  ORDER_REVIEW = 4,
-  CONFIRMATION = 5,
+  PAYMENT_METHOD = 2,
+  ORDER_REVIEW = 3,
+  CONFIRMATION = 4,
 }
 
 export interface StepStatus {

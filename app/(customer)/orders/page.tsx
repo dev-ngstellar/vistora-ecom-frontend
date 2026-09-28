@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { ProtectedRoute } from '@/shared';
 import { checkoutService } from '@/platform/checkout';
 import { brandConfig } from '@/config';
+import { InvoiceModal } from '@/components/sales/invoice-modal';
 import toast from 'react-hot-toast';
 import {
   Package,
@@ -23,6 +24,8 @@ import {
 
 export default function OrdersPage() {
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
+  const [selectedInvoiceOrder, setSelectedInvoiceOrder] = useState<any | null>(null);
+  const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
 
   const { data: orders = [], isLoading, error } = useQuery({
     queryKey: ['customer', 'orders'],
@@ -83,14 +86,9 @@ export default function OrdersPage() {
     }
   };
 
-  const handleDownloadInvoice = async (orderId: string, orderNumber: string) => {
-    try {
-      toast.loading('Generating invoice...', { id: 'inv' });
-      const invoice = await checkoutService.downloadInvoice(orderId);
-      toast.success(`Invoice generated for #${orderNumber}`, { id: 'inv' });
-    } catch {
-      toast.error('Unable to fetch invoice details', { id: 'inv' });
-    }
+  const handleViewInvoice = (order: any) => {
+    setSelectedInvoiceOrder(order);
+    setIsInvoiceModalOpen(true);
   };
 
   return (
@@ -256,8 +254,8 @@ export default function OrdersPage() {
                       {/* Actions Footer */}
                       <div className="pt-2 flex justify-end">
                         <button
-                          onClick={() => handleDownloadInvoice(order.id, order.orderNumber)}
-                          className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-indigo-600 text-white font-bold text-xs flex items-center gap-2 transition shadow-xs"
+                          onClick={() => handleViewInvoice(order)}
+                          className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-[#A50025] text-white font-bold text-xs flex items-center gap-2 transition shadow-xs cursor-pointer"
                         >
                           <FileText className="w-4 h-4" />
                           <span>View Invoice</span>
@@ -270,6 +268,13 @@ export default function OrdersPage() {
             })}
           </div>
         )}
+
+        {/* Invoice Modal for Customer */}
+        <InvoiceModal
+          order={selectedInvoiceOrder}
+          open={isInvoiceModalOpen}
+          onClose={() => setIsInvoiceModalOpen(false)}
+        />
       </div>
     </ProtectedRoute>
   );

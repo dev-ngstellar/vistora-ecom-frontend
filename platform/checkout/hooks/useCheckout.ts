@@ -67,17 +67,25 @@ export const useCheckout = () => {
     }
   };
 
+  const handleOrderSuccess = (orderId: string, orderNumber?: string) => {
+    setCreatedOrderId(orderId);
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('buyNowItem');
+    }
+    queryClient.invalidateQueries({ queryKey: ['cart'] });
+    queryClient.invalidateQueries({ queryKey: ['orders'] });
+    setCurrentStep(CheckoutStep.CONFIRMATION);
+    if (orderNumber) {
+      toast.success(`Order #${orderNumber} confirmed successfully!`);
+    } else {
+      toast.success('Payment verified! Order confirmed.');
+    }
+  };
+
   const createOrderMutation = useMutation({
     mutationFn: (payload: CreateOrderPayload) => checkoutService.createOrder(payload),
     onSuccess: (order) => {
-      setCreatedOrderId(order.id);
-      if (typeof window !== 'undefined') {
-        sessionStorage.removeItem('buyNowItem');
-      }
-      queryClient.invalidateQueries({ queryKey: ['cart'] });
-      queryClient.invalidateQueries({ queryKey: ['orders'] });
-      setCurrentStep(CheckoutStep.CONFIRMATION);
-      toast.success(`Order #${order.orderNumber} created successfully!`);
+      handleOrderSuccess(order.id, order.orderNumber);
     },
     onError: (err: any) => {
       toast.error(getErrorMessage(err, 'Failed to place order. Please try again.'));
@@ -131,6 +139,7 @@ export const useCheckout = () => {
     notes,
     setNotes,
     createdOrderId,
+    setCreatedOrderId,
     cartSummary,
     user,
     isAuthenticated,
@@ -143,6 +152,7 @@ export const useCheckout = () => {
     nextStep,
     prevStep,
     submitOrder,
+    handleOrderSuccess,
     isSubmittingOrder: createOrderMutation.isPending,
   };
 };

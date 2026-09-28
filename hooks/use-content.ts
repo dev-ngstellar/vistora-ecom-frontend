@@ -1,7 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { contentService } from '@/services/content.service';
 import { Banner, CMSPage } from '@/types/content.types';
-import { message } from 'antd';
+import { message } from '@/lib/antd';
+
 
 export const contentKeys = {
   allBanners: ['content', 'banners'] as const,

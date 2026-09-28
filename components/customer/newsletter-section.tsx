@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Mail, CheckCircle2 } from 'lucide-react';
-import { message } from 'antd';
+import toast from 'react-hot-toast';
 
 export const NewsletterSection: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -11,14 +11,15 @@ export const NewsletterSection: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !email.includes('@')) {
-      message.error('Please enter a valid email address');
+      toast.error('Please enter a valid email address');
       return;
     }
 
     setSubscribed(true);
-    message.success('Thank you for subscribing to Vistora!');
+    toast.success('Thank you for subscribing to Vistora!');
     setEmail('');
   };
+
 
   return (
     <section className="bg-[#A50025] text-white rounded-2xl p-6 sm:p-8 border border-[#7D001C] shadow-xs my-6">
