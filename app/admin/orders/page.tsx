@@ -3,7 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useOrderMutations, useOrders, useOrderStats } from '@/hooks/use-sales';
+import { salesService } from '@/services/sales.service';
 import { Order } from '@/types/sales.types';
+import toast from 'react-hot-toast';
 import { StatusBadge } from '@/components/sales/status-badge';
 import { OrderTimeline } from '@/components/sales/order-timeline';
 import { InvoiceModal } from '@/components/sales/invoice-modal';
@@ -129,23 +131,36 @@ export default function AdminOrdersPage() {
     setIsDetailDrawerOpen(false);
   };
 
+  const [isExporting, setIsExporting] = useState(false);
+
   const handleExportCsv = async () => {
     try {
-      const response = await fetch('/api/v1/orders/export', {
-        headers: {
-          Authorization: `Bearer ${sessionStorage.getItem('accessToken')}`,
-        },
+      setIsExporting(true);
+      toast.loading('Preparing orders spreadsheet export...', { id: 'csv-export' });
+
+      const blob = await salesService.exportOrdersCsv({
+        search: search || undefined,
+        status: statusFilter,
+        paymentStatus: paymentFilter,
+        startDate: dateRange ? dateRange[0] : undefined,
+        endDate: dateRange ? dateRange[1] : undefined,
       });
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
+
+      const url = window.URL.createObjectURL(new Blob([blob], { type: 'text/csv;charset=utf-8;' }));
       const a = document.createElement('a');
       a.href = url;
-      a.download = `orders-export-${dayjs().format('YYYY-MM-DD')}.csv`;
+      a.download = `orders-export-${dayjs().format('YYYY-MM-DD-HHmm')}.csv`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
+      a.remove();
+
+      toast.success('Orders exported successfully!', { id: 'csv-export' });
     } catch (error) {
       console.error('Failed to export CSV', error);
+      toast.error('Failed to export orders spreadsheet', { id: 'csv-export' });
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -376,6 +391,8 @@ export default function AdminOrdersPage() {
             type="primary"
             icon={<Download className="w-4 h-4" />}
             onClick={handleExportCsv}
+            loading={isExporting}
+            disabled={isExporting}
             className="rounded-lg font-bold text-xs bg-[#A50025] hover:bg-[#7D001C] text-white h-9 px-4"
           >
             Export Orders

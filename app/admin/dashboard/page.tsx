@@ -26,10 +26,10 @@ import dayjs from 'dayjs';
 const { RangePicker } = DatePicker;
 
 export default function AdminDashboardPage() {
-  const [dateFilter, setDateFilter] = useState<'today' | '7days' | '30days' | 'this_month' | 'this_year' | 'custom'>('30days');
+  const [dateFilter, setDateFilter] = useState<'all' | 'today' | '7days' | '30days' | 'this_month' | 'this_year' | 'custom'>('all');
   const [customRange, setCustomRange] = useState<[string | undefined, string | undefined]>([
-    dayjs().subtract(30, 'day').format('YYYY-MM-DD'),
-    dayjs().format('YYYY-MM-DD'),
+    undefined,
+    undefined,
   ]);
 
   const startDate = customRange[0];
@@ -37,9 +37,11 @@ export default function AdminDashboardPage() {
 
   const { data: analytics, isLoading } = useDashboardAnalytics(startDate, endDate);
 
-  const handleFilterChange = (val: 'today' | '7days' | '30days' | 'this_month' | 'this_year' | 'custom') => {
+  const handleFilterChange = (val: 'all' | 'today' | '7days' | '30days' | 'this_month' | 'this_year' | 'custom') => {
     setDateFilter(val);
-    if (val === 'today') {
+    if (val === 'all') {
+      setCustomRange([undefined, undefined]);
+    } else if (val === 'today') {
       setCustomRange([dayjs().format('YYYY-MM-DD'), dayjs().format('YYYY-MM-DD')]);
     } else if (val === '7days') {
       setCustomRange([dayjs().subtract(7, 'day').format('YYYY-MM-DD'), dayjs().format('YYYY-MM-DD')]);
@@ -63,6 +65,7 @@ export default function AdminDashboardPage() {
         action={
           <div className="flex items-center gap-2">
             <Select value={dateFilter} onChange={handleFilterChange} className="w-36" size="middle">
+              <Select.Option value="all">All Time</Select.Option>
               <Select.Option value="today">Today</Select.Option>
               <Select.Option value="7days">Last 7 Days</Select.Option>
               <Select.Option value="30days">Last 30 Days</Select.Option>

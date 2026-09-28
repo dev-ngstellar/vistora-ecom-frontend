@@ -6,7 +6,7 @@ import { authService } from '@/services/auth.service';
 import { brandConfig } from '@/config';
 import { AuthResponseData } from '@/types/auth.types';
 import toast from 'react-hot-toast';
-import { X, Lock, Mail, User, Phone, Loader2, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { X, Lock, Mail, User, Phone, Loader2, ArrowRight, CheckCircle2, Eye, EyeOff } from 'lucide-react';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -28,12 +28,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   // Form States
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
 
   const [regFirstName, setRegFirstName] = useState('');
   const [regLastName, setRegLastName] = useState('');
   const [regEmail, setRegEmail] = useState('');
   const [regPhone, setRegPhone] = useState('');
   const [regPassword, setRegPassword] = useState('');
+  const [showRegPassword, setShowRegPassword] = useState(false);
 
   const [forgotEmail, setForgotEmail] = useState('');
   const [forgotSent, setForgotSent] = useState(false);
@@ -192,13 +194,25 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               <div className="relative flex items-center">
                 <Lock className="absolute left-3 w-4 h-4 text-slate-400 pointer-events-none" />
                 <input
-                  type="password"
+                  type={showLoginPassword ? 'text' : 'password'}
                   required
                   placeholder="••••••••"
                   value={loginPassword}
                   onChange={(e) => setLoginPassword(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-maroon"
+                  className="w-full pl-9 pr-10 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-maroon"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowLoginPassword((prev) => !prev)}
+                  className="absolute right-3 p-1 text-slate-400 hover:text-slate-600 focus:outline-none transition"
+                  aria-label={showLoginPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showLoginPassword ? (
+                    <EyeOff className="w-4 h-4" />
+                  ) : (
+                    <Eye className="w-4 h-4" />
+                  )}
+                </button>
               </div>
             </div>
 
@@ -274,14 +288,28 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
               <div className="space-y-1">
                 <label className="font-bold text-slate-700 block">Password *</label>
-                <input
-                  type="password"
-                  required
-                  placeholder="Min 8 chars"
-                  value={regPassword}
-                  onChange={(e) => setRegPassword(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-maroon"
-                />
+                <div className="relative flex items-center">
+                  <input
+                    type={showRegPassword ? 'text' : 'password'}
+                    required
+                    placeholder="Min 8 chars"
+                    value={regPassword}
+                    onChange={(e) => setRegPassword(e.target.value)}
+                    className="w-full pl-3 pr-8 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-maroon"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowRegPassword((prev) => !prev)}
+                    className="absolute right-2 p-1 text-slate-400 hover:text-slate-600 focus:outline-none transition"
+                    aria-label={showRegPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showRegPassword ? (
+                      <EyeOff className="w-3.5 h-3.5" />
+                    ) : (
+                      <Eye className="w-3.5 h-3.5" />
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
 
