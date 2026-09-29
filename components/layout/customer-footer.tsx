@@ -15,6 +15,7 @@ import {
   Truck,
   RotateCcw,
   Lock,
+  Clock,
   Instagram,
   Facebook,
   Twitter,
@@ -35,7 +36,7 @@ export const CustomerFooter: React.FC = () => {
             </div>
             <div>
               <h5 className="text-xs font-extrabold text-white">Free Delivery</h5>
-              <p className="text-[11px] text-slate-300 font-normal">On orders over ₹1500</p>
+              <p className="text-[11px] text-slate-300 font-normal">In Komarapalayam & Bhavani</p>
             </div>
           </div>
 
@@ -44,8 +45,8 @@ export const CustomerFooter: React.FC = () => {
               <ShieldCheck className="w-5 h-5 text-[#E66001]" />
             </div>
             <div>
-              <h5 className="text-xs font-extrabold text-white">Authentic Products</h5>
-              <p className="text-[11px] text-slate-300 font-normal">Curated top sellers</p>
+              <h5 className="text-xs font-extrabold text-white">Direct Fulfillment</h5>
+              <p className="text-[11px] text-slate-300 font-normal">100% Pure Organics & Grains</p>
             </div>
           </div>
 
@@ -54,8 +55,8 @@ export const CustomerFooter: React.FC = () => {
               <Lock className="w-5 h-5 text-[#E66001]" />
             </div>
             <div>
-              <h5 className="text-xs font-extrabold text-white">Secure Checkout</h5>
-              <p className="text-[11px] text-slate-300 font-normal">100% Encrypted Payment</p>
+              <h5 className="text-xs font-extrabold text-white">Secure Payments</h5>
+              <p className="text-[11px] text-slate-300 font-normal">UPI, Cards & Razorpay</p>
             </div>
           </div>
 
@@ -64,8 +65,8 @@ export const CustomerFooter: React.FC = () => {
               <RotateCcw className="w-5 h-5 text-[#E66001]" />
             </div>
             <div>
-              <h5 className="text-xs font-extrabold text-white">Easy Returns</h5>
-              <p className="text-[11px] text-slate-300 font-normal">Hassle-free customer support</p>
+              <h5 className="text-xs font-extrabold text-white">24h Replacement</h5>
+              <p className="text-[11px] text-slate-300 font-normal">For Grocery & Grains</p>
             </div>
           </div>
         </div>
@@ -83,10 +84,10 @@ export const CustomerFooter: React.FC = () => {
               />
             </Link>
             <p className="text-xs font-bold text-[#E66001] tracking-wide">
-              One Destination. Endless Choices.
+              {brandConfig.tagline}
             </p>
             <p className="text-xs text-slate-300 font-normal leading-relaxed">
-              Centralized marketplace for organic rice, farm-fresh spices, masala powders, and traditional health mixes.
+              {brandConfig.merchantLegalName} — Your trusted destination for native rice varieties, traditional millets, pure spices, and grocery essentials.
             </p>
           </div>
 
@@ -119,17 +120,19 @@ export const CustomerFooter: React.FC = () => {
             </ul>
           </div>
 
-          {/* Column 4: COMPANY */}
+          {/* Column 4: COMPANY & POLICIES */}
           <div className="space-y-3">
             <div className="flex items-center gap-2 text-white">
               <Building2 className="w-4 h-4 text-[#E66001]" />
-              <h4 className="text-xs font-black uppercase tracking-wider text-white">COMPANY</h4>
+              <h4 className="text-xs font-black uppercase tracking-wider text-white">POLICIES</h4>
             </div>
             <ul className="space-y-2 text-xs text-slate-200 font-medium">
-              <li><Link href="/about" className="hover:text-[#E66001] transition-colors flex items-center gap-1.5"><ArrowRight className="w-3 h-3 text-slate-500" /> About Vistora</Link></li>
-              <li><Link href="/faq" className="hover:text-[#E66001] transition-colors flex items-center gap-1.5"><ArrowRight className="w-3 h-3 text-slate-500" /> FAQ</Link></li>
-              <li><Link href="/privacy-policy" className="hover:text-[#E66001] transition-colors flex items-center gap-1.5"><ArrowRight className="w-3 h-3 text-slate-500" /> Privacy Policy</Link></li>
+              <li><Link href="/shipping-policy" className="hover:text-[#E66001] transition-colors flex items-center gap-1.5"><ArrowRight className="w-3 h-3 text-slate-500" /> Shipping & Delivery</Link></li>
+              <li><Link href="/cancellation-refund" className="hover:text-[#E66001] transition-colors flex items-center gap-1.5"><ArrowRight className="w-3 h-3 text-slate-500" /> Cancellation & Refund</Link></li>
               <li><Link href="/terms" className="hover:text-[#E66001] transition-colors flex items-center gap-1.5"><ArrowRight className="w-3 h-3 text-slate-500" /> Terms of Service</Link></li>
+              <li><Link href="/privacy-policy" className="hover:text-[#E66001] transition-colors flex items-center gap-1.5"><ArrowRight className="w-3 h-3 text-slate-500" /> Privacy Policy</Link></li>
+              <li><Link href="/faq" className="hover:text-[#E66001] transition-colors flex items-center gap-1.5"><ArrowRight className="w-3 h-3 text-slate-500" /> FAQ</Link></li>
+              <li><Link href="/about" className="hover:text-[#E66001] transition-colors flex items-center gap-1.5"><ArrowRight className="w-3 h-3 text-slate-500" /> About Vistora</Link></li>
             </ul>
           </div>
 
@@ -139,18 +142,22 @@ export const CustomerFooter: React.FC = () => {
               <Headphones className="w-4 h-4 text-[#E66001]" />
               <h4 className="text-xs font-black uppercase tracking-wider text-white">CONTACT</h4>
             </div>
-            <div className="space-y-2 text-xs text-slate-200 font-normal">
+            <div className="space-y-2.5 text-xs text-slate-200 font-normal">
               <div className="flex items-start gap-2">
                 <MapPin className="w-4 h-4 text-[#E66001] shrink-0 mt-0.5" />
-                <span>Vistora Commerce, Promenade Towers, Mumbai, MH 400001</span>
+                <span className="leading-snug">{brandConfig.officialAddress}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Mail className="w-4 h-4 text-[#E66001] shrink-0" />
-                <a href="mailto:support@vistoracommerce.com" className="hover:text-[#E66001] transition-colors">support@vistoracommerce.com</a>
+                <a href={`mailto:${brandConfig.supportEmail}`} className="hover:text-[#E66001] transition-colors">{brandConfig.supportEmail}</a>
               </div>
               <div className="flex items-center gap-2">
                 <Phone className="w-4 h-4 text-[#E66001] shrink-0" />
-                <a href="tel:+919876543210" className="hover:text-[#E66001] transition-colors">+91 98765 43210</a>
+                <a href={`tel:${brandConfig.supportPhone}`} className="hover:text-[#E66001] transition-colors">{brandConfig.contactPhone}</a>
+              </div>
+              <div className="flex items-center gap-2 text-[11px] text-slate-400">
+                <Clock className="w-3.5 h-3.5 text-[#E66001] shrink-0" />
+                <span>{brandConfig.supportHours}</span>
               </div>
             </div>
           </div>
@@ -159,7 +166,7 @@ export const CustomerFooter: React.FC = () => {
 
         {/* Bottom Bar: Copyright & High-Visibility Social Badges */}
         <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-300 font-medium">
-          <p>© {new Date().getFullYear()} Vistora Commerce. All rights reserved.</p>
+          <p>{brandConfig.copyright}</p>
           
           <div className="flex items-center space-x-3">
             <span className="text-[11px] font-bold text-slate-400 mr-1">Follow Us:</span>
@@ -219,3 +226,4 @@ export const CustomerFooter: React.FC = () => {
     </footer>
   );
 };
+

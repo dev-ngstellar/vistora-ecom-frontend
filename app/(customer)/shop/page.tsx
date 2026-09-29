@@ -99,9 +99,10 @@ export default function ShopPage() {
     }
   }, [searchParams]);
 
-  const { data: productsData, isLoading } = useProducts(filters);
+  const { data: productsData, isLoading, isError, refetch } = useProducts(filters);
   const products = productsData?.items || [];
   const meta = productsData?.meta || { total: 0, page: 1, limit: 12, totalPages: 1 };
+
 
   const catalogSectionRef = React.useRef<HTMLDivElement>(null);
 
@@ -318,6 +319,22 @@ export default function ShopPage() {
           {/* Products Grid */}
           {isLoading ? (
             <ProductGridSkeleton />
+          ) : isError ? (
+            <div className="py-20 text-center space-y-4 bg-white rounded-[20px] border border-[#ECECEC]">
+              <div className="w-16 h-16 rounded-full bg-rose-50 text-rose-500 mx-auto flex items-center justify-center">
+                <X className="w-8 h-8" />
+              </div>
+              <h3 className="text-lg font-bold text-slate-800">Unable to Load Products</h3>
+              <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                There was a problem fetching the product catalog. Please try reloading.
+              </p>
+              <button
+                onClick={() => refetch()}
+                className="px-6 py-2.5 rounded-xl bg-[#A50025] text-white font-bold text-xs hover:bg-[#7D001C] transition cursor-pointer"
+              >
+                Retry Loading Products
+              </button>
+            </div>
           ) : products.length > 0 ? (
             <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5">
               {products.map((product) => (
@@ -335,12 +352,13 @@ export default function ShopPage() {
               </p>
               <button
                 onClick={handleClearFilters}
-                className="px-6 py-2.5 rounded-xl bg-[#A50025] text-white font-bold text-xs hover:bg-[#7D001C] transition"
+                className="px-6 py-2.5 rounded-xl bg-[#A50025] text-white font-bold text-xs hover:bg-[#7D001C] transition cursor-pointer"
               >
                 Clear All Filters
               </button>
             </div>
           )}
+
 
           {/* Pagination */}
           {!isLoading && meta.totalPages > 1 && (

@@ -98,19 +98,37 @@ export default function OrdersPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-5">
           <div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
-              <Package className="w-7 h-7 text-maroon" />
+              <Package className="w-7 h-7 text-[#A50025]" />
               My Orders
             </h1>
             <p className="text-xs text-slate-500 mt-1">Track your recent order history and download invoice receipts.</p>
           </div>
           <Link
             href="/shop"
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-maroon hover:bg-maroon-dark text-white font-bold text-xs shadow-xs transition self-start sm:self-auto"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#A50025] hover:bg-[#83001D] text-white font-bold text-xs shadow-xs transition self-start sm:self-auto"
           >
             <ShoppingBag className="w-4 h-4" />
             <span>Continue Shopping</span>
           </Link>
         </div>
+
+        {/* Order Policy Notice */}
+        <div className="p-4 bg-slate-50 border border-slate-200/90 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-slate-600">
+          <div>
+            <span className="font-bold text-slate-900 block">Need help with an order?</span>
+            <span>Cancellations are accepted before dispatch. Damaged or missing grocery items must be reported within <strong>24 hours of delivery</strong>.</span>
+          </div>
+          <div className="flex items-center gap-3 shrink-0">
+            <Link href="/cancellation-refund" className="text-[#A50025] font-bold hover:underline">
+              Refund Policy
+            </Link>
+            <span className="text-slate-300">•</span>
+            <Link href="/contact" className="text-slate-900 font-bold hover:underline">
+              Support ({brandConfig.contactPhone})
+            </Link>
+          </div>
+        </div>
+
 
         {/* Loading State */}
         {isLoading && (

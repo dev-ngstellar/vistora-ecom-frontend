@@ -84,11 +84,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         sessionStorage.removeItem('refreshToken');
       }
       setUser(null);
-      queryClient.clear();
+      
+      // Clear private user-scoped queries
+      queryClient.removeQueries({ queryKey: ['cart'] });
+      queryClient.removeQueries({ queryKey: ['wishlist'] });
+      queryClient.removeQueries({ queryKey: ['customer'] });
+      queryClient.removeQueries({ queryKey: ['orders'] });
+      queryClient.removeQueries({ queryKey: ['user'] });
+      queryClient.removeQueries({ queryKey: ['admin'] });
+      
+      // Invalidate public catalogue queries to ensure fresh guest view
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['categories'] });
+      queryClient.invalidateQueries({ queryKey: ['brands'] });
+      queryClient.invalidateQueries({ queryKey: ['collections'] });
+      
       toast.success('Logged out successfully');
       router.push('/');
     }
   }, [router]);
+
 
   const updateUser = React.useCallback((updatedFields: Partial<User>) => {
     setUser((prevUser) => (prevUser ? { ...prevUser, ...updatedFields } : null));

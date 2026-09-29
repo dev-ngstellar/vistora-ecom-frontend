@@ -30,35 +30,61 @@ export default function ContactPage() {
         {/* Contact Info Cards */}
         <div className="space-y-4">
           <div className="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-xs flex items-start gap-4">
-            <div className="p-3 rounded-2xl bg-maroon-light text-maroon shrink-0">
+            <div className="p-3 rounded-2xl bg-[#FFF0F3] text-[#A50025] shrink-0">
               <Mail className="w-5 h-5" />
             </div>
             <div>
-              <span className="text-xs font-bold text-slate-400 block uppercase">Email Us</span>
-              <span className="text-xs font-bold text-slate-900">{brandConfig.supportEmail}</span>
+              <span className="text-xs font-bold text-slate-400 block uppercase">Email Support</span>
+              <a href={`mailto:${brandConfig.supportEmail}`} className="text-xs font-bold text-[#A50025] hover:underline block">
+                {brandConfig.supportEmail}
+              </a>
+              <span className="text-[11px] text-slate-500">Replies within 24 business hours</span>
             </div>
           </div>
 
           <div className="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-xs flex items-start gap-4">
-            <div className="p-3 rounded-2xl bg-maroon-light text-maroon shrink-0">
+            <div className="p-3 rounded-2xl bg-[#FFF0F3] text-[#A50025] shrink-0">
               <Phone className="w-5 h-5" />
             </div>
             <div>
-              <span className="text-xs font-bold text-slate-400 block uppercase">Call Toll Free</span>
-              <span className="text-xs font-bold text-slate-900">{brandConfig.contactPhone}</span>
+              <span className="text-xs font-bold text-slate-400 block uppercase">Customer Helpline</span>
+              <a href={`tel:${brandConfig.supportPhone}`} className="text-xs font-bold text-slate-900 block">
+                {brandConfig.contactPhone}
+              </a>
+              <span className="text-[11px] text-slate-500">{brandConfig.supportHours}</span>
             </div>
           </div>
 
           <div className="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-xs flex items-start gap-4">
-            <div className="p-3 rounded-2xl bg-maroon-light text-maroon shrink-0">
+            <div className="p-3 rounded-2xl bg-[#FFF0F3] text-[#A50025] shrink-0">
               <MapPin className="w-5 h-5" />
             </div>
             <div>
-              <span className="text-xs font-bold text-slate-400 block uppercase">Headquarters</span>
-              <span className="text-xs font-bold text-slate-900 leading-snug block">Vistora Commerce Tower, High Street, India</span>
+              <span className="text-xs font-bold text-slate-400 block uppercase">Registered Address</span>
+              <p className="text-xs font-bold text-slate-900 leading-snug">
+                {brandConfig.merchantLegalName}
+              </p>
+              <p className="text-[11px] text-slate-600 mt-0.5 leading-relaxed">
+                {brandConfig.officialAddress}
+              </p>
             </div>
           </div>
+
+          {/* Grievance Redressal Card */}
+          <div className="bg-slate-50 p-5 rounded-3xl border border-slate-200 shadow-xs space-y-1.5 text-xs">
+            <span className="text-[10px] font-extrabold text-[#E66001] uppercase tracking-wider block">
+              Grievance Redressal Officer
+            </span>
+            <p className="font-extrabold text-slate-900">{brandConfig.grievanceOfficer.name}</p>
+            <p className="text-slate-600">
+              Email: <a href={`mailto:${brandConfig.grievanceOfficer.email}`} className="text-[#A50025] font-semibold hover:underline">{brandConfig.grievanceOfficer.email}</a>
+            </p>
+            <p className="text-[11px] text-slate-500 pt-1 border-t border-slate-200">
+              Jurisdiction: {brandConfig.governingJurisdiction}
+            </p>
+          </div>
         </div>
+
 
         {/* Form Container */}
         <div className="md:col-span-2 bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs">

@@ -26,12 +26,12 @@ export const getErrorMessage = (err: any, fallback: string = 'An unexpected erro
 
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-
-
     if (typeof window !== 'undefined') {
       const accessToken = sessionStorage.getItem('accessToken');
       if (accessToken && config.headers) {
         config.headers.Authorization = `Bearer ${accessToken}`;
+      } else if (config.headers && config.headers.Authorization) {
+        delete config.headers.Authorization;
       }
     }
     return config;
@@ -68,6 +68,14 @@ apiClient.interceptors.response.use(
       !originalRequest.url?.includes('/auth/login') &&
       !originalRequest.url?.includes('/auth/refresh')
     ) {
+      const storedRefreshToken =
+        typeof window !== 'undefined' ? sessionStorage.getItem('refreshToken') : null;
+
+      // If no refresh token exists, reject immediately (guest/logged out session)
+      if (!storedRefreshToken) {
+        return Promise.reject(error);
+      }
+
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
@@ -85,9 +93,6 @@ apiClient.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const storedRefreshToken =
-          typeof window !== 'undefined' ? sessionStorage.getItem('refreshToken') : null;
-
         const refreshResponse = await axios.post<
           ApiEnvelope<{ accessToken: string; refreshToken: string }>
         >(
@@ -95,6 +100,7 @@ apiClient.interceptors.response.use(
           { refreshToken: storedRefreshToken },
           { withCredentials: true },
         );
+
 
         const newAccessToken = refreshResponse.data.data.accessToken;
         const newRefreshToken = refreshResponse.data.data.refreshToken;

@@ -827,9 +827,31 @@ export const CheckoutView: React.FC = () => {
                       : `Place Order via COD (${brandConfig.currency.symbol}${summary.grandTotal.toFixed(2)})`}
                   </span>
                 </button>
+
+                {/* Logistics & Compliance Badges */}
+                <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200/80 text-[11px] text-slate-600 space-y-1.5">
+                  <div className="flex items-center gap-1.5 font-bold text-slate-900">
+                    <ShieldCheck className="w-3.5 h-3.5 text-[#E66001]" />
+                    <span>Fulfilled by {brandConfig.merchantLegalName}</span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 text-[11px] text-slate-500">
+                    <div>• Dispatched in <strong>2–3 business days</strong></div>
+                    <div>• Delivered in <strong>2–5 business days</strong></div>
+                    <div>• Free delivery in <strong>Komarapalayam & Bhavani</strong></div>
+                    <div>• <strong>24h replacement</strong> for grocery & grains</div>
+                  </div>
+                </div>
+
+                <p className="text-[10px] text-slate-400 text-center leading-relaxed">
+                  By placing this order, you agree to our{' '}
+                  <Link href="/terms" target="_blank" className="text-[#A50025] font-semibold underline">Terms of Service</Link>,{' '}
+                  <Link href="/shipping-policy" target="_blank" className="text-[#A50025] font-semibold underline">Shipping Policy</Link>, and{' '}
+                  <Link href="/cancellation-refund" target="_blank" className="text-[#A50025] font-semibold underline">Cancellation & Refund Policy</Link>.
+                </p>
               </div>
             </div>
           )}
+
         </div>
 
         {/* ============================================================

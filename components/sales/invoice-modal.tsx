@@ -2,7 +2,9 @@ import React, { useRef } from 'react';
 import { Modal, Button } from 'antd';
 import { Download, Printer, FileText } from 'lucide-react';
 import { Order } from '@/types/sales.types';
+import { brandConfig } from '@/config';
 import dayjs from 'dayjs';
+
 
 interface InvoiceModalProps {
   order: Order | null;
@@ -77,13 +79,13 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({ order, open, onClose
         {/* Invoice Header */}
         <div className="flex justify-between items-start border-b border-slate-200 pb-4">
           <div>
-            <h2 className="text-xl font-black text-[#A50025] tracking-tight uppercase">VISTORA COMMERCE</h2>
-            <p className="text-xs text-slate-500 font-medium mt-0.5">Premium Organics & Natural Superfoods</p>
-            <p className="text-[11px] text-slate-400 mt-1 font-mono">
-              Central Warehouse: 100% Direct Fulfillment
+            <h2 className="text-base sm:text-lg font-black text-[#A50025] tracking-tight uppercase">{brandConfig.merchantLegalName}</h2>
+            <p className="text-[11px] text-slate-600 font-medium mt-0.5">{brandConfig.officialAddress}</p>
+            <p className="text-[11px] text-slate-500 mt-0.5">
+              Support: {brandConfig.contactPhone} | {brandConfig.supportEmail}
             </p>
           </div>
-          <div className="text-right">
+          <div className="text-right shrink-0 ml-4">
             <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-slate-100 text-slate-700">
               Tax Invoice
             </span>
@@ -91,6 +93,7 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({ order, open, onClose
             <p className="text-xs text-slate-500 font-medium">Date: {dayjs(order.createdAt).format('DD MMM YYYY, hh:mm A')}</p>
           </div>
         </div>
+
 
         {/* Bill To & Ship To */}
         <div className="grid grid-cols-2 gap-4 text-xs bg-slate-50 p-4 rounded-xl border border-slate-200/70">
@@ -190,11 +193,13 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({ order, open, onClose
         </div>
 
         {/* Footer */}
-        <div className="text-[10px] text-slate-400 text-center border-t border-slate-200 pt-4">
-          <p>Thank you for choosing Vistora Commerce. This is a computer-generated tax invoice.</p>
-          <p className="mt-0.5">Direct fulfillment from Vistora Central Inventory Warehouse.</p>
+        <div className="text-[10px] text-slate-400 text-center border-t border-slate-200 pt-4 space-y-0.5">
+          <p>Thank you for choosing {brandConfig.merchantLegalName}. This is a computer-generated tax invoice.</p>
+          <p>Direct fulfillment from our facility at {brandConfig.officialAddress}.</p>
+          <p className="text-[9px] text-slate-400">Subject to the exclusive jurisdiction of the {brandConfig.governingJurisdiction}.</p>
         </div>
       </div>
     </Modal>
   );
 };
+
