@@ -39,6 +39,10 @@ import {
   Calendar,
   Boxes,
   TrendingUp,
+  Truck,
+  Copy,
+  Check,
+  ExternalLink,
 } from 'lucide-react';
 import dayjs from 'dayjs';
 import { PageHeader } from '@/components/admin/page-header';
@@ -46,6 +50,18 @@ import { AdminCard } from '@/components/admin/admin-card';
 import { TableToolbar } from '@/components/admin/table-toolbar';
 
 const { RangePicker } = DatePicker;
+
+const COURIER_OPTIONS = [
+  { label: 'The Professional Couriers', value: 'The Professional Couriers', defaultUrl: 'https://www.tpcindia.com' },
+  { label: 'ST Courier', value: 'ST Courier', defaultUrl: 'https://stcourier.com' },
+  { label: 'India Post / Speed Post', value: 'India Post', defaultUrl: 'https://www.indiapost.gov.in' },
+  { label: 'DTDC Express', value: 'DTDC Express', defaultUrl: 'https://www.dtdc.in' },
+  { label: 'Franch Express', value: 'Franch Express', defaultUrl: 'https://www.franchexpress.com' },
+  { label: 'Trackon Couriers', value: 'Trackon Couriers', defaultUrl: 'https://trackon.in' },
+  { label: 'Blue Dart', value: 'Blue Dart', defaultUrl: 'https://www.bluedart.com' },
+  { label: 'Delhivery', value: 'Delhivery', defaultUrl: 'https://www.delhivery.com' },
+  { label: 'Other / Custom Courier', value: 'OTHER', defaultUrl: '' },
+];
 
 export default function AdminOrdersPage() {
   const [search, setSearch] = useState('');
@@ -61,6 +77,8 @@ export default function AdminOrdersPage() {
 
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [selectedCourierKey, setSelectedCourierKey] = useState<string>('The Professional Couriers');
+  const [copiedTrackingId, setCopiedTrackingId] = useState<string | null>(null);
 
   const [statusForm] = Form.useForm();
   const [cancelForm] = Form.useForm();
@@ -100,8 +118,35 @@ export default function AdminOrdersPage() {
 
   const handleOpenStatusModal = (order: Order) => {
     setSelectedOrder(order);
-    statusForm.setFieldsValue({ status: order.status, remarks: '' });
+    const existingCourier = order.shipment?.courierName || 'The Professional Couriers';
+    const matchedOption = COURIER_OPTIONS.find((c) => c.value === existingCourier);
+
+    const courierKey = matchedOption ? matchedOption.value : 'OTHER';
+    setSelectedCourierKey(courierKey);
+
+    statusForm.setFieldsValue({
+      status:
+        order.status === 'PENDING' || order.status === 'CONFIRMED' || order.status === 'PROCESSING'
+          ? 'SHIPPED'
+          : order.status,
+      courierSelect: courierKey,
+      customCourierName: courierKey === 'OTHER' ? existingCourier : '',
+      trackingNumber: order.shipment?.trackingNumber || '',
+      trackingUrl: order.shipment?.trackingUrl || (matchedOption?.defaultUrl || ''),
+      remarks: order.shipment?.remarks || '',
+    });
     setIsStatusModalOpen(true);
+  };
+
+  const handleCourierSelectChange = (value: string) => {
+    setSelectedCourierKey(value);
+    const matched = COURIER_OPTIONS.find((c) => c.value === value);
+    if (matched && matched.defaultUrl) {
+      const currentUrl = statusForm.getFieldValue('trackingUrl');
+      if (!currentUrl || COURIER_OPTIONS.some((c) => c.defaultUrl === currentUrl)) {
+        statusForm.setFieldValue('trackingUrl', matched.defaultUrl);
+      }
+    }
   };
 
   const handleOpenCancelModal = (order: Order) => {
@@ -112,13 +157,29 @@ export default function AdminOrdersPage() {
 
   const handleStatusSubmit = async (values: any) => {
     if (!selectedOrder) return;
+
+    const courierName =
+      values.courierSelect === 'OTHER'
+        ? values.customCourierName?.trim() || 'Custom Courier'
+        : values.courierSelect;
+
     await updateStatus.mutateAsync({
       id: selectedOrder.id,
       status: values.status,
-      remarks: values.remarks,
+      courierName,
+      trackingNumber: values.trackingNumber?.trim(),
+      trackingUrl: values.trackingUrl?.trim(),
+      remarks: values.remarks?.trim(),
     });
     setIsStatusModalOpen(false);
     setIsDetailDrawerOpen(false);
+  };
+
+  const handleCopyTracking = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedTrackingId(text);
+    toast.success('Tracking ID copied to clipboard!');
+    setTimeout(() => setCopiedTrackingId(null), 2000);
   };
 
   const handleCancelSubmit = async (values: any) => {
@@ -234,10 +295,48 @@ export default function AdminOrdersPage() {
       ),
     },
     {
-      title: 'Order Status',
+      title: 'Order & Tracking Status',
       dataIndex: 'status',
       key: 'status',
-      render: (status: string) => <StatusBadge status={status} category="order" />,
+      render: (status: string, record: Order) => (
+        <div className="space-y-1">
+          <StatusBadge status={status} category="order" />
+          {record.shipment?.courierName && (
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+                <Truck className="w-2.5 h-2.5 text-[#A50025]" />
+                {record.shipment.courierName}
+              </span>
+              {record.shipment.trackingNumber && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleCopyTracking(record.shipment!.trackingNumber!);
+                  }}
+                  className="font-mono text-[10px] font-bold text-[#A50025] hover:underline cursor-pointer flex items-center gap-0.5"
+                  title="Click to copy Tracking ID"
+                >
+                  <span>#{record.shipment.trackingNumber}</span>
+                  {copiedTrackingId === record.shipment.trackingNumber ? (
+                    <Check className="w-2.5 h-2.5 text-emerald-600" />
+                  ) : (
+                    <Copy className="w-2.5 h-2.5 opacity-70" />
+                  )}
+                </button>
+              )}
+            </div>
+          )}
+          {!record.shipment?.trackingNumber && record.status !== 'CANCELLED' && (
+            <button
+              onClick={() => handleOpenStatusModal(record)}
+              className="text-[10px] font-bold text-[#A50025] hover:underline flex items-center gap-0.5"
+            >
+              + Add Tracking ID
+            </button>
+          )}
+        </div>
+      ),
     },
     {
       title: 'Date',
@@ -283,8 +382,8 @@ export default function AdminOrdersPage() {
                 },
                 {
                   key: 'update_status',
-                  icon: <Clock className="w-4 h-4 text-amber-600" />,
-                  label: 'Update Status',
+                  icon: <Truck className="w-4 h-4 text-[#A50025]" />,
+                  label: 'Dispatch / Add Tracking ID',
                   onClick: () => handleOpenStatusModal(record),
                 },
                 {
@@ -385,7 +484,7 @@ export default function AdminOrdersPage() {
       {/* Page Header */}
       <PageHeader
         title="Orders & Fulfillment"
-        subtitle="Manage customer orders, warehouse inventory fulfillment, and delivery statuses."
+        subtitle="Manage customer orders, physical courier dispatch slips, and tracking numbers."
         action={
           <Button
             type="primary"
@@ -398,82 +497,94 @@ export default function AdminOrdersPage() {
             Export Orders
           </Button>
         }
-        toolbar={
-          <TableToolbar
-            searchValue={search}
-            onSearchChange={(val) => setSearch(val)}
-            searchPlaceholder="Search order #, customer name, email..."
-            onReset={() => {
-              setSearch('');
-              setStatusFilter(undefined);
-              setPaymentFilter(undefined);
-              setDateRange(undefined);
-            }}
-            filters={
-              <div className="flex items-center gap-2 flex-wrap">
-                <Select
-                  placeholder="Order Status"
-                  value={statusFilter}
-                  onChange={(val) => setStatusFilter(val)}
-                  className="w-36 text-xs"
-                  allowClear
-                >
-                  <Select.Option value="PENDING">Pending</Select.Option>
-                  <Select.Option value="CONFIRMED">Confirmed</Select.Option>
-                  <Select.Option value="PROCESSING">Processing</Select.Option>
-                  <Select.Option value="PACKED">Packed</Select.Option>
-                  <Select.Option value="SHIPPED">Shipped</Select.Option>
-                  <Select.Option value="OUT_FOR_DELIVERY">Out for Delivery</Select.Option>
-                  <Select.Option value="DELIVERED">Delivered</Select.Option>
-                  <Select.Option value="CANCELLED">Cancelled</Select.Option>
-                </Select>
-
-                <Select
-                  placeholder="Payment Status"
-                  value={paymentFilter}
-                  onChange={(val) => setPaymentFilter(val)}
-                  className="w-36 text-xs"
-                  allowClear
-                >
-                  <Select.Option value="PAID">Paid</Select.Option>
-                  <Select.Option value="PENDING">Pending</Select.Option>
-                  <Select.Option value="FAILED">Failed</Select.Option>
-                  <Select.Option value="REFUNDED">Refunded</Select.Option>
-                </Select>
-
-                <RangePicker
-                  onChange={(dates) => {
-                    if (dates && dates[0] && dates[1]) {
-                      setDateRange([dates[0].toISOString(), dates[1].toISOString()]);
-                    } else {
-                      setDateRange(undefined);
-                    }
-                  }}
-                  className="rounded-lg text-xs"
-                />
-              </div>
-            }
-          />
-        }
       />
 
-      {/* Orders Data Table */}
-      <AdminCard headerBorder={false} className="p-0">
+      {/* Orders Table Card with Filters */}
+      <AdminCard>
+        <TableToolbar
+          searchPlaceholder="Search order #, customer name, email, phone..."
+          searchValue={search}
+          onSearchChange={(val) => {
+            setSearch(val);
+            setPage(1);
+          }}
+          filters={
+            <>
+              <Select
+                placeholder="Order Status"
+                allowClear
+                value={statusFilter}
+                onChange={(val) => {
+                  setStatusFilter(val);
+                  setPage(1);
+                }}
+                className="w-36"
+              >
+                <Select.Option value="PENDING">Pending</Select.Option>
+                <Select.Option value="CONFIRMED">Confirmed</Select.Option>
+                <Select.Option value="PROCESSING">Processing</Select.Option>
+                <Select.Option value="PACKED">Packed</Select.Option>
+                <Select.Option value="SHIPPED">Shipped</Select.Option>
+                <Select.Option value="OUT_FOR_DELIVERY">Out for Delivery</Select.Option>
+                <Select.Option value="DELIVERED">Delivered</Select.Option>
+                <Select.Option value="CANCELLED">Cancelled</Select.Option>
+              </Select>
+
+              <Select
+                placeholder="Payment Status"
+                allowClear
+                value={paymentFilter}
+                onChange={(val) => {
+                  setPaymentFilter(val);
+                  setPage(1);
+                }}
+                className="w-36"
+              >
+                <Select.Option value="PENDING">Pending</Select.Option>
+                <Select.Option value="PAID">Paid</Select.Option>
+                <Select.Option value="FAILED">Failed</Select.Option>
+                <Select.Option value="REFUNDED">Refunded</Select.Option>
+              </Select>
+
+              <RangePicker
+                onChange={(dates) => {
+                  if (dates && dates[0] && dates[1]) {
+                    setDateRange([dates[0].toISOString(), dates[1].toISOString()]);
+                  } else {
+                    setDateRange(undefined);
+                  }
+                  setPage(1);
+                }}
+                className="w-56"
+              />
+            </>
+          }
+          onReset={() => {
+            setSearch('');
+            setStatusFilter(undefined);
+            setPaymentFilter(undefined);
+            setDateRange(undefined);
+            setPage(1);
+          }}
+        />
+
         <Table
-          dataSource={ordersData?.orders || []}
           columns={columns}
+          dataSource={ordersData?.orders || []}
           rowKey="id"
           loading={isOrdersLoading}
           pagination={{
             current: page,
             pageSize: limit,
             total: ordersData?.meta?.total || 0,
+            showSizeChanger: true,
             onChange: (p, l) => {
               setPage(p);
               setLimit(l);
             },
-            showSizeChanger: true,
+            showTotal: (total) => `Total ${total} orders`,
           }}
+          className="admin-table"
         />
       </AdminCard>
 
@@ -481,69 +592,151 @@ export default function AdminOrdersPage() {
       <Drawer
         title={
           selectedOrder ? (
-            <div className="flex items-center gap-2">
-              <ShoppingBag className="w-5 h-5 text-[#A50025]" />
-              <span className="font-black text-[#111827]">
-                Order #{selectedOrder.orderNumber}
-              </span>
+            <div className="flex items-center justify-between gap-3 pr-6">
+              <div>
+                <span className="font-mono text-sm font-black text-[#A50025]">
+                  Order #{selectedOrder.orderNumber}
+                </span>
+                <span className="text-[11px] text-[#64748B] block font-medium">
+                  Placed on {dayjs(selectedOrder.createdAt).format('MMMM D, YYYY h:mm A')}
+                </span>
+              </div>
+              <StatusBadge status={selectedOrder.status} category="order" />
             </div>
           ) : (
             'Order Details'
           )
         }
         placement="right"
-        styles={{ wrapper: { width: '640px', maxWidth: '100vw' } }}
+        size="large"
         onClose={() => setIsDetailDrawerOpen(false)}
         open={isDetailDrawerOpen}
         extra={
           selectedOrder && (
             <Space>
               <Button
-                icon={<FileText className="w-4 h-4" />}
-                onClick={() => setIsInvoiceOpen(true)}
-                className="rounded-lg font-bold text-xs"
-              >
-                Invoice
-              </Button>
-              <Button
+                icon={<Truck className="w-3.5 h-3.5" />}
                 type="primary"
                 onClick={() => handleOpenStatusModal(selectedOrder)}
-                className="bg-[#A50025] hover:bg-[#7D001C] rounded-lg font-bold text-xs text-white"
+                className="bg-[#A50025] hover:bg-[#7D001C] text-xs font-bold"
               >
-                Update Status
+                Update Tracking
+              </Button>
+              <Button
+                icon={<FileText className="w-3.5 h-3.5" />}
+                onClick={() => setIsInvoiceOpen(true)}
+                className="text-xs font-bold"
+              >
+                Invoice
               </Button>
             </Space>
           )
         }
       >
         {selectedOrder && (
-          <div className="space-y-5 text-xs">
-            {/* Status Highlights */}
-            <div className="grid grid-cols-3 gap-3 p-4 bg-[#F7F8FA] rounded-xl border border-[#E5E7EB]">
-              <div>
-                <span className="text-[#64748B] font-semibold uppercase tracking-wider block text-[10px]">Current Status</span>
+          <div className="space-y-6 text-xs">
+            {/* Courier Dispatch & Tracking Banner */}
+            <div className="bg-gradient-to-br from-red-50/60 to-orange-50/50 p-4 rounded-xl border border-red-200/80 shadow-2xs space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-[#A50025] font-extrabold text-xs uppercase tracking-wider">
+                  <Truck className="w-4 h-4" />
+                  <span>Courier & Dispatch Tracking</span>
+                </div>
+                <Button
+                  size="small"
+                  onClick={() => handleOpenStatusModal(selectedOrder)}
+                  className="text-[11px] font-bold text-[#A50025] border-[#A50025]/30 hover:bg-white"
+                >
+                  Edit Tracking Slip
+                </Button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-white/80 p-2.5 rounded-lg border border-red-100">
+                  <span className="text-[#64748B] text-[10px] block font-bold uppercase tracking-wider">
+                    Courier Partner
+                  </span>
+                  <span className="font-bold text-[#111827] text-xs">
+                    {selectedOrder.shipment?.courierName || 'The Professional Couriers'}
+                  </span>
+                </div>
+
+                <div className="bg-white/80 p-2.5 rounded-lg border border-red-100">
+                  <span className="text-[#64748B] text-[10px] block font-bold uppercase tracking-wider">
+                    Tracking / Consignment #
+                  </span>
+                  {selectedOrder.shipment?.trackingNumber ? (
+                    <button
+                      type="button"
+                      onClick={() => handleCopyTracking(selectedOrder.shipment!.trackingNumber!)}
+                      className="font-mono font-bold text-[#A50025] hover:underline flex items-center gap-1 mt-0.5"
+                    >
+                      <span>{selectedOrder.shipment.trackingNumber}</span>
+                      {copiedTrackingId === selectedOrder.shipment.trackingNumber ? (
+                        <Check className="w-3 h-3 text-emerald-600" />
+                      ) : (
+                        <Copy className="w-3 h-3 opacity-70" />
+                      )}
+                    </button>
+                  ) : (
+                    <span className="text-amber-600 font-medium italic">Pending entry</span>
+                  )}
+                </div>
+              </div>
+
+              {selectedOrder.shipment?.trackingUrl && (
+                <div className="pt-1">
+                  <a
+                    href={selectedOrder.shipment.trackingUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 text-[11px] font-bold text-[#A50025] hover:underline bg-white px-3 py-1.5 rounded-lg border border-red-200"
+                  >
+                    <span>Open Courier Tracking Portal</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
+              )}
+            </div>
+
+            {/* Financial & Status Summary Cards */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              <div className="bg-[#F7F8FA] p-3 rounded-xl border border-[#E5E7EB]">
+                <span className="text-[#64748B] font-semibold block text-[11px]">Total Paid</span>
+                <span className="text-base font-black text-[#111827] mt-0.5 block">
+                  ₹{Number(selectedOrder.total).toLocaleString('en-IN')}
+                </span>
+                <span className="text-[10px] text-[#64748B]">
+                  Sub: ₹{Number(selectedOrder.subtotal).toLocaleString('en-IN')} | Ship: ₹{Number(selectedOrder.shipping).toLocaleString('en-IN')}
+                </span>
+              </div>
+
+              <div className="bg-[#F7F8FA] p-3 rounded-xl border border-[#E5E7EB]">
+                <span className="text-[#64748B] font-semibold block text-[11px]">Payment</span>
+                <div className="mt-1">
+                  <StatusBadge
+                    status={selectedOrder.payments?.[0]?.status || 'PENDING'}
+                    category="payment"
+                  />
+                </div>
+                <span className="text-[10px] text-[#64748B] mt-0.5 block">
+                  Via {selectedOrder.payments?.[0]?.paymentMethod || 'ONLINE'}
+                </span>
+              </div>
+
+              <div className="bg-[#F7F8FA] p-3 rounded-xl border border-[#E5E7EB]">
+                <span className="text-[#64748B] font-semibold block text-[11px]">Fulfillment</span>
                 <div className="mt-1">
                   <StatusBadge status={selectedOrder.status} category="order" />
                 </div>
-              </div>
-
-              <div>
-                <span className="text-[#64748B] font-semibold uppercase tracking-wider block text-[10px]">Payment Status</span>
-                <div className="mt-1">
-                  <StatusBadge status={selectedOrder.payments?.[0]?.status || 'PENDING'} category="payment" />
-                </div>
-              </div>
-
-              <div>
-                <span className="text-[#64748B] font-semibold uppercase tracking-wider block text-[10px]">Total Order Amount</span>
-                <span className="text-base font-black text-[#111827] mt-1 block">
-                  ₹{Number(selectedOrder.total).toLocaleString('en-IN')}
+                <span className="text-[10px] text-[#64748B] mt-0.5 block">
+                  {selectedOrder.items?.length || 0} Line Items
                 </span>
               </div>
             </div>
 
-            {/* Customer & Address Information */}
-            <div className="grid grid-cols-2 gap-4">
+            {/* Customer & Shipping Address */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="bg-[#F7F8FA] p-3.5 rounded-xl border border-[#E5E7EB]">
                 <div className="flex items-center gap-1.5 text-[#A50025] font-bold mb-2">
                   <User className="w-4 h-4" />
@@ -633,29 +826,81 @@ export default function AdminOrdersPage() {
         onClose={() => setIsInvoiceOpen(false)}
       />
 
-      {/* Status Update Modal */}
+      {/* Courier Dispatch & Tracking Modal */}
       <Modal
-        title="Update Order Status"
+        title={
+          <div className="flex items-center gap-2 text-slate-900 font-extrabold">
+            <Truck className="w-5 h-5 text-[#A50025]" />
+            <span>Courier Dispatch & Tracking Details</span>
+          </div>
+        }
         open={isStatusModalOpen}
         onCancel={() => setIsStatusModalOpen(false)}
         onOk={() => statusForm.submit()}
         confirmLoading={updateStatus.isPending}
+        okText="Save & Update Order"
+        okButtonProps={{ className: 'bg-[#A50025] hover:bg-[#7D001C] font-bold' }}
       >
         <Form form={statusForm} layout="vertical" onFinish={handleStatusSubmit} className="mt-4">
-          <Form.Item name="status" label="New Order Status" rules={[{ required: true }]}>
-            <Select>
-              <Select.Option value="PENDING">Pending</Select.Option>
-              <Select.Option value="CONFIRMED">Confirmed</Select.Option>
-              <Select.Option value="PROCESSING">Processing</Select.Option>
-              <Select.Option value="PACKED">Packed</Select.Option>
-              <Select.Option value="SHIPPED">Shipped</Select.Option>
-              <Select.Option value="OUT_FOR_DELIVERY">Out for Delivery</Select.Option>
-              <Select.Option value="DELIVERED">Delivered</Select.Option>
-            </Select>
-          </Form.Item>
+          <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-800 mb-4">
+            Enter the <strong>Courier Service Name</strong> and physical <strong>Consignment / Tracking ID</strong> provided by your local courier office (*e.g., The Professional Couriers, ST Courier, India Post*).
+          </div>
 
-          <Form.Item name="remarks" label="Remarks / Tracking Info">
-            <Input.TextArea rows={3} placeholder="Provide notes or courier tracking updates..." />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Form.Item
+              name="courierSelect"
+              label="Courier Service Partner"
+              rules={[{ required: true, message: 'Please select courier partner' }]}
+            >
+              <Select onChange={handleCourierSelectChange} placeholder="Select courier service">
+                {COURIER_OPTIONS.map((c) => (
+                  <Select.Option key={c.value} value={c.value}>
+                    {c.label}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+
+            {selectedCourierKey === 'OTHER' && (
+              <Form.Item
+                name="customCourierName"
+                label="Custom Courier Name"
+                rules={[{ required: true, message: 'Enter custom courier name' }]}
+              >
+                <Input placeholder="e.g. Local Fast Delivery" />
+              </Form.Item>
+            )}
+
+            <Form.Item
+              name="trackingNumber"
+              label="Courier Tracking / Consignment ID (AWB)"
+              rules={[{ required: true, message: 'Please enter tracking / receipt number' }]}
+            >
+              <Input
+                placeholder="e.g. TPC84920492IN or STC129482"
+                prefix={<Truck className="w-3.5 h-3.5 text-slate-400" />}
+              />
+            </Form.Item>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Form.Item name="status" label="Order Status" rules={[{ required: true }]}>
+              <Select>
+                <Select.Option value="SHIPPED">Shipped (Dispatched to Courier)</Select.Option>
+                <Select.Option value="OUT_FOR_DELIVERY">Out for Delivery</Select.Option>
+                <Select.Option value="DELIVERED">Delivered</Select.Option>
+                <Select.Option value="CONFIRMED">Confirmed</Select.Option>
+                <Select.Option value="PROCESSING">Processing</Select.Option>
+              </Select>
+            </Form.Item>
+
+            <Form.Item name="trackingUrl" label="Courier Website / Tracking Portal URL">
+              <Input placeholder="https://www.tpcindia.com" />
+            </Form.Item>
+          </div>
+
+          <Form.Item name="remarks" label="Counter / Dispatch Notes (Optional)">
+            <Input.TextArea rows={2} placeholder="e.g. Handed over package at branch counter..." />
           </Form.Item>
         </Form>
       </Modal>

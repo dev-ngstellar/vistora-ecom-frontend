@@ -63,15 +63,35 @@ export const useOrderMutations = () => {
   const queryClient = useQueryClient();
 
   const updateStatus = useMutation({
-    mutationFn: ({ id, status, remarks }: { id: string; status: string; remarks?: string }) =>
-      salesService.updateOrderStatus(id, status, remarks),
+    mutationFn: ({
+      id,
+      status,
+      remarks,
+      courierName,
+      trackingNumber,
+      trackingUrl,
+    }: {
+      id: string;
+      status?: string;
+      remarks?: string;
+      courierName?: string;
+      trackingNumber?: string;
+      trackingUrl?: string;
+    }) =>
+      salesService.updateOrderStatus(id, {
+        status,
+        remarks,
+        courierName,
+        trackingNumber,
+        trackingUrl,
+      }),
     onSuccess: (_, variables) => {
-      message.success('Order status updated successfully');
+      message.success('Order tracking and status updated successfully');
       queryClient.invalidateQueries({ queryKey: salesKeys.allOrders });
       queryClient.invalidateQueries({ queryKey: salesKeys.orderDetails(variables.id) });
     },
     onError: (err: any) => {
-      message.error(err.response?.data?.message || 'Failed to update order status');
+      message.error(err.response?.data?.message || 'Failed to update order tracking details');
     },
   });
 

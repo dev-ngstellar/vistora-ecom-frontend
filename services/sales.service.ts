@@ -29,8 +29,19 @@ export const salesService = {
     return res.data.data;
   },
 
-  updateOrderStatus: async (id: string, status: string, remarks?: string) => {
-    const res = await apiClient.patch<ApiEnvelope<Order>>(`/orders/${id}/status`, { status, remarks });
+  updateOrderStatus: async (
+    id: string,
+    payload: {
+      status?: string;
+      remarks?: string;
+      courierName?: string;
+      trackingNumber?: string;
+      trackingUrl?: string;
+    } | string,
+    remarks?: string
+  ) => {
+    const data = typeof payload === 'string' ? { status: payload, remarks } : payload;
+    const res = await apiClient.patch<ApiEnvelope<Order>>(`/orders/${id}/status`, data);
     return res.data.data;
   },
 
