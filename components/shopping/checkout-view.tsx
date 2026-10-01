@@ -799,54 +799,72 @@ export const CheckoutView: React.FC = () => {
               </div>
 
               {/* Step Navigation & Submit Action */}
-              <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-                <button
-                  onClick={() => goToStep(CheckoutStep.SHIPPING_ADDRESS)}
-                  className="px-5 py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition flex items-center gap-1.5 cursor-pointer"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  <span>Back to Address</span>
-                </button>
+              <div className="pt-6 border-t border-slate-100 space-y-4">
+                {/* Action Buttons Row */}
+                <div className="flex flex-col-reverse sm:flex-row items-center justify-between gap-3 sm:gap-4">
+                  <button
+                    type="button"
+                    onClick={() => goToStep(CheckoutStep.SHIPPING_ADDRESS)}
+                    className="w-full sm:w-auto px-5 py-3.5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition flex items-center justify-center gap-2 cursor-pointer shadow-2xs"
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                    <span>Back to Address</span>
+                  </button>
 
-                <button
-                  onClick={handleFinalOrder}
-                  disabled={isSubmittingOrder || isProcessing}
-                  className={`px-8 py-4 rounded-2xl text-white font-black text-xs transition shadow-lg flex items-center gap-2 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 ${selectedPaymentMethod === 'RAZORPAY'
-                    ? 'bg-gradient-to-r from-blue-600 via-indigo-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800'
-                    : 'bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800'
-                    }`}
-                >
-                  {isSubmittingOrder || isProcessing ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Lock className="w-4 h-4" />
-                  )}
-                  <span>
-                    {selectedPaymentMethod === 'RAZORPAY'
-                      ? `Pay ${brandConfig.currency.symbol}${summary.grandTotal.toFixed(2)} with Razorpay`
-                      : `Place Order via COD (${brandConfig.currency.symbol}${summary.grandTotal.toFixed(2)})`}
-                  </span>
-                </button>
+                  <button
+                    type="button"
+                    onClick={handleFinalOrder}
+                    disabled={isSubmittingOrder || isProcessing}
+                    className={`w-full sm:w-auto px-8 py-4 rounded-2xl text-white font-black text-xs transition shadow-lg hover:shadow-xl flex items-center justify-center gap-2.5 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 ${selectedPaymentMethod === 'RAZORPAY'
+                      ? 'bg-gradient-to-r from-blue-600 via-indigo-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800'
+                      : 'bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800'
+                      }`}
+                  >
+                    {isSubmittingOrder || isProcessing ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Lock className="w-4 h-4" />
+                    )}
+                    <span>
+                      {selectedPaymentMethod === 'RAZORPAY'
+                        ? `Pay ${brandConfig.currency.symbol}${summary.grandTotal.toFixed(2)} with Razorpay`
+                        : `Place Order via COD (${brandConfig.currency.symbol}${summary.grandTotal.toFixed(2)})`}
+                    </span>
+                  </button>
+                </div>
 
                 {/* Logistics & Compliance Badges */}
-                <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200/80 text-[11px] text-slate-600 space-y-1.5">
-                  <div className="flex items-center gap-1.5 font-bold text-slate-900">
-                    <ShieldCheck className="w-3.5 h-3.5 text-[#E66001]" />
+                <div className="p-4 bg-slate-50/90 rounded-2xl border border-slate-200/80 text-[11px] text-slate-600 space-y-2">
+                  <div className="flex items-center gap-2 font-bold text-slate-900">
+                    <ShieldCheck className="w-4 h-4 text-[#E66001]" />
                     <span>Fulfilled by {brandConfig.merchantLegalName}</span>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 text-[11px] text-slate-500">
-                    <div>• Dispatched in <strong>2–3 business days</strong></div>
-                    <div>• Delivered in <strong>2–5 business days</strong></div>
-                    <div>• Free delivery in <strong>Komarapalayam & Bhavani</strong></div>
-                    <div>• <strong>24h replacement</strong> for grocery & grains</div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 text-[11px] text-slate-500 pt-1.5 border-t border-slate-200/60">
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#E66001] shrink-0" />
+                      <span>Dispatched in <strong>2–3 days</strong></span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#E66001] shrink-0" />
+                      <span>Delivered in <strong>2–5 days</strong></span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#E66001] shrink-0" />
+                      <span>Free local delivery</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#E66001] shrink-0" />
+                      <span><strong>24h replacement</strong> guarantee</span>
+                    </div>
                   </div>
                 </div>
 
-                <p className="text-[10px] text-slate-400 text-center leading-relaxed">
+                {/* Terms and Legal Notice */}
+                <p className="text-[11px] text-slate-400 text-center leading-relaxed px-2">
                   By placing this order, you agree to our{' '}
-                  <Link href="/terms" target="_blank" className="text-[#A50025] font-semibold underline">Terms of Service</Link>,{' '}
-                  <Link href="/shipping-policy" target="_blank" className="text-[#A50025] font-semibold underline">Shipping Policy</Link>, and{' '}
-                  <Link href="/cancellation-refund" target="_blank" className="text-[#A50025] font-semibold underline">Cancellation & Refund Policy</Link>.
+                  <Link href="/terms" target="_blank" className="text-[#A50025] hover:text-[#80001D] font-semibold underline underline-offset-2">Terms of Service</Link>,{' '}
+                  <Link href="/shipping-policy" target="_blank" className="text-[#A50025] hover:text-[#80001D] font-semibold underline underline-offset-2">Shipping Policy</Link>, and{' '}
+                  <Link href="/cancellation-refund" target="_blank" className="text-[#A50025] hover:text-[#80001D] font-semibold underline underline-offset-2">Cancellation & Refund Policy</Link>.
                 </p>
               </div>
             </div>

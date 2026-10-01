@@ -14,15 +14,18 @@ interface SearchBarProps {
 const POPULAR_SEARCH_TAGS = [
   'Karuppu Kavuni',
   'Mappillai Samba',
-  'Sathu Maavu',
-  'Salem Turmeric',
-  'Guntur Chilli',
-  'Basmati Rice',
-  'Sprouted Millet',
+  'Hand-Pounded Rice',
+  'Organic Ragi',
+  'Kambu Kurunai',
+  'Thinai Millet',
+  'Saamai',
+  'Varagu',
+  'Native Kollu',
+  'White Cholam',
 ];
 
 export const SearchBar: React.FC<SearchBarProps> = ({
-  placeholder = 'Search products, categories & items...',
+  placeholder = 'Search products, brands & categories...',
   className = '',
 }) => {
   const [query, setQuery] = useState('');
@@ -32,6 +35,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
 
   const hasValidQuery = isFocused && query.trim().length >= 2;
 
+  // Active query search results
   const { data: searchResults, isLoading } = useProducts(
     {
       q: hasValidQuery ? query.trim() : undefined,
@@ -42,7 +46,18 @@ export const SearchBar: React.FC<SearchBarProps> = ({
     }
   );
 
+  // Popular / Trending products shown before typing
+  const { data: popularProductsData, isLoading: isPopularLoading } = useProducts(
+    {
+      limit: 4,
+    },
+    {
+      enabled: isFocused && !hasValidQuery,
+    }
+  );
+
   const matchingProducts = searchResults?.items || [];
+  const popularProducts = popularProductsData?.items || [];
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -104,12 +119,12 @@ export const SearchBar: React.FC<SearchBarProps> = ({
 
       {/* Instant Product Suggestions Dropdown Popover */}
       {isFocused && (
-        <div className="absolute top-full left-0 right-0 mt-2 rounded-2xl bg-white shadow-2xl border border-slate-200/90 p-3 z-50 animate-in fade-in slide-in-from-top-2 duration-200 max-h-96 overflow-y-auto space-y-3">
+        <div className="absolute top-full left-0 right-0 mt-2 rounded-2xl bg-white shadow-2xl border border-slate-200/90 p-3 z-50 animate-in fade-in slide-in-from-top-2 duration-200 max-h-[460px] overflow-y-auto space-y-3">
           {query.trim().length >= 2 ? (
             <div>
               <div className="flex items-center justify-between px-2 pb-2 border-b border-slate-100">
                 <span className="text-[10px] font-black uppercase tracking-widest text-maroon flex items-center gap-1">
-                  <Sparkles className="w-3 h-3 text-orange" /> Relatable Products
+                  <Sparkles className="w-3 h-3 text-orange" /> Matching Products
                 </span>
                 <span className="text-[10px] text-slate-400 font-semibold">
                   {isLoading ? 'Searching...' : `${matchingProducts.length} Results`}
@@ -117,7 +132,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
               </div>
 
               {isLoading ? (
-                <div className="p-4 text-center text-xs text-slate-400 font-medium">
+                <div className="p-4 text-center text-xs text-slate-400 font-medium animate-pulse">
                   Fetching catalog matches...
                 </div>
               ) : matchingProducts.length > 0 ? (
@@ -143,7 +158,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
                             {prod.name}
                           </h4>
                           <span className="text-[10px] text-slate-500 font-medium block">
-                            {prod.category?.name || 'Organic Foods'}
+                            {prod.category?.name || 'Organic Staples'}
                           </span>
                         </div>
                         <div className="text-right flex-shrink-0">
@@ -171,22 +186,76 @@ export const SearchBar: React.FC<SearchBarProps> = ({
               )}
             </div>
           ) : (
-            <div className="p-1 space-y-2">
-              <div className="flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-slate-400 px-1">
-                <Sparkles className="w-3 h-3 text-orange" /> Popular Search Suggestions
+            <div className="p-1 space-y-3">
+              {/* Popular Search Tags */}
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-slate-500 px-1">
+                  <Sparkles className="w-3.5 h-3.5 text-orange" /> Popular Search Suggestions
+                </div>
+                <div className="flex flex-wrap gap-1.5 pt-0.5">
+                  {POPULAR_SEARCH_TAGS.map((tag) => (
+                    <button
+                      key={tag}
+                      type="button"
+                      onClick={() => handleSelectTag(tag)}
+                      className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-maroon-light hover:text-maroon text-slate-700 text-xs font-bold transition-all border border-slate-200/80 hover:border-maroon/30 shadow-2xs"
+                    >
+                      {tag}
+                    </button>
+                  ))}
+                </div>
               </div>
-              <div className="flex flex-wrap gap-1.5 pt-1">
-                {POPULAR_SEARCH_TAGS.map((tag) => (
-                  <button
-                    key={tag}
-                    type="button"
-                    onClick={() => handleSelectTag(tag)}
-                    className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-maroon-light text-slate-700 hover:text-maroon text-xs font-bold transition border border-slate-200/80"
-                  >
-                    {tag}
-                  </button>
-                ))}
-              </div>
+
+              {/* Popular & Trending Products Section */}
+              {popularProducts.length > 0 && (
+                <div className="pt-2 border-t border-slate-100 space-y-1.5">
+                  <div className="flex items-center justify-between px-1">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 flex items-center gap-1">
+                      <ShoppingBag className="w-3.5 h-3.5 text-maroon" /> Trending Products
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsFocused(false);
+                        router.push('/shop');
+                      }}
+                      className="text-[10px] font-bold text-maroon hover:text-orange transition"
+                    >
+                      View All →
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-0.5">
+                    {popularProducts.map((prod) => {
+                      const img =
+                        prod.images?.find((i) => i.isPrimary)?.imageUrl ||
+                        prod.images?.[0]?.imageUrl ||
+                        'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=400&auto=format&fit=crop';
+                      const priceNum = typeof prod.price === 'string' ? parseFloat(prod.price) : prod.price;
+
+                      return (
+                        <div
+                          key={prod.id}
+                          onClick={() => handleSelectProduct(prod.slug)}
+                          className="flex items-center gap-2.5 p-2 rounded-xl bg-slate-50/70 hover:bg-maroon-light/60 border border-slate-100 hover:border-maroon/20 cursor-pointer transition-all group"
+                        >
+                          <div className="w-10 h-10 rounded-lg overflow-hidden bg-white flex-shrink-0 border border-slate-200">
+                            <img src={img} alt={prod.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="text-xs font-bold text-slate-900 truncate group-hover:text-maroon transition-colors">
+                              {prod.name}
+                            </h4>
+                            <span className="text-[10px] font-black text-maroon">
+                              {brandConfig.currency.symbol}{priceNum.toLocaleString('en-IN', { minimumFractionDigits: 0 })}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>

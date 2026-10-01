@@ -1,23 +1,33 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Mail, CheckCircle2 } from 'lucide-react';
+import { Mail, CheckCircle2, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { contactService } from '@/services/contact.service';
 
 export const NewsletterSection: React.FC = () => {
   const [email, setEmail] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [subscribed, setSubscribed] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !email.includes('@')) {
       toast.error('Please enter a valid email address');
       return;
     }
 
-    setSubscribed(true);
-    toast.success('Thank you for subscribing to Vistora!');
-    setEmail('');
+    setIsSubmitting(true);
+    try {
+      await contactService.subscribeNewsletter(email.trim());
+      setSubscribed(true);
+      toast.success('Thank you! Welcome details and catalog have been sent to your email.');
+      setEmail('');
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || 'Failed to subscribe. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
 
@@ -43,18 +53,28 @@ export const NewsletterSection: React.FC = () => {
               <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="email"
+                required
+                disabled={isSubmitting}
                 placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-white text-[#111827] placeholder-slate-400 rounded-xl text-xs font-bold border border-transparent focus:outline-none focus:ring-2 focus:ring-[#E66001] transition-all"
+                className="w-full pl-10 pr-4 py-2.5 bg-white text-[#111827] placeholder-slate-400 rounded-xl text-xs font-bold border border-transparent focus:outline-none focus:ring-2 focus:ring-[#E66001] transition-all disabled:opacity-75"
               />
             </div>
 
             <button
               type="submit"
-              className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-[#E66001] hover:bg-[#B84D01] text-white text-xs font-extrabold transition-all shadow-xs shrink-0"
+              disabled={isSubmitting}
+              className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-[#E66001] hover:bg-[#B84D01] disabled:opacity-70 text-white text-xs font-extrabold transition-all shadow-xs shrink-0 flex items-center justify-center gap-1.5 cursor-pointer disabled:cursor-not-allowed"
             >
-              Subscribe
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <span>Subscribing...</span>
+                </>
+              ) : (
+                <span>Subscribe</span>
+              )}
             </button>
           </form>
         )}

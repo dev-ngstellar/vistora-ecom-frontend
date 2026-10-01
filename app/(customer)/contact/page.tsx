@@ -2,17 +2,32 @@
 
 import React, { useState } from 'react';
 import { brandConfig } from '@/config';
-import { Mail, Phone, MapPin, Send, CheckCircle2 } from 'lucide-react';
+import { Mail, Phone, MapPin, Send, CheckCircle2, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { contactService } from '@/services/contact.service';
 
 export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
-    toast.success('Thank you! Your message has been sent to Vistora Customer Support.');
+    if (!form.name.trim() || !form.email.trim() || !form.message.trim()) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      await contactService.submitContact(form);
+      setSubmitted(true);
+      toast.success('Thank you! Your message has been sent to Vistora Customer Support.');
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || 'Failed to send message. Please try again or call our support.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -155,10 +170,20 @@ export default function ContactPage() {
 
               <button
                 type="submit"
-                className="w-full py-3.5 px-6 rounded-2xl bg-maroon hover:bg-maroon-dark text-white font-extrabold text-xs uppercase tracking-wider transition shadow-md flex items-center justify-center gap-2"
+                disabled={isSubmitting}
+                className="w-full py-3.5 px-6 rounded-2xl bg-maroon hover:bg-maroon-dark disabled:opacity-70 text-white font-extrabold text-xs uppercase tracking-wider transition shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed"
               >
-                <Send className="w-4 h-4" />
-                Submit Message
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Sending to Vistora Support...</span>
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-4 h-4" />
+                    <span>Submit Message</span>
+                  </>
+                )}
               </button>
             </form>
           )}
