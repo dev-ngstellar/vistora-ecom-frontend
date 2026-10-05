@@ -30,7 +30,8 @@ import { brandConfig } from '@/config';
 
 export default function ProductDetailPage() {
   const params = useParams();
-  const slug = params['slug'] as string;
+  const rawSlug = params['slug'] as string;
+  const slug = rawSlug ? decodeURIComponent(rawSlug) : '';
   const router = useRouter();
   const { requireCustomerAuth } = useAuth();
 
@@ -92,28 +93,28 @@ export default function ProductDetailPage() {
     if (selectedVariant.imageUrl) return selectedVariant.imageUrl;
     if (selectedVariant.imageUrls && selectedVariant.imageUrls.length > 0) return selectedVariant.imageUrls[0];
 
-    // 2. Alt-text color match in product images
-    if (selectedVariant.color && allGalleryImages.length > 0) {
-      const colorLower = selectedVariant.color.toLowerCase().trim();
-      const matchedImg = allGalleryImages.find((img) =>
-        img.altText ? img.altText.toLowerCase().includes(colorLower) : false,
-      );
-      if (matchedImg) return matchedImg.imageUrl;
-    }
+    // 2. Alt-text size or color match in product images
+    if (allGalleryImages.length > 0) {
+      if (selectedVariant.size) {
+        const sizeLower = selectedVariant.size.toLowerCase().trim();
+        const matchedSizeImg = allGalleryImages.find((img) =>
+          img.altText ? img.altText.toLowerCase().includes(sizeLower) : false,
+        );
+        if (matchedSizeImg) return matchedSizeImg.imageUrl;
+      }
 
-    // 3. Match image by color variant index
-    if (product?.variants && product.variants.length > 0 && allGalleryImages.length > 0) {
-      const colorVariants = Array.from(
-        new Set(product.variants.map((v) => v.color).filter(Boolean)),
-      );
-      const colorIndex = colorVariants.indexOf(selectedVariant.color);
-      if (colorIndex >= 0 && allGalleryImages[colorIndex]) {
-        return allGalleryImages[colorIndex].imageUrl;
+      if (selectedVariant.color) {
+        const colorLower = selectedVariant.color.toLowerCase().trim();
+        const matchedColorImg = allGalleryImages.find((img) =>
+          img.altText ? img.altText.toLowerCase().includes(colorLower) : false,
+        );
+        if (matchedColorImg) return matchedColorImg.imageUrl;
       }
     }
 
+    // 3. Fallback to primary 1st product image
     return allGalleryImages[0]?.imageUrl || null;
-  }, [selectedVariant, product, allGalleryImages]);
+  }, [selectedVariant, allGalleryImages]);
 
   const selectedVariantImageUrls = React.useMemo(() => {
     if (!selectedVariant) return null;
