@@ -16,7 +16,7 @@ const EMAILJS_PUBLIC_KEY = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY || 'OqI80Y
 
 export const contactService = {
   submitContact: async (data: ContactFormData) => {
-    // 1. Send via EmailJS directly to sainithish2710@gmail.com
+    // 1. Send via EmailJS directly to vistoraoffice123@gmail.com
     try {
       if (EMAILJS_SERVICE_ID && EMAILJS_TEMPLATE_ID && EMAILJS_PUBLIC_KEY) {
         const response = await emailjs.send(
@@ -34,7 +34,7 @@ export const contactService = {
             phone: data.phone || 'Not provided',
             subject: data.subject || 'Vistora Customer Support Inquiry',
             message: data.message,
-            to_email: 'sainithish2710@gmail.com',
+            to_email: 'vistoraoffice123@gmail.com',
             to_name: 'Vistora Support Team',
           },
           {
@@ -57,7 +57,7 @@ export const contactService = {
   },
 
   subscribeNewsletter: async (email: string) => {
-    // 1. Send subscriber notification to sainithish2710@gmail.com via EmailJS
+    // 1. Send subscriber notification to vistoraoffice123@gmail.com via EmailJS
     try {
       if (EMAILJS_SERVICE_ID && EMAILJS_TEMPLATE_ID && EMAILJS_PUBLIC_KEY) {
         await emailjs.send(
@@ -72,7 +72,7 @@ export const contactService = {
             phone: 'N/A',
             subject: '[Vistora Newsletter] New Catalog & Updates Subscription',
             message: `A new customer with email "${email}" has subscribed to Vistora updates and requested the latest catalog & welcome offers.`,
-            to_email: 'sainithish2710@gmail.com',
+            to_email: 'vistoraoffice123@gmail.com',
           },
           {
             publicKey: EMAILJS_PUBLIC_KEY,
