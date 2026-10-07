@@ -9,6 +9,8 @@ import { VariantSelector } from '@/components/catalogue/variant-selector';
 import { ProductCard } from '@/components/catalogue/product-card';
 import { ProductDetailSkeleton } from '@/components/catalogue/skeleton-loaders';
 import { ProductVariant, ProductImage } from '@/types/catalogue.types';
+import { ReviewSummary } from '@/types/sales.types';
+import { ProductReviewsSection } from '@/components/reviews/product-reviews-section';
 import { useCart, useCartMutations, useWishlist, useWishlistMutations } from '@/hooks/use-shopping';
 import {
   ShoppingBag,
@@ -43,6 +45,7 @@ export default function ProductDetailPage() {
 
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
   const [quantity, setQuantity] = useState<number>(1);
+  const [reviewSummary, setReviewSummary] = useState<ReviewSummary | null>(null);
 
   // Fetch recommendations from same category only when product categoryId is loaded
   const { data: recsData } = useProducts(
@@ -266,11 +269,29 @@ export default function ProductDetailPage() {
               <span className="text-[11px] font-black uppercase tracking-widest text-[#A50025]">
                 {product.category?.name || 'VISTORA SELECTION'}
               </span>
-              <div className="inline-flex items-center gap-1 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md text-amber-800 font-extrabold text-[11px]">
+              <button
+                type="button"
+                onClick={() => {
+                  const el = document.getElementById('reviews');
+                  if (el) {
+                    el.scrollIntoView({ behavior: 'smooth' });
+                  }
+                }}
+                className="inline-flex items-center gap-1 bg-amber-50 hover:bg-amber-100/80 border border-amber-200 px-2 py-0.5 rounded-md text-amber-800 font-extrabold text-[11px] transition-colors cursor-pointer"
+                title="View customer reviews"
+              >
                 <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-                <span>4.8</span>
-                <span className="text-slate-400 font-normal">(124 reviews)</span>
-              </div>
+                <span>
+                  {reviewSummary?.totalReviews && reviewSummary.totalReviews > 0
+                    ? reviewSummary.averageRating.toFixed(1)
+                    : '5.0'}
+                </span>
+                <span className="text-slate-400 font-normal">
+                  ({reviewSummary?.totalReviews !== undefined
+                    ? `${reviewSummary.totalReviews} ${reviewSummary.totalReviews === 1 ? 'review' : 'reviews'}`
+                    : 'Reviews'})
+                </span>
+              </button>
             </div>
 
             <h1 className="text-lg sm:text-xl font-black text-[#111827] tracking-tight leading-snug">
@@ -614,6 +635,13 @@ export default function ProductDetailPage() {
         </div>
 
       </div>
+
+      {/* PRODUCT REVIEWS SECTION */}
+      <ProductReviewsSection
+        productId={product.id}
+        productName={product.name}
+        onSummaryLoaded={setReviewSummary}
+      />
 
       {/* YOU MAY ALSO LIKE RECOMMENDATIONS SECTION */}
       {recommendations.length > 0 && (

@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { salesService } from '@/services/sales.service';
-import { Coupon } from '@/types/sales.types';
+import { Coupon, CreateReviewPayload } from '@/types/sales.types';
 import { message } from '@/lib/antd';
 
 
@@ -26,6 +26,8 @@ export const salesKeys = {
   reviewsList: (params?: Record<string, any>) => [...salesKeys.allReviews, 'list', params] as const,
   reviewDetails: (id: string) => [...salesKeys.allReviews, 'details', id] as const,
   reviewStats: ['sales', 'reviews', 'stats'] as const,
+  productReviews: (productId: string, params?: Record<string, any>) => ['reviews', 'product', productId, params] as const,
+  myReviews: ['reviews', 'me'] as const,
 };
 
 // ==================== ORDERS HOOKS ====================
@@ -278,3 +280,56 @@ export const useReviewMutations = () => {
 
   return { approveReview, rejectReview, deleteReview };
 };
+
+export const useProductReviews = (
+  productId: string,
+  params?: { page?: number; limit?: number; rating?: number; sort?: string }
+) => {
+  return useQuery({
+    queryKey: salesKeys.productReviews(productId, params),
+    queryFn: () => salesService.getProductReviews(productId, params),
+    enabled: Boolean(productId),
+  });
+};
+
+export const useCreateReview = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: CreateReviewPayload) => salesService.createReview(payload),
+    onSuccess: (_data, variables) => {
+      message.success('Review submitted successfully! Thank you for sharing your experience.');
+      queryClient.invalidateQueries({ queryKey: ['reviews', 'product', variables.productId] });
+      queryClient.invalidateQueries({ queryKey: salesKeys.myReviews });
+      queryClient.invalidateQueries({ queryKey: salesKeys.allReviews });
+      queryClient.invalidateQueries({ queryKey: salesKeys.reviewStats });
+    },
+    onError: (err: any) => {
+      message.error(err.response?.data?.message || 'Failed to submit review');
+    },
+  });
+};
+
+export const useMyReviews = () => {
+  return useQuery({
+    queryKey: salesKeys.myReviews,
+    queryFn: salesService.getMyReviews,
+  });
+};
+
+export const useDeleteMyReview = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => salesService.deleteMyReview(id),
+    onSuccess: () => {
+      message.success('Review deleted successfully');
+      queryClient.invalidateQueries({ queryKey: salesKeys.myReviews });
+      queryClient.invalidateQueries({ queryKey: ['reviews'] });
+    },
+    onError: (err: any) => {
+      message.error(err.response?.data?.message || 'Failed to delete review');
+    },
+  });
+};
+

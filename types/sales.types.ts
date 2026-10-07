@@ -310,6 +310,28 @@ export interface Review {
     orderNumber: string;
     createdAt: string;
   } | null;
+  isVerifiedBuyer?: boolean;
+}
+
+export interface ReviewSummary {
+  totalReviews: number;
+  averageRating: number;
+  distribution: Record<number, number>;
+  percentages: Record<number, number>;
+  recommendedPercentage: number;
+}
+
+export interface ProductReviewsResponse {
+  reviews: Review[];
+  summary: ReviewSummary;
+  meta: PaginationMeta;
+}
+
+export interface CreateReviewPayload {
+  productId: string;
+  rating: number;
+  title?: string;
+  comment?: string;
 }
 
 export interface ReviewStats {
@@ -326,3 +348,4 @@ export interface PaginationMeta {
   limit: number;
   totalPages: number;
 }
+

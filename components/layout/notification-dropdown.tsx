@@ -60,8 +60,19 @@ export const NotificationDropdown: React.FC = () => {
     if (item.status === 'UNREAD') {
       markAsRead(item.id);
     }
+    setIsOpen(false);
+
+    // Order & payment notifications navigate directly to the main orders page
+    if (
+      item.type?.toUpperCase() === 'ORDER' ||
+      item.type?.toUpperCase() === 'PAYMENT' ||
+      item.actionUrl?.startsWith('/admin/orders')
+    ) {
+      router.push('/admin/orders');
+      return;
+    }
+
     if (item.actionUrl) {
-      setIsOpen(false);
       router.push(item.actionUrl);
     }
   };
@@ -181,9 +192,13 @@ export const NotificationDropdown: React.FC = () => {
                     <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5 line-clamp-2">
                       {item.message}
                     </p>
-                    {item.actionUrl && (
+                    {(item.actionUrl || item.type?.toUpperCase() === 'ORDER') && (
                       <div className="flex items-center gap-1 text-[10px] text-[#A50025] dark:text-rose-400 font-bold mt-1.5">
-                        <span>View Details</span>
+                        <span>
+                          {item.type?.toUpperCase() === 'ORDER' || item.actionUrl?.startsWith('/admin/orders')
+                            ? 'View Orders'
+                            : 'View Details'}
+                        </span>
                         <ExternalLink className="w-2.5 h-2.5" />
                       </div>
                     )}

@@ -12,6 +12,8 @@ import {
   PaginationMeta,
   Review,
   ReviewStats,
+  CreateReviewPayload,
+  ReviewSummary,
 } from '@/types/sales.types';
 
 export const salesService = {
@@ -127,6 +129,34 @@ export const salesService = {
   },
 
   // ==================== REVIEWS ====================
+  getProductReviews: async (
+    productId: string,
+    params?: { page?: number; limit?: number; rating?: number; sort?: string }
+  ) => {
+    const res = await apiClient.get<ApiEnvelope<Review[]>>(`/reviews/product/${productId}`, { params });
+    const meta = res.data.meta as (PaginationMeta & { summary?: ReviewSummary }) | undefined;
+    return {
+      reviews: res.data.data || [],
+      meta,
+      summary: meta?.summary,
+    };
+  },
+
+  createReview: async (payload: CreateReviewPayload) => {
+    const res = await apiClient.post<ApiEnvelope<Review>>('/reviews', payload);
+    return res.data.data;
+  },
+
+  getMyReviews: async () => {
+    const res = await apiClient.get<ApiEnvelope<Review[]>>('/reviews/me');
+    return res.data.data || [];
+  },
+
+  deleteMyReview: async (id: string) => {
+    const res = await apiClient.delete<ApiEnvelope<null>>(`/reviews/me/${id}`);
+    return res.data.data;
+  },
+
   getReviews: async (params?: Record<string, any>) => {
     const res = await apiClient.get<ApiEnvelope<Review[]>>('/reviews', { params });
     return {

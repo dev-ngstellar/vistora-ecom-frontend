@@ -18,6 +18,7 @@ import {
   Rate,
   Avatar,
   Tag,
+  App,
 } from 'antd';
 import {
   Star,
@@ -36,6 +37,8 @@ import {
 import dayjs from 'dayjs';
 
 export default function AdminReviewsPage() {
+  const { modal } = App.useApp();
+
   const [search, setSearch] = useState('');
   const [ratingFilter, setRatingFilter] = useState<number | undefined>(undefined);
   const [statusFilter, setStatusFilter] = useState<string | undefined>(undefined);
@@ -71,7 +74,7 @@ export default function AdminReviewsPage() {
   };
 
   const handleDelete = (id: string) => {
-    Modal.confirm({
+    modal.confirm({
       title: 'Delete Review',
       content: 'Are you sure you want to permanently delete this product review?',
       okText: 'Yes, Delete',
@@ -377,7 +380,7 @@ export default function AdminReviewsPage() {
                 form={replyForm}
                 layout="vertical"
                 onFinish={() => {
-                  Modal.success({
+                  modal.success({
                     title: 'Response Saved',
                     content: 'Customer review reply has been updated.',
                   });

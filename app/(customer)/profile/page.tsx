@@ -22,11 +22,17 @@ import {
   Heart,
   Loader2,
   Calendar,
+  Star,
+  MessageSquare,
 } from 'lucide-react';
+import { useMyReviews, useDeleteMyReview } from '@/hooks/use-sales';
 
 export default function ProfilePage() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+
+  const { data: myReviews = [], isLoading: loadingReviews } = useMyReviews();
+  const deleteReviewMutation = useDeleteMyReview();
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingAddress, setEditingAddress] = useState<AddressResponse | null>(null);
@@ -320,6 +326,93 @@ export default function ProfilePage() {
               </div>
             )}
           </div>
+        </div>
+
+        {/* My Product Reviews Section */}
+        <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div>
+              <h2 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+                My Product Reviews ({myReviews.length})
+              </h2>
+              <p className="text-[11px] text-slate-500 mt-0.5">
+                Ratings and feedback you have submitted across Vistora products.
+              </p>
+            </div>
+          </div>
+
+          {loadingReviews ? (
+            <div className="p-8 text-center text-xs text-slate-400 flex items-center justify-center gap-2">
+              <Loader2 className="w-4 h-4 animate-spin text-maroon" /> Loading reviews...
+            </div>
+          ) : myReviews.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {myReviews.map((rev) => (
+                <div
+                  key={rev.id}
+                  className="p-4 rounded-2xl border border-slate-100 bg-slate-50/50 hover:bg-slate-50 transition space-y-2.5 flex flex-col justify-between"
+                >
+                  <div className="space-y-1.5">
+                    <div className="flex items-start justify-between gap-2">
+                      <Link
+                        href={rev.product?.slug ? `/product/${rev.product.slug}` : '#'}
+                        className="text-xs font-black text-slate-900 hover:text-maroon line-clamp-1 transition"
+                      >
+                        {rev.product?.name || 'Vistora Harvest'}
+                      </Link>
+
+                      <div className="inline-flex items-center gap-0.5 text-xs font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200 shrink-0">
+                        <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                        <span>{rev.rating}.0</span>
+                      </div>
+                    </div>
+
+                    {rev.title && (
+                      <p className="text-xs font-extrabold text-slate-800 tracking-tight">
+                        {rev.title}
+                      </p>
+                    )}
+
+                    {rev.comment && (
+                      <p className="text-[11px] text-slate-600 line-clamp-2 leading-relaxed">
+                        {rev.comment}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="flex items-center justify-between pt-2 border-t border-slate-200/50 text-[10px]">
+                    <span className="text-slate-400 font-medium">
+                      {new Date(rev.createdAt).toLocaleDateString('en-IN', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric',
+                      })}
+                    </span>
+
+                    <button
+                      onClick={() => {
+                        if (window.confirm('Are you sure you want to delete this review?')) {
+                          deleteReviewMutation.mutate(rev.id);
+                        }
+                      }}
+                      className="text-slate-400 hover:text-rose-600 font-semibold flex items-center gap-1 transition"
+                    >
+                      <Trash2 className="w-3 h-3" /> Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="p-8 rounded-2xl bg-slate-50 text-center space-y-2">
+              <MessageSquare className="w-8 h-8 text-slate-300 mx-auto" />
+              <p className="text-xs font-semibold text-slate-600">No reviews submitted yet.</p>
+              <p className="text-[11px] text-slate-400">
+                You can write a review directly on any product page you've tasted!
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Modal: Add New Address */}
