@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { CartSummaryResponse } from '@/types/shopping.types';
-import { ArrowRight, ShieldCheck, Truck, Lock, Tag, Sparkles, Loader2 } from 'lucide-react';
+import { ArrowRight, ShieldCheck, Lock, Tag, Sparkles, Loader2 } from 'lucide-react';
 import { brandConfig } from '@/config';
 import { useCoupons } from '@/platform/checkout';
 
@@ -29,10 +29,6 @@ export const CartSummaryCard: React.FC<CartSummaryCardProps> = ({
   const taxNum = Number(summary.tax) || 0;
   const shippingNum = Number(summary.shipping) || 0;
   const totalNum = Number(summary.total) || 0;
-  const thresholdNum = Number(summary.freeShippingThreshold) || 150;
-
-  const amountNeeded = Math.max(0, thresholdNum - subtotalNum);
-  const freeProgress = Math.min(100, (subtotalNum / thresholdNum) * 100);
 
   const handleCheckoutClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -47,26 +43,6 @@ export const CartSummaryCard: React.FC<CartSummaryCardProps> = ({
   return (
     <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-6">
       <h2 className="text-lg font-black text-slate-900 tracking-tight">Order Summary</h2>
-
-      {/* Free Shipping Progress Indicator */}
-      <div className="space-y-2 p-3.5 rounded-2xl bg-orange-light border border-orange-200">
-        <div className="flex items-center gap-2 text-xs font-bold text-slate-900">
-          <Truck className="w-4 h-4 text-orange" />
-          {summary.freeShippingEligible ? (
-            <span>You qualify for FREE Worldwide Express Shipping!</span>
-          ) : (
-            <span>
-              Add <span className="text-orange font-black">{brandConfig.currency.symbol}{amountNeeded.toFixed(2)}</span> more for FREE Shipping
-            </span>
-          )}
-        </div>
-        <div className="w-full bg-orange-200/60 rounded-full h-2 overflow-hidden">
-          <div
-            className="bg-orange h-full rounded-full transition-all duration-500"
-            style={{ width: `${freeProgress}%` }}
-          />
-        </div>
-      </div>
 
       {/* Promo Code Box */}
       <div className="space-y-2.5 p-4 rounded-2xl bg-slate-50 border border-slate-200/80">
