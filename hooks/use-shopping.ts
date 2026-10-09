@@ -111,9 +111,11 @@ export const useCart = () => {
     queryKey: ['cart', isAuthenticated, isBuyNow, buyNowItem?.productId, buyNowItem?.quantity],
     queryFn: async () => {
       if (isBuyNow && buyNowItem) {
-        const subtotal = buyNowItem.price * buyNowItem.quantity;
+        const unitPrice = Number(buyNowItem.price) || 0;
+        const qty = Number(buyNowItem.quantity) || 1;
+        const subtotal = unitPrice * qty;
         const tax = parseFloat((subtotal * 0.05).toFixed(2));
-        const shipping = subtotal >= 150 ? 0 : 15;
+        const shipping = 0; // Free shipping
         const total = parseFloat((subtotal + tax + shipping).toFixed(2));
 
         return {
@@ -125,29 +127,38 @@ export const useCart = () => {
           shipping,
           total,
           couponCode: null,
-          itemCount: buyNowItem.quantity,
+          itemCount: qty,
           items: [{
             id: 'buynow_item',
             cartId: 'buynow_cart',
             productId: buyNowItem.productId,
+            productName: buyNowItem.productName || 'Product',
+            productSlug: buyNowItem.productSlug || '',
+            imageUrl: buyNowItem.imageUrl || '',
             variantId: buyNowItem.variantId || null,
-            quantity: buyNowItem.quantity,
+            variantSku: buyNowItem.variantSku || null,
+            variantColor: buyNowItem.variantColor || null,
+            variantSize: buyNowItem.variantSize || null,
+            quantity: qty,
+            unitPrice,
+            totalPrice: unitPrice * qty,
+            availableStock: 99,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
             product: {
               id: buyNowItem.productId,
-              name: buyNowItem.productName,
-              slug: buyNowItem.productSlug,
-              price: buyNowItem.price,
-              imageUrl: buyNowItem.imageUrl,
-              images: [{ id: 'img', url: buyNowItem.imageUrl }]
+              name: buyNowItem.productName || 'Product',
+              slug: buyNowItem.productSlug || '',
+              price: unitPrice,
+              imageUrl: buyNowItem.imageUrl || '',
+              images: [{ id: 'img', url: buyNowItem.imageUrl || '' }]
             },
             variant: buyNowItem.variantId ? {
               id: buyNowItem.variantId,
               productId: buyNowItem.productId,
-              name: '',
-              price: buyNowItem.price,
-              sku: ''
+              name: buyNowItem.variantSize || '',
+              price: unitPrice,
+              sku: buyNowItem.variantSku || ''
             } : null
           }]
         } as any;

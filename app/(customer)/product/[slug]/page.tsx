@@ -222,6 +222,9 @@ export default function ProductDetailPage() {
       const buyNowItem = {
         productId: product.id,
         variantId: selectedVariant?.id || null,
+        variantSize: selectedVariant?.size || (selectedVariant?.weight ? `${selectedVariant.weight}g` : null),
+        variantColor: selectedVariant?.color || null,
+        variantSku: selectedVariant?.sku || product.sku || null,
         quantity,
         productName: product.name,
         productSlug: product.slug,

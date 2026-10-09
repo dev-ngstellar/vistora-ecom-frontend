@@ -1190,34 +1190,39 @@ export const CheckoutView: React.FC = () => {
 
             {isItemsExpanded && cartSummary?.items && (
               <div className="p-5 pt-0 border-t border-slate-100 space-y-3.5 divide-y divide-slate-100 max-h-64 overflow-y-auto">
-                {cartSummary.items.map((item) => (
-                  <div key={item.id} className="pt-3 flex items-center gap-3 text-xs">
-                    <div className="relative w-12 h-12 rounded-xl bg-slate-100 border border-slate-200 overflow-hidden shrink-0 flex items-center justify-center">
-                      {item.imageUrl ? (
-                        <Image
-                          src={item.imageUrl}
-                          alt={item.productName}
-                          fill
-                          className="object-cover"
-                          sizes="48px"
-                        />
-                      ) : (
-                        <ShoppingBag className="w-5 h-5 text-slate-300" />
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="font-bold text-slate-900 truncate">{item.productName}</div>
-                      <div className="text-[11px] text-slate-500 flex items-center gap-2 mt-0.5">
-                        <span>Qty: {item.quantity}</span>
-                        {item.variantSize && <span>• Size: {item.variantSize}</span>}
-                        {item.variantColor && <span>• Color: {item.variantColor}</span>}
+                {cartSummary.items.map((item) => {
+                  const pName = item.productName || (item as any).product?.name || 'Product';
+                  const img = item.imageUrl || (item as any).product?.imageUrl || (item as any).product?.images?.[0]?.url || '';
+                  const totalP = Number(item.totalPrice ?? (item.unitPrice ? item.unitPrice * item.quantity : ((item as any).product?.price ? (item as any).product.price * item.quantity : 0))) || 0;
+                  return (
+                    <div key={item.id} className="pt-3 flex items-center gap-3 text-xs">
+                      <div className="relative w-12 h-12 rounded-xl bg-slate-100 border border-slate-200 overflow-hidden shrink-0 flex items-center justify-center">
+                        {img ? (
+                          <Image
+                            src={img}
+                            alt={pName}
+                            fill
+                            className="object-cover"
+                            sizes="48px"
+                          />
+                        ) : (
+                          <ShoppingBag className="w-5 h-5 text-slate-300" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-bold text-slate-900 truncate">{pName}</div>
+                        <div className="text-[11px] text-slate-500 flex items-center gap-2 mt-0.5">
+                          <span>Qty: {item.quantity}</span>
+                          {item.variantSize && <span>• Size: {item.variantSize}</span>}
+                          {item.variantColor && <span>• Color: {item.variantColor}</span>}
+                        </div>
+                      </div>
+                      <div className="font-black text-slate-900 text-right shrink-0">
+                        {brandConfig.currency.symbol}{totalP.toFixed(2)}
                       </div>
                     </div>
-                    <div className="font-black text-slate-900 text-right shrink-0">
-                      {brandConfig.currency.symbol}{Number(item.totalPrice).toFixed(2)}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
