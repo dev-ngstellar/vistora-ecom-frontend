@@ -767,7 +767,7 @@ export default function AdminProductsPage() {
                     </div>
 
                     {/* Default Product Pricing */}
-                    <div className="grid grid-cols-3 gap-4">
+                    <div className="grid grid-cols-2 gap-4">
                       <Form.Item
                         name="price"
                         label={<span className="font-bold text-xs">Retail Price ({brandConfig.currency.symbol})</span>}
@@ -781,10 +781,6 @@ export default function AdminProductsPage() {
                         label={<span className="font-bold text-xs">Compare At Price ({brandConfig.currency.symbol})</span>}
                       >
                         <InputNumber min={0} className="w-full rounded-xl" prefix={brandConfig.currency.symbol} />
-                      </Form.Item>
-
-                      <Form.Item name="taxRate" label={<span className="font-bold text-xs">Tax Rate (%)</span>}>
-                        <InputNumber min={0} max={100} className="w-full rounded-xl" suffix="%" />
                       </Form.Item>
                     </div>
 

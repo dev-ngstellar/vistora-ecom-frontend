@@ -126,7 +126,10 @@ export const CartSummaryCard: React.FC<CartSummaryCardProps> = ({
         )}
 
         <div className="flex justify-between text-slate-600">
-          <span>Estimated Sales Tax (5%)</span>
+          <span>
+            {summary.taxLabel || 'GST'}{summary.taxRate !== undefined ? ` (${summary.taxRate}%)` : ''}
+            {summary.taxInclusive && <span className="text-[10px] text-slate-400 ml-1">(Included)</span>}
+          </span>
           <span className="font-bold text-slate-900">{brandConfig.currency.symbol}{taxNum.toFixed(2)}</span>
         </div>
 

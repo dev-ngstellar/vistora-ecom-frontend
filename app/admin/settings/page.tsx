@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SectionHeader } from '@/components/config/section-header';
 import { StoreSettings } from '@/types/config.types';
+import { apiClient, getErrorMessage } from '@/lib/axios';
 import {
   Settings,
   Store,
@@ -32,7 +33,7 @@ const INITIAL_SETTINGS: StoreSettings = {
   timezone: 'Asia/Kolkata',
   language: 'en-IN',
   gstNumber: '27AABCV1234A1Z5',
-  taxRate: 18,
+  taxRate: 5,
   taxInclusive: false,
   taxLabel: 'GST',
   orderPrefix: 'VC-',
@@ -63,14 +64,83 @@ export default function AdminSettingsPage() {
   const [activeTab, setActiveTab] = useState<Tab>('store');
   const [isSaving, setIsSaving] = useState(false);
 
+  useEffect(() => {
+    let isMounted = true;
+    async function loadSettings() {
+      try {
+        const res = await apiClient.get('/settings');
+        if (Array.isArray(res.data?.data) && isMounted) {
+          const storeSetting = res.data.data.find((s: any) => s.key === 'store_settings');
+          const taxSetting = res.data.data.find((s: any) => s.key === 'tax_settings');
+
+          let loaded: Partial<StoreSettings> = {};
+          if (storeSetting?.value) {
+            try {
+              loaded = { ...loaded, ...JSON.parse(storeSetting.value) };
+            } catch {}
+          }
+          if (taxSetting?.value) {
+            try {
+              const tax = JSON.parse(taxSetting.value);
+              loaded = {
+                ...loaded,
+                taxRate: tax.taxRate !== undefined ? Number(tax.taxRate) : loaded.taxRate,
+                taxLabel: tax.taxLabel || loaded.taxLabel,
+                taxInclusive: tax.taxInclusive !== undefined ? Boolean(tax.taxInclusive) : loaded.taxInclusive,
+                gstNumber: tax.gstNumber || loaded.gstNumber,
+              };
+            } catch {}
+          }
+          setSettings((prev) => ({ ...prev, ...loaded }));
+          return;
+        }
+      } catch {}
+
+      try {
+        const pub = await apiClient.get('/settings/public');
+        if (pub.data?.data?.tax && isMounted) {
+          const tax = pub.data.data.tax;
+          setSettings((prev) => ({
+            ...prev,
+            taxRate: tax.taxRate !== undefined ? Number(tax.taxRate) : prev.taxRate,
+            taxLabel: tax.taxLabel || prev.taxLabel,
+            taxInclusive: tax.taxInclusive !== undefined ? Boolean(tax.taxInclusive) : prev.taxInclusive,
+            gstNumber: tax.gstNumber || prev.gstNumber,
+          }));
+        }
+      } catch {}
+    }
+
+    loadSettings();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const update = (data: Partial<StoreSettings>) => setSettings((prev) => ({ ...prev, ...data }));
 
-  const handleSave = () => {
-    setIsSaving(true);
-    setTimeout(() => {
-      setIsSaving(false);
+  const handleSave = async () => {
+    try {
+      setIsSaving(true);
+      await Promise.all([
+        apiClient.put('/settings/tax_settings', {
+          value: JSON.stringify({
+            gstNumber: settings.gstNumber,
+            taxRate: settings.taxRate,
+            taxLabel: settings.taxLabel,
+            taxInclusive: settings.taxInclusive,
+          }),
+        }),
+        apiClient.put('/settings/store_settings', {
+          value: JSON.stringify(settings),
+        }),
+      ]);
       toast.success('Settings saved successfully!');
-    }, 1200);
+    } catch (err: any) {
+      toast.error(getErrorMessage(err, 'Failed to save settings'));
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const inputClass =

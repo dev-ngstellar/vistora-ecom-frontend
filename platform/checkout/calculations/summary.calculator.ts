@@ -2,7 +2,8 @@ export interface FinancialSummaryInput {
   subtotal: number;
   discount: number;
   shippingCost: number;
-  taxRate?: number; // e.g. 0.08 for 8%
+  taxRate?: number; // e.g. 0.05 for 5%
+  taxInclusive?: boolean;
 }
 
 export interface CalculatedFinancialSummary {
@@ -21,10 +22,17 @@ export const calculateFinancialSummary = (
   const shippingCost = Math.max(0, input.shippingCost);
   
   const taxableAmount = Math.max(0, subtotal - discount);
-  const taxRate = input.taxRate || 0.05; // 5% default standard tax
-  const taxAmount = parseFloat((taxableAmount * taxRate).toFixed(2));
+  const taxRate = input.taxRate !== undefined ? input.taxRate : 0.05;
+  const taxInclusive = Boolean(input.taxInclusive);
+
+  let taxAmount = 0;
+  if (taxInclusive) {
+    taxAmount = parseFloat(((taxableAmount * (taxRate * 100)) / (100 + taxRate * 100)).toFixed(2));
+  } else {
+    taxAmount = parseFloat((taxableAmount * taxRate).toFixed(2));
+  }
   
-  const grandTotal = parseFloat((taxableAmount + shippingCost + taxAmount).toFixed(2));
+  const grandTotal = parseFloat((taxableAmount + (taxInclusive ? 0 : taxAmount) + shippingCost).toFixed(2));
 
   return {
     subtotal,

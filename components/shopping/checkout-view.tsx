@@ -726,9 +726,6 @@ export const CheckoutView: React.FC = () => {
                           <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-600 text-white uppercase tracking-wider">
                             Recommended
                           </span>
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 uppercase">
-                            Razorpay Test Mode
-                          </span>
                         </div>
                         <p className="text-xs text-slate-600 font-medium">
                           Pay instantly and securely via Google Pay, PhonePe, Paytm, Debit/Credit Cards, or NetBanking.
@@ -1004,7 +1001,11 @@ export const CheckoutView: React.FC = () => {
           <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-xs space-y-4">
             <h3 className="text-sm font-black text-slate-900 border-b border-slate-100 pb-3 flex items-center justify-between">
               <span>Order Total Summary</span>
-              <span className="text-[11px] font-bold text-slate-400">All Taxes Included</span>
+              {summary.taxInclusive ? (
+                <span className="text-[11px] font-bold text-slate-400">All Taxes Included</span>
+              ) : (
+                <span className="text-[11px] font-bold text-slate-400">+ Applicable Taxes</span>
+              )}
             </h3>
 
             <div className="space-y-3 text-xs">
@@ -1037,7 +1038,10 @@ export const CheckoutView: React.FC = () => {
               </div>
 
               <div className="flex justify-between text-slate-600">
-                <span>Estimated Tax (5%)</span>
+                <span>
+                  {summary.taxLabel || 'GST'} ({summary.taxRate}%)
+                  {summary.taxInclusive && <span className="text-[10px] text-slate-400 ml-1">(Included in Price)</span>}
+                </span>
                 <span className="font-bold text-slate-900">{brandConfig.currency.symbol}{summary.taxAmount.toFixed(2)}</span>
               </div>
 
