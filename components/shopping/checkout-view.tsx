@@ -15,6 +15,7 @@ import {
 import toast from 'react-hot-toast';
 import { brandConfig } from '@/config';
 import { InvoiceModal } from '@/components/sales/invoice-modal';
+import { INDIAN_STATES, validateAddress } from '@/platform/checkout/validators/address.validator';
 import {
   MapPin,
   CreditCard,
@@ -88,6 +89,7 @@ export const CheckoutView: React.FC = () => {
   // Address modal/form state
   const [showAddressForm, setShowAddressForm] = useState(false);
   const [editingAddressId, setEditingAddressId] = useState<string | null>(null);
+  const [addressErrors, setAddressErrors] = useState<Record<string, string>>({});
   const [newAddr, setNewAddr] = useState({
     fullName: '',
     phone: '',
@@ -101,9 +103,72 @@ export const CheckoutView: React.FC = () => {
     isDefault: true,
   });
 
+  const validateDeliveryAddress = (data: typeof newAddr) => {
+    const errs: Record<string, string> = {};
+
+    const trimmedName = data.fullName.trim();
+    if (!trimmedName) {
+      errs.fullName = 'Full name is required';
+    } else if (/\d/.test(trimmedName)) {
+      errs.fullName = 'Full name cannot contain numbers';
+    } else if (!/^[a-zA-Z\s.'-]+$/.test(trimmedName)) {
+      errs.fullName = 'Full name must contain only letters and spaces';
+    } else if (trimmedName.length < 2) {
+      errs.fullName = 'Full name must be at least 2 characters';
+    }
+
+    const cleanPhone = data.phone.replace(/[\s\-+]/g, '').replace(/^91/, '');
+    if (!cleanPhone) {
+      errs.phone = 'Phone number is required';
+    } else if (/[^\d]/.test(cleanPhone)) {
+      errs.phone = 'Phone number cannot contain letters or symbols';
+    } else if (cleanPhone.length !== 10) {
+      errs.phone = 'Phone number must be exactly 10 digits';
+    } else if (!/^[6-9]/.test(cleanPhone)) {
+      errs.phone = 'Phone number must start with 6, 7, 8, or 9';
+    }
+
+    const trimmedAddr1 = data.addressLine1.trim();
+    if (!trimmedAddr1) {
+      errs.addressLine1 = 'Street address line 1 is required';
+    } else if (trimmedAddr1.length < 5) {
+      errs.addressLine1 = 'Address line 1 must be at least 5 characters';
+    }
+
+    const trimmedCity = data.city.trim();
+    if (!trimmedCity) {
+      errs.city = 'City is required';
+    } else if (/\d/.test(trimmedCity)) {
+      errs.city = 'City cannot contain numbers';
+    } else if (!/^[a-zA-Z\s.'-]+$/.test(trimmedCity)) {
+      errs.city = 'City must contain only letters and spaces';
+    } else if (trimmedCity.length < 2) {
+      errs.city = 'City must be at least 2 characters';
+    }
+
+    const trimmedState = data.state.trim();
+    if (!trimmedState) {
+      errs.state = 'Please select a State';
+    } else if (trimmedState.length < 2) {
+      errs.state = 'State must be at least 2 characters';
+    }
+
+    const cleanPin = data.postalCode.trim();
+    if (!cleanPin) {
+      errs.postalCode = 'PIN code is required';
+    } else if (/[^\d]/.test(cleanPin)) {
+      errs.postalCode = 'PIN code must contain numbers only';
+    } else if (!/^[1-9][0-9]{5}$/.test(cleanPin)) {
+      errs.postalCode = 'PIN code must be a valid 6-digit number (e.g. 560001)';
+    }
+
+    return errs;
+  };
+
   const handleEditAddress = (addr: any, e: React.MouseEvent) => {
     e.stopPropagation();
     setEditingAddressId(addr.id);
+    setAddressErrors({});
     setNewAddr({
       fullName: addr.fullName,
       phone: addr.phone,
@@ -121,6 +186,7 @@ export const CheckoutView: React.FC = () => {
 
   const handleAddNewClick = () => {
     setEditingAddressId(null);
+    setAddressErrors({});
     setNewAddr({
       fullName: user?.fullName || '',
       phone: user?.phone || '',
@@ -138,13 +204,38 @@ export const CheckoutView: React.FC = () => {
 
   const handleAddAddressSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingAddressId) {
-      await updateAddress({ id: editingAddressId, data: newAddr });
-      setEditingAddressId(null);
-    } else {
-      await createAddress(newAddr);
+    const errs = validateDeliveryAddress(newAddr);
+    if (Object.keys(errs).length > 0) {
+      setAddressErrors(errs);
+      const firstError = Object.values(errs)[0];
+      toast.error(firstError || 'Please correct the delivery address fields');
+      return;
     }
-    setShowAddressForm(false);
+    setAddressErrors({});
+
+    const payload = {
+      ...newAddr,
+      fullName: newAddr.fullName.trim(),
+      phone: newAddr.phone.replace(/[\s\-+]/g, '').replace(/^91/, '').trim(),
+      addressLine1: newAddr.addressLine1.trim(),
+      addressLine2: newAddr.addressLine2?.trim() || null,
+      city: newAddr.city.trim(),
+      state: newAddr.state.trim(),
+      postalCode: newAddr.postalCode.trim(),
+      country: 'India',
+    };
+
+    try {
+      if (editingAddressId) {
+        await updateAddress({ id: editingAddressId, data: payload });
+        setEditingAddressId(null);
+      } else {
+        await createAddress(payload);
+      }
+      setShowAddressForm(false);
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || 'Failed to save address');
+    }
   };
 
   const handleFinalOrder = async () => {
@@ -518,71 +609,193 @@ export const CheckoutView: React.FC = () => {
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                     <div>
-                      <label className="text-[11px] font-bold text-slate-700 block mb-1">Full Name</label>
+                      <label className="text-[11px] font-bold text-slate-700 block mb-1">Full Name *</label>
                       <input
                         type="text"
                         placeholder="e.g. John Doe"
-                        required
                         value={newAddr.fullName}
-                        onChange={(e) => setNewAddr({ ...newAddr, fullName: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-900 font-medium focus:ring-2 focus:ring-[#A50025] focus:outline-none"
+                        onChange={(e) => {
+                          const val = e.target.value.replace(/[^a-zA-Z\s.'-]/g, '');
+                          setNewAddr({ ...newAddr, fullName: val });
+                          if (addressErrors.fullName) {
+                            setAddressErrors((prev) => {
+                              const u = { ...prev };
+                              delete u.fullName;
+                              return u;
+                            });
+                          }
+                        }}
+                        className={`w-full px-3.5 py-2.5 rounded-xl border font-medium transition focus:outline-none ${
+                          addressErrors.fullName
+                            ? 'bg-rose-50/30 border-rose-400 focus:ring-2 focus:ring-rose-500 text-slate-900'
+                            : 'bg-white border-slate-200 text-slate-900 focus:ring-2 focus:ring-[#A50025]'
+                        }`}
                       />
+                      {addressErrors.fullName && (
+                        <p className="text-[11px] font-bold text-rose-600 mt-1">
+                          ⚠ {addressErrors.fullName}
+                        </p>
+                      )}
                     </div>
+
                     <div>
-                      <label className="text-[11px] font-bold text-slate-700 block mb-1">Phone Number (10 digits)</label>
-                      <input
-                        type="tel"
-                        placeholder="+91 9876543210"
-                        required
-                        value={newAddr.phone}
-                        onChange={(e) => setNewAddr({ ...newAddr, phone: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-900 font-medium focus:ring-2 focus:ring-[#A50025] focus:outline-none"
-                      />
+                      <label className="text-[11px] font-bold text-slate-700 block mb-1">Phone Number (10 digits) *</label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-2.5 text-xs font-bold text-slate-400 select-none">+91</span>
+                        <input
+                          type="tel"
+                          maxLength={10}
+                          placeholder="9876543210"
+                          value={newAddr.phone}
+                          onChange={(e) => {
+                            const digits = e.target.value.replace(/\D/g, '').slice(0, 10);
+                            setNewAddr({ ...newAddr, phone: digits });
+                            if (addressErrors.phone) {
+                              setAddressErrors((prev) => {
+                                const u = { ...prev };
+                                delete u.phone;
+                                return u;
+                              });
+                            }
+                          }}
+                          className={`w-full pl-11 pr-3.5 py-2.5 rounded-xl border font-mono tracking-wide transition focus:outline-none ${
+                            addressErrors.phone
+                              ? 'bg-rose-50/30 border-rose-400 focus:ring-2 focus:ring-rose-500 text-slate-900'
+                              : 'bg-white border-slate-200 text-slate-900 focus:ring-2 focus:ring-[#A50025]'
+                          }`}
+                        />
+                      </div>
+                      {addressErrors.phone && (
+                        <p className="text-[11px] font-bold text-rose-600 mt-1">
+                          ⚠ {addressErrors.phone}
+                        </p>
+                      )}
                     </div>
+
                     <div className="sm:col-span-2">
-                      <label className="text-[11px] font-bold text-slate-700 block mb-1">Street Address Line 1</label>
+                      <label className="text-[11px] font-bold text-slate-700 block mb-1">Street Address Line 1 *</label>
                       <input
                         type="text"
                         placeholder="House / Flat No., Building Name, Street"
-                        required
                         value={newAddr.addressLine1}
-                        onChange={(e) => setNewAddr({ ...newAddr, addressLine1: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-900 font-medium focus:ring-2 focus:ring-[#A50025] focus:outline-none"
+                        onChange={(e) => {
+                          setNewAddr({ ...newAddr, addressLine1: e.target.value });
+                          if (addressErrors.addressLine1) {
+                            setAddressErrors((prev) => {
+                              const u = { ...prev };
+                              delete u.addressLine1;
+                              return u;
+                            });
+                          }
+                        }}
+                        className={`w-full px-3.5 py-2.5 rounded-xl border font-medium transition focus:outline-none ${
+                          addressErrors.addressLine1
+                            ? 'bg-rose-50/30 border-rose-400 focus:ring-2 focus:ring-rose-500 text-slate-900'
+                            : 'bg-white border-slate-200 text-slate-900 focus:ring-2 focus:ring-[#A50025]'
+                        }`}
                       />
+                      {addressErrors.addressLine1 && (
+                        <p className="text-[11px] font-bold text-rose-600 mt-1">
+                          ⚠ {addressErrors.addressLine1}
+                        </p>
+                      )}
                     </div>
+
                     <div>
-                      <label className="text-[11px] font-bold text-slate-700 block mb-1">City / Town</label>
+                      <label className="text-[11px] font-bold text-slate-700 block mb-1">City / Town *</label>
                       <input
                         type="text"
-                        placeholder="e.g. Mumbai, Bengaluru"
-                        required
+                        placeholder="e.g. Coimbatore, Mumbai"
                         value={newAddr.city}
-                        onChange={(e) => setNewAddr({ ...newAddr, city: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-900 font-medium focus:ring-2 focus:ring-[#A50025] focus:outline-none"
+                        onChange={(e) => {
+                          const val = e.target.value.replace(/[^a-zA-Z\s.'-]/g, '');
+                          setNewAddr({ ...newAddr, city: val });
+                          if (addressErrors.city) {
+                            setAddressErrors((prev) => {
+                              const u = { ...prev };
+                              delete u.city;
+                              return u;
+                            });
+                          }
+                        }}
+                        className={`w-full px-3.5 py-2.5 rounded-xl border font-medium transition focus:outline-none ${
+                          addressErrors.city
+                            ? 'bg-rose-50/30 border-rose-400 focus:ring-2 focus:ring-rose-500 text-slate-900'
+                            : 'bg-white border-slate-200 text-slate-900 focus:ring-2 focus:ring-[#A50025]'
+                        }`}
                       />
+                      {addressErrors.city && (
+                        <p className="text-[11px] font-bold text-rose-600 mt-1">
+                          ⚠ {addressErrors.city}
+                        </p>
+                      )}
                     </div>
+
                     <div>
-                      <label className="text-[11px] font-bold text-slate-700 block mb-1">State</label>
-                      <input
-                        type="text"
-                        placeholder="e.g. Maharashtra, Karnataka"
-                        required
+                      <label className="text-[11px] font-bold text-slate-700 block mb-1">State *</label>
+                      <select
                         value={newAddr.state}
-                        onChange={(e) => setNewAddr({ ...newAddr, state: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-900 font-medium focus:ring-2 focus:ring-[#A50025] focus:outline-none"
-                      />
+                        onChange={(e) => {
+                          setNewAddr({ ...newAddr, state: e.target.value });
+                          if (addressErrors.state) {
+                            setAddressErrors((prev) => {
+                              const u = { ...prev };
+                              delete u.state;
+                              return u;
+                            });
+                          }
+                        }}
+                        className={`w-full px-3 py-2.5 rounded-xl border font-medium transition focus:outline-none ${
+                          addressErrors.state
+                            ? 'bg-rose-50/30 border-rose-400 focus:ring-2 focus:ring-rose-500 text-slate-900'
+                            : 'bg-white border-slate-200 text-slate-900 focus:ring-2 focus:ring-[#A50025]'
+                        }`}
+                      >
+                        <option value="">Select State</option>
+                        {INDIAN_STATES.map((s) => (
+                          <option key={s} value={s}>
+                            {s}
+                          </option>
+                        ))}
+                      </select>
+                      {addressErrors.state && (
+                        <p className="text-[11px] font-bold text-rose-600 mt-1">
+                          ⚠ {addressErrors.state}
+                        </p>
+                      )}
                     </div>
+
                     <div>
-                      <label className="text-[11px] font-bold text-slate-700 block mb-1">PIN / Postal Code</label>
+                      <label className="text-[11px] font-bold text-slate-700 block mb-1">PIN / Postal Code *</label>
                       <input
                         type="text"
-                        placeholder="e.g. 560001"
-                        required
+                        maxLength={6}
+                        placeholder="e.g. 641012"
                         value={newAddr.postalCode}
-                        onChange={(e) => setNewAddr({ ...newAddr, postalCode: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-900 font-medium focus:ring-2 focus:ring-[#A50025] focus:outline-none"
+                        onChange={(e) => {
+                          const digits = e.target.value.replace(/\D/g, '').slice(0, 6);
+                          setNewAddr({ ...newAddr, postalCode: digits });
+                          if (addressErrors.postalCode) {
+                            setAddressErrors((prev) => {
+                              const u = { ...prev };
+                              delete u.postalCode;
+                              return u;
+                            });
+                          }
+                        }}
+                        className={`w-full px-3.5 py-2.5 rounded-xl border font-mono tracking-wider transition focus:outline-none ${
+                          addressErrors.postalCode
+                            ? 'bg-rose-50/30 border-rose-400 focus:ring-2 focus:ring-rose-500 text-slate-900'
+                            : 'bg-white border-slate-200 text-slate-900 focus:ring-2 focus:ring-[#A50025]'
+                        }`}
                       />
+                      {addressErrors.postalCode && (
+                        <p className="text-[11px] font-bold text-rose-600 mt-1">
+                          ⚠ {addressErrors.postalCode}
+                        </p>
+                      )}
                     </div>
+
                     <div>
                       <label className="text-[11px] font-bold text-slate-700 block mb-1">Address Type</label>
                       <select

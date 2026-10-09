@@ -7,6 +7,7 @@ import { ProtectedRoute } from '@/shared';
 import { useAuth } from '@/context/auth-context';
 import { addressService } from '@/platform/checkout/services/address.service';
 import { AddressResponse } from '@/platform/checkout/types/address.types';
+import { INDIAN_STATES } from '@/platform/checkout/validators/address.validator';
 import toast from 'react-hot-toast';
 import {
   User,
@@ -36,6 +37,7 @@ export default function ProfilePage() {
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingAddress, setEditingAddress] = useState<AddressResponse | null>(null);
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState({
     fullName: '',
     addressLine1: '',
@@ -48,6 +50,74 @@ export default function ProfilePage() {
     type: 'HOME' as 'HOME' | 'OFFICE' | 'OTHER',
     isDefault: false,
   });
+
+  const validateAddressForm = (data: typeof formData) => {
+    const errs: Record<string, string> = {};
+
+    // 1. Full Name
+    const trimmedName = data.fullName.trim();
+    if (!trimmedName) {
+      errs.fullName = 'Full name is required';
+    } else if (/\d/.test(trimmedName)) {
+      errs.fullName = 'Full name cannot contain numbers';
+    } else if (!/^[a-zA-Z\s.'-]+$/.test(trimmedName)) {
+      errs.fullName = 'Full name must contain only letters and spaces';
+    } else if (trimmedName.length < 2) {
+      errs.fullName = 'Full name must be at least 2 characters';
+    }
+
+    // 2. Phone Number (10 digits Indian mobile)
+    const cleanPhone = data.phone.replace(/[\s\-+]/g, '').replace(/^91/, '');
+    if (!cleanPhone) {
+      errs.phone = 'Phone number is required';
+    } else if (/[^\d]/.test(cleanPhone)) {
+      errs.phone = 'Phone number cannot contain letters or symbols';
+    } else if (cleanPhone.length !== 10) {
+      errs.phone = 'Phone number must be exactly 10 digits';
+    } else if (!/^[6-9]/.test(cleanPhone)) {
+      errs.phone = 'Phone number must start with 6, 7, 8, or 9';
+    }
+
+    // 3. Address Line 1
+    const trimmedAddr1 = data.addressLine1.trim();
+    if (!trimmedAddr1) {
+      errs.addressLine1 = 'Address line 1 is required';
+    } else if (trimmedAddr1.length < 5) {
+      errs.addressLine1 = 'Address line 1 must be at least 5 characters (e.g. Flat/Door No., Street)';
+    }
+
+    // 4. City
+    const trimmedCity = data.city.trim();
+    if (!trimmedCity) {
+      errs.city = 'City is required';
+    } else if (/\d/.test(trimmedCity)) {
+      errs.city = 'City cannot contain numbers';
+    } else if (!/^[a-zA-Z\s.'-]+$/.test(trimmedCity)) {
+      errs.city = 'City must contain only letters';
+    } else if (trimmedCity.length < 2) {
+      errs.city = 'City must be at least 2 characters';
+    }
+
+    // 5. State
+    const trimmedState = data.state.trim();
+    if (!trimmedState) {
+      errs.state = 'Please select or enter your State';
+    } else if (trimmedState.length < 2) {
+      errs.state = 'State must be at least 2 characters';
+    }
+
+    // 6. Postal Code (6 digits PIN)
+    const cleanPin = data.postalCode.trim();
+    if (!cleanPin) {
+      errs.postalCode = 'Postal code / PIN is required';
+    } else if (/[^\d]/.test(cleanPin)) {
+      errs.postalCode = 'Postal code must contain numbers only (not text)';
+    } else if (!/^[1-9][0-9]{5}$/.test(cleanPin)) {
+      errs.postalCode = 'PIN code must be a valid 6-digit number (e.g. 641012)';
+    }
+
+    return errs;
+  };
 
   // 1. Fetch Saved Customer Addresses
   const { data: addresses = [], isLoading: loadingAddresses } = useQuery({
@@ -63,6 +133,7 @@ export default function ProfilePage() {
       queryClient.invalidateQueries({ queryKey: ['customer', 'addresses'] });
       toast.success('Address saved successfully');
       setShowAddModal(false);
+      setFormErrors({});
       setFormData({
         fullName: '',
         addressLine1: '',
@@ -76,8 +147,9 @@ export default function ProfilePage() {
         isDefault: false,
       });
     },
-    onError: () => {
-      toast.error('Failed to save address. Please check required fields.');
+    onError: (err: any) => {
+      const msg = err?.response?.data?.message || 'Failed to save address. Please check required fields.';
+      toast.error(msg);
     },
   });
 
@@ -90,6 +162,7 @@ export default function ProfilePage() {
       toast.success('Address updated successfully');
       setShowAddModal(false);
       setEditingAddress(null);
+      setFormErrors({});
       setFormData({
         fullName: '',
         addressLine1: '',
@@ -103,8 +176,9 @@ export default function ProfilePage() {
         isDefault: false,
       });
     },
-    onError: () => {
-      toast.error('Failed to update address. Please check required fields.');
+    onError: (err: any) => {
+      const msg = err?.response?.data?.message || 'Failed to update address. Please check required fields.';
+      toast.error(msg);
     },
   });
 
@@ -122,6 +196,7 @@ export default function ProfilePage() {
 
   const handleOpenAddModal = () => {
     setEditingAddress(null);
+    setFormErrors({});
     setFormData({
       fullName: '',
       addressLine1: '',
@@ -139,6 +214,7 @@ export default function ProfilePage() {
 
   const handleOpenEditModal = (addr: AddressResponse) => {
     setEditingAddress(addr);
+    setFormErrors({});
     setFormData({
       fullName: addr.fullName,
       addressLine1: addr.addressLine1,
@@ -156,14 +232,32 @@ export default function ProfilePage() {
 
   const handleCreateSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.fullName || !formData.addressLine1 || !formData.city || !formData.postalCode || !formData.phone) {
-      toast.error('Please fill in all required address fields');
+    const errs = validateAddressForm(formData);
+    if (Object.keys(errs).length > 0) {
+      setFormErrors(errs);
+      const firstError = Object.values(errs)[0];
+      toast.error(firstError || 'Please correct the highlighted fields in the address form');
       return;
     }
+    setFormErrors({});
+
+    // Cleaned payload
+    const payload = {
+      ...formData,
+      fullName: formData.fullName.trim(),
+      phone: formData.phone.replace(/[\s\-+]/g, '').replace(/^91/, '').trim(),
+      addressLine1: formData.addressLine1.trim(),
+      addressLine2: formData.addressLine2?.trim() || null,
+      city: formData.city.trim(),
+      state: formData.state.trim(),
+      postalCode: formData.postalCode.trim(),
+      country: 'India',
+    };
+
     if (editingAddress) {
-      updateAddressMutation.mutate({ id: editingAddress.id, data: formData });
+      updateAddressMutation.mutate({ id: editingAddress.id, data: payload as any });
     } else {
-      addAddressMutation.mutate(formData);
+      addAddressMutation.mutate(payload as any);
     }
   };
 
@@ -432,103 +526,223 @@ export default function ProfilePage() {
                 </button>
               </div>
 
-              <form onSubmit={handleCreateSubmit} className="space-y-3.5 text-xs">
-                <div className="grid grid-cols-2 gap-3">
+              <form onSubmit={handleCreateSubmit} noValidate className="space-y-4 text-xs">
+                {/* Full Name & Phone Number */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   <div className="space-y-1">
                     <label className="font-bold text-slate-700 block">Full Name *</label>
                     <input
                       type="text"
-                      required
                       placeholder="e.g. Rahul Sharma"
                       value={formData.fullName}
-                      onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                      className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-maroon"
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/[^a-zA-Z\s.'-]/g, '');
+                        setFormData({ ...formData, fullName: val });
+                        if (formErrors.fullName) {
+                          setFormErrors((prev) => {
+                            const updated = { ...prev };
+                            delete updated.fullName;
+                            return updated;
+                          });
+                        }
+                      }}
+                      className={`w-full px-3.5 py-2.5 rounded-xl border text-slate-900 transition focus:outline-none ${
+                        formErrors.fullName
+                          ? 'bg-rose-50/30 border-rose-400 focus:ring-2 focus:ring-rose-500'
+                          : 'bg-slate-50 border-slate-200 focus:ring-2 focus:ring-maroon'
+                      }`}
                     />
+                    {formErrors.fullName && (
+                      <p className="text-[11px] font-bold text-rose-600 mt-1">
+                        ⚠ {formErrors.fullName}
+                      </p>
+                    )}
                   </div>
 
                   <div className="space-y-1">
-                    <label className="font-bold text-slate-700 block">Phone Number *</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="e.g. +91 9876543210"
-                      value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-maroon"
-                    />
+                    <label className="font-bold text-slate-700 block">Phone Number (10 Digits) *</label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-2.5 font-bold text-slate-400 select-none">+91</span>
+                      <input
+                        type="tel"
+                        maxLength={10}
+                        placeholder="9876543210"
+                        value={formData.phone}
+                        onChange={(e) => {
+                          const digits = e.target.value.replace(/\D/g, '').slice(0, 10);
+                          setFormData({ ...formData, phone: digits });
+                          if (formErrors.phone) {
+                            setFormErrors((prev) => {
+                              const updated = { ...prev };
+                              delete updated.phone;
+                              return updated;
+                            });
+                          }
+                        }}
+                        className={`w-full pl-11 pr-3.5 py-2.5 rounded-xl border text-slate-900 transition font-mono tracking-wide focus:outline-none ${
+                          formErrors.phone
+                            ? 'bg-rose-50/30 border-rose-400 focus:ring-2 focus:ring-rose-500'
+                            : 'bg-slate-50 border-slate-200 focus:ring-2 focus:ring-maroon'
+                        }`}
+                      />
+                    </div>
+                    {formErrors.phone && (
+                      <p className="text-[11px] font-bold text-rose-600 mt-1">
+                        ⚠ {formErrors.phone}
+                      </p>
+                    )}
                   </div>
                 </div>
 
+                {/* Address Line 1 */}
                 <div className="space-y-1">
-                  <label className="font-bold text-slate-700 block">Address Line 1 *</label>
+                  <label className="font-bold text-slate-700 block">Address Line 1 (Flat/Door No., Building, Street) *</label>
                   <input
                     type="text"
-                    required
-                    placeholder="House/Flat No., Building Name, Street"
+                    placeholder="e.g. Flat 402, Royal Residency, 5th Cross Street"
                     value={formData.addressLine1}
-                    onChange={(e) => setFormData({ ...formData, addressLine1: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-maroon"
+                    onChange={(e) => {
+                      setFormData({ ...formData, addressLine1: e.target.value });
+                      if (formErrors.addressLine1) {
+                        setFormErrors((prev) => {
+                          const updated = { ...prev };
+                          delete updated.addressLine1;
+                          return updated;
+                        });
+                      }
+                    }}
+                    className={`w-full px-3.5 py-2.5 rounded-xl border text-slate-900 transition focus:outline-none ${
+                      formErrors.addressLine1
+                        ? 'bg-rose-50/30 border-rose-400 focus:ring-2 focus:ring-rose-500'
+                        : 'bg-slate-50 border-slate-200 focus:ring-2 focus:ring-maroon'
+                    }`}
                   />
+                  {formErrors.addressLine1 && (
+                    <p className="text-[11px] font-bold text-rose-600 mt-1">
+                      ⚠ {formErrors.addressLine1}
+                    </p>
+                  )}
                 </div>
 
+                {/* Address Line 2 */}
                 <div className="space-y-1">
-                  <label className="font-bold text-slate-700 block">Address Line 2 (Optional)</label>
+                  <label className="font-bold text-slate-700 block">Address Line 2 (Locality, Landmark - Optional)</label>
                   <input
                     type="text"
-                    placeholder="Locality, Landmark"
+                    placeholder="e.g. Near Gandhipuram Bus Stand"
                     value={formData.addressLine2}
                     onChange={(e) => setFormData({ ...formData, addressLine2: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-maroon"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-maroon"
                   />
                 </div>
 
-                <div className="grid grid-cols-3 gap-3">
+                {/* City, State, Postal Code */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
                   <div className="space-y-1">
                     <label className="font-bold text-slate-700 block">City *</label>
                     <input
                       type="text"
-                      required
-                      placeholder="e.g. Mumbai"
+                      placeholder="e.g. Coimbatore"
                       value={formData.city}
-                      onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                      className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-maroon"
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/[^a-zA-Z\s.'-]/g, '');
+                        setFormData({ ...formData, city: val });
+                        if (formErrors.city) {
+                          setFormErrors((prev) => {
+                            const updated = { ...prev };
+                            delete updated.city;
+                            return updated;
+                          });
+                        }
+                      }}
+                      className={`w-full px-3.5 py-2.5 rounded-xl border text-slate-900 transition focus:outline-none ${
+                        formErrors.city
+                          ? 'bg-rose-50/30 border-rose-400 focus:ring-2 focus:ring-rose-500'
+                          : 'bg-slate-50 border-slate-200 focus:ring-2 focus:ring-maroon'
+                      }`}
                     />
+                    {formErrors.city && (
+                      <p className="text-[11px] font-bold text-rose-600 mt-1">
+                        ⚠ {formErrors.city}
+                      </p>
+                    )}
                   </div>
 
                   <div className="space-y-1">
                     <label className="font-bold text-slate-700 block">State *</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="e.g. Maharashtra"
+                    <select
                       value={formData.state}
-                      onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                      className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-maroon"
-                    />
+                      onChange={(e) => {
+                        setFormData({ ...formData, state: e.target.value });
+                        if (formErrors.state) {
+                          setFormErrors((prev) => {
+                            const updated = { ...prev };
+                            delete updated.state;
+                            return updated;
+                          });
+                        }
+                      }}
+                      className={`w-full px-3 py-2.5 rounded-xl border text-slate-900 font-medium transition focus:outline-none ${
+                        formErrors.state
+                          ? 'bg-rose-50/30 border-rose-400 focus:ring-2 focus:ring-rose-500'
+                          : 'bg-slate-50 border-slate-200 focus:ring-2 focus:ring-maroon'
+                      }`}
+                    >
+                      <option value="">Select State</option>
+                      {INDIAN_STATES.map((s) => (
+                        <option key={s} value={s}>
+                          {s}
+                        </option>
+                      ))}
+                    </select>
+                    {formErrors.state && (
+                      <p className="text-[11px] font-bold text-rose-600 mt-1">
+                        ⚠ {formErrors.state}
+                      </p>
+                    )}
                   </div>
 
                   <div className="space-y-1">
-                    <label className="font-bold text-slate-700 block">Postal Code *</label>
+                    <label className="font-bold text-slate-700 block">PIN Code (6 Digits) *</label>
                     <input
                       type="text"
-                      required
-                      placeholder="e.g. 400001"
+                      maxLength={6}
+                      placeholder="e.g. 641012"
                       value={formData.postalCode}
-                      onChange={(e) => setFormData({ ...formData, postalCode: e.target.value })}
-                      className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-maroon"
+                      onChange={(e) => {
+                        const digits = e.target.value.replace(/\D/g, '').slice(0, 6);
+                        setFormData({ ...formData, postalCode: digits });
+                        if (formErrors.postalCode) {
+                          setFormErrors((prev) => {
+                            const updated = { ...prev };
+                            delete updated.postalCode;
+                            return updated;
+                          });
+                        }
+                      }}
+                      className={`w-full px-3.5 py-2.5 rounded-xl border text-slate-900 font-mono tracking-wider transition focus:outline-none ${
+                        formErrors.postalCode
+                          ? 'bg-rose-50/30 border-rose-400 focus:ring-2 focus:ring-rose-500'
+                          : 'bg-slate-50 border-slate-200 focus:ring-2 focus:ring-maroon'
+                      }`}
                     />
+                    {formErrors.postalCode && (
+                      <p className="text-[11px] font-bold text-rose-600 mt-1">
+                        ⚠ {formErrors.postalCode}
+                      </p>
+                    )}
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                {/* Country & Address Tag */}
+                <div className="grid grid-cols-2 gap-3.5">
                   <div className="space-y-1">
                     <label className="font-bold text-slate-700 block">Country</label>
                     <input
                       type="text"
-                      required
-                      value={formData.country}
-                      onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-                      className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-maroon"
+                      disabled
+                      value="India"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 border border-slate-200 text-slate-500 cursor-not-allowed font-medium"
                     />
                   </div>
 
@@ -537,7 +751,7 @@ export default function ProfilePage() {
                     <select
                       value={formData.type}
                       onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
-                      className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-maroon font-semibold"
+                      className="w-full px-3 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-maroon font-semibold"
                     >
                       <option value="HOME">HOME</option>
                       <option value="OFFICE">OFFICE</option>
@@ -549,15 +763,18 @@ export default function ProfilePage() {
                 <div className="flex items-center gap-3 justify-end pt-3 border-t border-slate-100">
                   <button
                     type="button"
-                    onClick={() => setShowAddModal(false)}
-                    className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold transition"
+                    onClick={() => {
+                      setShowAddModal(false);
+                      setFormErrors({});
+                    }}
+                    className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold transition cursor-pointer"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={addAddressMutation.isPending || updateAddressMutation.isPending}
-                    className="px-5 py-2 rounded-xl bg-maroon text-white font-bold hover:bg-maroon-dark transition shadow-xs flex items-center gap-1.5"
+                    className="px-5 py-2.5 rounded-xl bg-maroon text-white font-bold hover:bg-maroon-dark transition shadow-xs flex items-center gap-1.5 cursor-pointer disabled:cursor-not-allowed"
                   >
                     {(addAddressMutation.isPending || updateAddressMutation.isPending) && (
                       <Loader2 className="w-3.5 h-3.5 animate-spin" />

@@ -10,17 +10,62 @@ export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const validateContactForm = () => {
+    const errs: Record<string, string> = {};
+    const trimmedName = form.name.trim();
+    if (!trimmedName) {
+      errs.name = 'Full name is required';
+    } else if (/\d/.test(trimmedName)) {
+      errs.name = 'Name cannot contain numbers';
+    } else if (trimmedName.length < 2) {
+      errs.name = 'Name must be at least 2 characters';
+    }
+
+    const trimmedEmail = form.email.trim();
+    if (!trimmedEmail) {
+      errs.email = 'Email address is required';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+      errs.email = 'Please enter a valid email address';
+    }
+
+    const trimmedSubject = form.subject.trim();
+    if (!trimmedSubject) {
+      errs.subject = 'Subject is required';
+    } else if (trimmedSubject.length < 3) {
+      errs.subject = 'Subject must be at least 3 characters';
+    }
+
+    const trimmedMessage = form.message.trim();
+    if (!trimmedMessage) {
+      errs.message = 'Message is required';
+    } else if (trimmedMessage.length < 10) {
+      errs.message = 'Please provide a message of at least 10 characters';
+    }
+
+    return errs;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.name.trim() || !form.email.trim() || !form.message.trim()) {
-      toast.error('Please fill in all required fields');
+    const errs = validateContactForm();
+    if (Object.keys(errs).length > 0) {
+      setErrors(errs);
+      const first = Object.values(errs)[0];
+      toast.error(first || 'Please fill in all required fields correctly');
       return;
     }
+    setErrors({});
 
     setIsSubmitting(true);
     try {
-      await contactService.submitContact(form);
+      await contactService.submitContact({
+        name: form.name.trim(),
+        email: form.email.trim(),
+        subject: form.subject.trim(),
+        message: form.message.trim(),
+      });
       setSubmitted(true);
       toast.success('Thank you! Your message has been sent to Vistora Customer Support.');
     } catch (err: any) {
@@ -118,54 +163,90 @@ export default function ContactPage() {
               </button>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} noValidate className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-bold text-slate-700 block mb-1">Your Name</label>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">Your Name *</label>
                   <input
                     type="text"
-                    required
                     value={form.name}
-                    onChange={(e) => setForm({ ...form, name: e.target.value })}
+                    onChange={(e) => {
+                      setForm({ ...form, name: e.target.value });
+                      if (errors.name) setErrors((prev) => { const u = { ...prev }; delete u.name; return u; });
+                    }}
                     placeholder="Enter your full name"
-                    className="w-full px-4 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-900 focus:outline-none focus:border-maroon"
+                    className={`w-full px-4 py-2.5 rounded-2xl border text-xs font-semibold text-slate-900 transition focus:outline-none ${
+                      errors.name
+                        ? 'bg-rose-50/30 border-rose-400 focus:border-rose-500 ring-1 ring-rose-400'
+                        : 'bg-slate-50 border-slate-200 focus:border-maroon'
+                    }`}
                   />
+                  {errors.name && (
+                    <p className="text-[11px] font-bold text-rose-600 mt-1">⚠ {errors.name}</p>
+                  )}
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-slate-700 block mb-1">Email Address</label>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">Email Address *</label>
                   <input
                     type="email"
-                    required
                     value={form.email}
-                    onChange={(e) => setForm({ ...form, email: e.target.value })}
+                    onChange={(e) => {
+                      setForm({ ...form, email: e.target.value });
+                      if (errors.email) setErrors((prev) => { const u = { ...prev }; delete u.email; return u; });
+                    }}
                     placeholder="name@example.com"
-                    className="w-full px-4 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-900 focus:outline-none focus:border-maroon"
+                    className={`w-full px-4 py-2.5 rounded-2xl border text-xs font-semibold text-slate-900 transition focus:outline-none ${
+                      errors.email
+                        ? 'bg-rose-50/30 border-rose-400 focus:border-rose-500 ring-1 ring-rose-400'
+                        : 'bg-slate-50 border-slate-200 focus:border-maroon'
+                    }`}
                   />
+                  {errors.email && (
+                    <p className="text-[11px] font-bold text-rose-600 mt-1">⚠ {errors.email}</p>
+                  )}
                 </div>
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1">Subject</label>
+                <label className="text-xs font-bold text-slate-700 block mb-1">Subject *</label>
                 <input
                   type="text"
-                  required
                   value={form.subject}
-                  onChange={(e) => setForm({ ...form, subject: e.target.value })}
+                  onChange={(e) => {
+                    setForm({ ...form, subject: e.target.value });
+                    if (errors.subject) setErrors((prev) => { const u = { ...prev }; delete u.subject; return u; });
+                  }}
                   placeholder="Order Inquiry, Product Information..."
-                  className="w-full px-4 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-900 focus:outline-none focus:border-maroon"
+                  className={`w-full px-4 py-2.5 rounded-2xl border text-xs font-semibold text-slate-900 transition focus:outline-none ${
+                    errors.subject
+                      ? 'bg-rose-50/30 border-rose-400 focus:border-rose-500 ring-1 ring-rose-400'
+                      : 'bg-slate-50 border-slate-200 focus:border-maroon'
+                  }`}
                 />
+                {errors.subject && (
+                  <p className="text-[11px] font-bold text-rose-600 mt-1">⚠ {errors.subject}</p>
+                )}
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1">Message</label>
+                <label className="text-xs font-bold text-slate-700 block mb-1">Message *</label>
                 <textarea
-                  required
                   rows={4}
                   value={form.message}
-                  onChange={(e) => setForm({ ...form, message: e.target.value })}
-                  placeholder="Write your message here..."
-                  className="w-full px-4 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-900 focus:outline-none focus:border-maroon"
+                  onChange={(e) => {
+                    setForm({ ...form, message: e.target.value });
+                    if (errors.message) setErrors((prev) => { const u = { ...prev }; delete u.message; return u; });
+                  }}
+                  placeholder="Write your message here (min 10 characters)..."
+                  className={`w-full px-4 py-2.5 rounded-2xl border text-xs font-semibold text-slate-900 transition focus:outline-none ${
+                    errors.message
+                      ? 'bg-rose-50/30 border-rose-400 focus:border-rose-500 ring-1 ring-rose-400'
+                      : 'bg-slate-50 border-slate-200 focus:border-maroon'
+                  }`}
                 />
+                {errors.message && (
+                  <p className="text-[11px] font-bold text-rose-600 mt-1">⚠ {errors.message}</p>
+                )}
               </div>
 
               <button
