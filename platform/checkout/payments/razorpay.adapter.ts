@@ -24,6 +24,7 @@ export interface RazorpayOptions {
   modal?: {
     ondismiss?: () => void;
   };
+  onPaymentFailed?: (response: any) => void;
 }
 
 export const loadRazorpaySdk = (): Promise<boolean> => {
@@ -46,5 +47,8 @@ export const openRazorpayModal = async (options: RazorpayOptions): Promise<void>
   }
 
   const razorpayInstance = new window.Razorpay(options);
+  if (options.onPaymentFailed) {
+    razorpayInstance.on('payment.failed', options.onPaymentFailed);
+  }
   razorpayInstance.open();
 };

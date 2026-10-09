@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -83,8 +83,14 @@ export const CheckoutView: React.FC = () => {
   const { selectedGateway, setSelectedGateway, processPayment, isProcessing, paymentError } = usePayment();
 
   const summary = useOrderSummary();
+  const [pendingPaymentOrderId, setPendingPaymentOrderId] = useState<string | null>(null);
   const [confirmationInvoiceOrder, setConfirmationInvoiceOrder] = useState<any | null>(null);
   const [isConfirmationInvoiceOpen, setIsConfirmationInvoiceOpen] = useState(false);
+
+  // If user modifies address, coupon, or cart total, reset pending order to generate a fresh one
+  useEffect(() => {
+    setPendingPaymentOrderId(null);
+  }, [selectedAddressId, couponCode, cartSummary?.total]);
 
   // Address modal/form state
   const [showAddressForm, setShowAddressForm] = useState(false);
@@ -246,9 +252,10 @@ export const CheckoutView: React.FC = () => {
     }
 
     if (selectedPaymentMethod === 'RAZORPAY') {
-      // Execute Razorpay Test flow
+      // Execute Razorpay Flow
       const res = await processPayment({
         orderPayload: {
+          orderId: pendingPaymentOrderId || undefined,
           addressId: selectedAddressId,
           couponCode: cartSummary?.couponCode || null,
           notes: notes || undefined,
@@ -259,7 +266,12 @@ export const CheckoutView: React.FC = () => {
       });
 
       if (res.success && res.orderId) {
+        setPendingPaymentOrderId(null);
         handleOrderSuccess(res.orderId);
+      } else if (res.orderId) {
+        // Payment window was closed or payment failed:
+        // Remember pending order ID for immediate retry so cart items remain completely intact
+        setPendingPaymentOrderId(res.orderId);
       }
     } else {
       // Execute COD Flow

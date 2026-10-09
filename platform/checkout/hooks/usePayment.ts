@@ -79,6 +79,13 @@ export const usePayment = () => {
                 resolve({ success: false, orderId: rzpOrder.orderId });
               },
             },
+            onPaymentFailed: (failureData: any) => {
+              setIsProcessing(false);
+              const reason = failureData?.error?.description || 'Payment failed or was declined by bank.';
+              setPaymentError(reason);
+              toast.error(reason);
+              resolve({ success: false, orderId: rzpOrder.orderId });
+            },
           }).catch((err) => {
             setIsProcessing(false);
             const msg = getErrorMessage(err, 'Could not launch payment gateway');
