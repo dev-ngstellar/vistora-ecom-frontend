@@ -16,12 +16,16 @@ export const registerSchema = z
   .object({
     firstName: z
       .string({ required_error: 'First name is required' })
+      .trim()
       .min(2, 'First name must be at least 2 characters')
-      .max(50, 'First name cannot exceed 50 characters'),
+      .max(50, 'First name cannot exceed 50 characters')
+      .regex(/^[a-zA-Z\s.'-]+$/, 'First name must contain only letters'),
     lastName: z
       .string({ required_error: 'Last name is required' })
+      .trim()
       .min(2, 'Last name must be at least 2 characters')
-      .max(50, 'Last name cannot exceed 50 characters'),
+      .max(50, 'Last name cannot exceed 50 characters')
+      .regex(/^[a-zA-Z\s.'-]+$/, 'Last name must contain only letters'),
     email: z
       .string({ required_error: 'Email is required' })
       .email('Please enter a valid email address'),
@@ -35,7 +39,8 @@ export const registerSchema = z
     confirmPassword: z.string({ required_error: 'Please confirm your password' }),
     phone: z
       .string()
-      .regex(/^[0-9]{10,15}$/, 'Phone number must be 10-15 digits')
+      .trim()
+      .regex(/^[6-9]\d{9}$/, 'Phone number must be a valid 10-digit number')
       .optional()
       .or(z.literal('')),
   })

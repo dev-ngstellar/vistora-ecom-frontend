@@ -6,7 +6,7 @@ import { authService } from '@/services/auth.service';
 import { brandConfig } from '@/config';
 import { AuthResponseData } from '@/types/auth.types';
 import toast from 'react-hot-toast';
-import { X, Lock, Mail, User, Phone, Loader2, ArrowRight, CheckCircle2, Eye, EyeOff } from 'lucide-react';
+import { X, Lock, Mail, User, Phone, Loader2, ArrowRight, CheckCircle2, Eye, EyeOff, AlertCircle } from 'lucide-react';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -24,6 +24,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [activeTab, setActiveTab] = useState<'login' | 'register' | 'forgot'>(initialTab);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   // Form States
   const [loginEmail, setLoginEmail] = useState('');
@@ -42,13 +43,93 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
   if (!isOpen) return null;
 
+  const validateRegisterForm = (): Record<string, string> => {
+    const errs: Record<string, string> = {};
+
+    // 1. First Name
+    const cleanFirst = regFirstName.trim();
+    if (!cleanFirst) {
+      errs.firstName = 'First name is required';
+    } else if (/\d/.test(cleanFirst)) {
+      errs.firstName = 'First name cannot contain numbers';
+    } else if (!/^[a-zA-Z\s.'-]+$/.test(cleanFirst)) {
+      errs.firstName = 'First name must contain only letters';
+    } else if (cleanFirst.length < 2) {
+      errs.firstName = 'First name must be at least 2 characters';
+    }
+
+    // 2. Last Name
+    const cleanLast = regLastName.trim();
+    if (!cleanLast) {
+      errs.lastName = 'Last name is required';
+    } else if (/\d/.test(cleanLast)) {
+      errs.lastName = 'Last name cannot contain numbers';
+    } else if (!/^[a-zA-Z\s.'-]+$/.test(cleanLast)) {
+      errs.lastName = 'Last name must contain only letters';
+    } else if (cleanLast.length < 2) {
+      errs.lastName = 'Last name must be at least 2 characters';
+    }
+
+    // 3. Email
+    const cleanEmail = regEmail.trim();
+    if (!cleanEmail) {
+      errs.email = 'Email address is required';
+    } else if (!/^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/.test(cleanEmail)) {
+      errs.email = 'Please enter a valid email address';
+    }
+
+    // 4. Phone (Optional, but strictly 10 digits if provided)
+    const cleanPhone = regPhone.replace(/[\s\-+]/g, '').replace(/^91/, '').trim();
+    if (cleanPhone) {
+      if (/[^\d]/.test(cleanPhone)) {
+        errs.phone = 'Phone number cannot contain letters';
+      } else if (cleanPhone.length !== 10) {
+        errs.phone = 'Phone number must be exactly 10 digits';
+      } else if (!/^[6-9]/.test(cleanPhone)) {
+        errs.phone = 'Phone number must start with 6, 7, 8, or 9';
+      }
+    }
+
+    // 5. Password
+    if (!regPassword) {
+      errs.password = 'Password is required';
+    } else if (regPassword.length < 8) {
+      errs.password = 'Password must be at least 8 characters';
+    } else if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#^~_-])/.test(regPassword)) {
+      errs.password = 'Include upper, lower, number, and special character';
+    }
+
+    return errs;
+  };
+
+  const validateLoginForm = (): Record<string, string> => {
+    const errs: Record<string, string> = {};
+    const cleanEmail = loginEmail.trim();
+    if (!cleanEmail) {
+      errs.loginEmail = 'Email address is required';
+    } else if (!/^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/.test(cleanEmail)) {
+      errs.loginEmail = 'Please enter a valid email address';
+    }
+    if (!loginPassword) {
+      errs.loginPassword = 'Password is required';
+    }
+    return errs;
+  };
+
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
+
+    const errs = validateLoginForm();
+    if (Object.keys(errs).length > 0) {
+      setFieldErrors(errs);
+      return;
+    }
+    setFieldErrors({});
     setIsLoading(true);
 
     try {
-      const data = await authService.login({ email: loginEmail, password: loginPassword });
+      const data = await authService.login({ email: loginEmail.trim(), password: loginPassword });
       toast.success(`Welcome back, ${data.user.firstName}!`);
       onSuccess(data);
     } catch (err: any) {
@@ -62,16 +143,26 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
+
+    const errs = validateRegisterForm();
+    if (Object.keys(errs).length > 0) {
+      setFieldErrors(errs);
+      const firstError = Object.values(errs)[0];
+      setErrorMessage(firstError);
+      return;
+    }
+    setFieldErrors({});
     setIsLoading(true);
 
     try {
+      const cleanPhone = regPhone.replace(/[\s\-+]/g, '').replace(/^91/, '').trim();
       const data = await authService.register({
-        firstName: regFirstName,
-        lastName: regLastName,
-        email: regEmail,
+        firstName: regFirstName.trim(),
+        lastName: regLastName.trim(),
+        email: regEmail.trim(),
         password: regPassword,
         confirmPassword: regPassword,
-        phone: regPhone || undefined,
+        phone: cleanPhone || undefined,
       });
       toast.success('Account created successfully!');
       onSuccess(data);
@@ -127,6 +218,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               onClick={() => {
                 setActiveTab('login');
                 setErrorMessage(null);
+                setFieldErrors({});
               }}
               className={`py-2 rounded-xl transition ${
                 activeTab === 'login'
@@ -140,6 +232,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               onClick={() => {
                 setActiveTab('register');
                 setErrorMessage(null);
+                setFieldErrors({});
               }}
               className={`py-2 rounded-xl transition ${
                 activeTab === 'register'
@@ -154,14 +247,15 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
         {/* Error Alert Banner */}
         {errorMessage && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-2xl text-xs text-red-700 font-semibold">
-            {errorMessage}
+          <div className="p-3 bg-red-50 border border-red-200 rounded-2xl text-xs text-red-700 font-semibold flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            <span>{errorMessage}</span>
           </div>
         )}
 
         {/* 1. LOGIN FORM */}
         {activeTab === 'login' && (
-          <form onSubmit={handleLoginSubmit} className="space-y-3.5 text-xs">
+          <form onSubmit={handleLoginSubmit} noValidate className="space-y-3.5 text-xs">
             <div className="space-y-1">
               <label className="font-bold text-slate-700 block">Email Address</label>
               <div className="relative flex items-center">
@@ -171,10 +265,24 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   required
                   placeholder="name@example.com"
                   value={loginEmail}
-                  onChange={(e) => setLoginEmail(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-maroon"
+                  onChange={(e) => {
+                    setLoginEmail(e.target.value);
+                    if (fieldErrors.loginEmail) setFieldErrors((prev) => ({ ...prev, loginEmail: '' }));
+                    if (errorMessage) setErrorMessage(null);
+                  }}
+                  className={`w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-50 border text-slate-900 focus:outline-none focus:ring-2 transition ${
+                    fieldErrors.loginEmail
+                      ? 'border-red-500 ring-1 ring-red-500 focus:ring-red-500 bg-red-50/20'
+                      : 'border-slate-200 focus:ring-maroon'
+                  }`}
                 />
               </div>
+              {fieldErrors.loginEmail && (
+                <p className="text-[11px] text-red-600 font-semibold mt-1 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3 shrink-0" />
+                  <span>{fieldErrors.loginEmail}</span>
+                </p>
+              )}
             </div>
 
             <div className="space-y-1">
@@ -185,6 +293,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   onClick={() => {
                     setActiveTab('forgot');
                     setErrorMessage(null);
+                    setFieldErrors({});
                   }}
                   className="text-[11px] font-extrabold text-maroon hover:underline"
                 >
@@ -198,8 +307,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   required
                   placeholder="••••••••"
                   value={loginPassword}
-                  onChange={(e) => setLoginPassword(e.target.value)}
-                  className="w-full pl-9 pr-10 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-maroon"
+                  onChange={(e) => {
+                    setLoginPassword(e.target.value);
+                    if (fieldErrors.loginPassword) setFieldErrors((prev) => ({ ...prev, loginPassword: '' }));
+                    if (errorMessage) setErrorMessage(null);
+                  }}
+                  className={`w-full pl-9 pr-10 py-2.5 rounded-xl bg-slate-50 border text-slate-900 focus:outline-none focus:ring-2 transition ${
+                    fieldErrors.loginPassword
+                      ? 'border-red-500 ring-1 ring-red-500 focus:ring-red-500 bg-red-50/20'
+                      : 'border-slate-200 focus:ring-maroon'
+                  }`}
                 />
                 <button
                   type="button"
@@ -214,6 +331,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   )}
                 </button>
               </div>
+              {fieldErrors.loginPassword && (
+                <p className="text-[11px] text-red-600 font-semibold mt-1 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3 shrink-0" />
+                  <span>{fieldErrors.loginPassword}</span>
+                </p>
+              )}
             </div>
 
             <button
@@ -233,7 +356,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
         {/* 2. REGISTER FORM */}
         {activeTab === 'register' && (
-          <form onSubmit={handleRegisterSubmit} className="space-y-3 text-xs">
+          <form onSubmit={handleRegisterSubmit} noValidate className="space-y-3 text-xs">
             <div className="grid grid-cols-2 gap-2.5">
               <div className="space-y-1">
                 <label className="font-bold text-slate-700 block">First Name *</label>
@@ -242,9 +365,24 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   required
                   placeholder="John"
                   value={regFirstName}
-                  onChange={(e) => setRegFirstName(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-maroon"
+                  onChange={(e) => {
+                    const clean = e.target.value.replace(/[^a-zA-Z\s.'-]/g, '');
+                    setRegFirstName(clean);
+                    if (fieldErrors.firstName) setFieldErrors((prev) => ({ ...prev, firstName: '' }));
+                    if (errorMessage) setErrorMessage(null);
+                  }}
+                  className={`w-full px-3 py-2 rounded-xl bg-slate-50 border text-slate-900 focus:outline-none focus:ring-2 transition ${
+                    fieldErrors.firstName
+                      ? 'border-red-500 ring-1 ring-red-500 focus:ring-red-500 bg-red-50/20'
+                      : 'border-slate-200 focus:ring-maroon'
+                  }`}
                 />
+                {fieldErrors.firstName && (
+                  <p className="text-[11px] text-red-600 font-semibold mt-1 flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3 shrink-0" />
+                    <span>{fieldErrors.firstName}</span>
+                  </p>
+                )}
               </div>
               <div className="space-y-1">
                 <label className="font-bold text-slate-700 block">Last Name *</label>
@@ -253,9 +391,24 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   required
                   placeholder="Doe"
                   value={regLastName}
-                  onChange={(e) => setRegLastName(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-maroon"
+                  onChange={(e) => {
+                    const clean = e.target.value.replace(/[^a-zA-Z\s.'-]/g, '');
+                    setRegLastName(clean);
+                    if (fieldErrors.lastName) setFieldErrors((prev) => ({ ...prev, lastName: '' }));
+                    if (errorMessage) setErrorMessage(null);
+                  }}
+                  className={`w-full px-3 py-2 rounded-xl bg-slate-50 border text-slate-900 focus:outline-none focus:ring-2 transition ${
+                    fieldErrors.lastName
+                      ? 'border-red-500 ring-1 ring-red-500 focus:ring-red-500 bg-red-50/20'
+                      : 'border-slate-200 focus:ring-maroon'
+                  }`}
                 />
+                {fieldErrors.lastName && (
+                  <p className="text-[11px] text-red-600 font-semibold mt-1 flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3 shrink-0" />
+                    <span>{fieldErrors.lastName}</span>
+                  </p>
+                )}
               </div>
             </div>
 
@@ -268,22 +421,55 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   required
                   placeholder="name@example.com"
                   value={regEmail}
-                  onChange={(e) => setRegEmail(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-maroon"
+                  onChange={(e) => {
+                    setRegEmail(e.target.value);
+                    if (fieldErrors.email) setFieldErrors((prev) => ({ ...prev, email: '' }));
+                    if (errorMessage) setErrorMessage(null);
+                  }}
+                  className={`w-full pl-9 pr-3 py-2 rounded-xl bg-slate-50 border text-slate-900 focus:outline-none focus:ring-2 transition ${
+                    fieldErrors.email
+                      ? 'border-red-500 ring-1 ring-red-500 focus:ring-red-500 bg-red-50/20'
+                      : 'border-slate-200 focus:ring-maroon'
+                  }`}
                 />
               </div>
+              {fieldErrors.email && (
+                <p className="text-[11px] text-red-600 font-semibold mt-1 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3 shrink-0" />
+                  <span>{fieldErrors.email}</span>
+                </p>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-2.5">
               <div className="space-y-1">
                 <label className="font-bold text-slate-700 block">Phone (Optional)</label>
-                <input
-                  type="text"
-                  placeholder="+91 9876543210"
-                  value={regPhone}
-                  onChange={(e) => setRegPhone(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-maroon"
-                />
+                <div className="relative flex items-center">
+                  <Phone className="absolute left-3 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+                  <input
+                    type="tel"
+                    maxLength={10}
+                    placeholder="10-digit number"
+                    value={regPhone}
+                    onChange={(e) => {
+                      const clean = e.target.value.replace(/[^\d]/g, '').slice(0, 10);
+                      setRegPhone(clean);
+                      if (fieldErrors.phone) setFieldErrors((prev) => ({ ...prev, phone: '' }));
+                      if (errorMessage) setErrorMessage(null);
+                    }}
+                    className={`w-full pl-8 pr-3 py-2 rounded-xl bg-slate-50 border text-slate-900 focus:outline-none focus:ring-2 transition ${
+                      fieldErrors.phone
+                        ? 'border-red-500 ring-1 ring-red-500 focus:ring-red-500 bg-red-50/20'
+                        : 'border-slate-200 focus:ring-maroon'
+                    }`}
+                  />
+                </div>
+                {fieldErrors.phone && (
+                  <p className="text-[11px] text-red-600 font-semibold mt-1 flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3 shrink-0" />
+                    <span>{fieldErrors.phone}</span>
+                  </p>
+                )}
               </div>
 
               <div className="space-y-1">
@@ -294,8 +480,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     required
                     placeholder="Min 8 chars"
                     value={regPassword}
-                    onChange={(e) => setRegPassword(e.target.value)}
-                    className="w-full pl-3 pr-8 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-maroon"
+                    onChange={(e) => {
+                      setRegPassword(e.target.value);
+                      if (fieldErrors.password) setFieldErrors((prev) => ({ ...prev, password: '' }));
+                      if (errorMessage) setErrorMessage(null);
+                    }}
+                    className={`w-full pl-3 pr-8 py-2 rounded-xl bg-slate-50 border text-slate-900 focus:outline-none focus:ring-2 transition ${
+                      fieldErrors.password
+                        ? 'border-red-500 ring-1 ring-red-500 focus:ring-red-500 bg-red-50/20'
+                        : 'border-slate-200 focus:ring-maroon'
+                    }`}
                   />
                   <button
                     type="button"
@@ -310,6 +504,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     )}
                   </button>
                 </div>
+                {fieldErrors.password && (
+                  <p className="text-[11px] text-red-600 font-semibold mt-1 flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3 shrink-0" />
+                    <span>{fieldErrors.password}</span>
+                  </p>
+                )}
               </div>
             </div>
 
