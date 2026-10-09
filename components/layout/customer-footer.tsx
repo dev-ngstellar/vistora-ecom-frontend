@@ -133,6 +133,7 @@ export const CustomerFooter: React.FC = () => {
               <li><Link href="/privacy-policy" className="hover:text-[#E66001] transition-colors flex items-center gap-1.5"><ArrowRight className="w-3 h-3 text-slate-500" /> Privacy Policy</Link></li>
               <li><Link href="/faq" className="hover:text-[#E66001] transition-colors flex items-center gap-1.5"><ArrowRight className="w-3 h-3 text-slate-500" /> FAQ</Link></li>
               <li><Link href="/about" className="hover:text-[#E66001] transition-colors flex items-center gap-1.5"><ArrowRight className="w-3 h-3 text-slate-500" /> About Vistora</Link></li>
+              <li><Link href="/contact" className="hover:text-[#E66001] transition-colors flex items-center gap-1.5"><ArrowRight className="w-3 h-3 text-slate-500" /> Contact Us</Link></li>
             </ul>
           </div>
 
