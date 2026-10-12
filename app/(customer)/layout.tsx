@@ -2,12 +2,19 @@ import React from 'react';
 import { CustomerHeader } from '@/components/layout/customer-header';
 import { CustomerFooter } from '@/components/layout/customer-footer';
 import { DynamicBreadcrumb } from '@/components/navigation/breadcrumb';
+import { ComingSoonContent } from '@/components/coming-soon/coming-soon-content';
+import { brandConfig } from '@/config';
 
 export default function CustomerGlobalLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // If site is on temporary hold, show isolated Coming Soon page without site links or header/footer
+  if (brandConfig.isMaintenanceHold) {
+    return <ComingSoonContent />;
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900 antialiased selection:bg-indigo-500 selection:text-white">
       <CustomerHeader />

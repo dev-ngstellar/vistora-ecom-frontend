@@ -6,6 +6,9 @@ export const brandConfig = {
   logoLetter: process.env.NEXT_PUBLIC_BRAND_LOGO_LETTER || 'V',
   logoUrl: 'https://res.cloudinary.com/ggvs7siw/image/upload/v1789622236/logo.png',
   
+  // Temporary Maintenance / Hold Mode (Set to true to hold site with Coming Soon screen, false to restore normal)
+  isMaintenanceHold: true,
+  
   // Official Merchant Details (Razorpay & Legal Compliance)
   merchantLegalName: 'VISTORA TRADING PRIVATE LIMITED',
   officialAddress: '31 H1, Ayyampalayam, Edapadi Road, Komarapalayam - 638183, Tamil Nadu, India',
