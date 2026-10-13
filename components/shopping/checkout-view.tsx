@@ -66,6 +66,7 @@ export const CheckoutView: React.FC = () => {
     handleOrderSuccess,
     isSubmittingOrder,
     createdOrderId,
+    createdOrder,
   } = useCheckout();
 
   const {
@@ -89,6 +90,8 @@ export const CheckoutView: React.FC = () => {
   const [pendingPaymentOrderId, setPendingPaymentOrderId] = useState<string | null>(null);
   const [confirmationInvoiceOrder, setConfirmationInvoiceOrder] = useState<any | null>(null);
   const [isConfirmationInvoiceOpen, setIsConfirmationInvoiceOpen] = useState(false);
+  const [confirmedOrderDetails, setConfirmedOrderDetails] = useState<any | null>(null);
+  const [confirmedGrandTotal, setConfirmedGrandTotal] = useState<number | null>(null);
 
   // If user modifies address, coupon, or cart total, reset pending order to generate a fresh one
   useEffect(() => {
@@ -254,11 +257,14 @@ export const CheckoutView: React.FC = () => {
       return;
     }
 
+    if (summary.grandTotal > 0) {
+      setConfirmedGrandTotal(summary.grandTotal);
+    }
+
     if (selectedPaymentMethod === 'RAZORPAY') {
-      // Execute Razorpay Flow
+      // Execute Razorpay Flow with active cart
       const res = await processPayment({
         orderPayload: {
-          orderId: pendingPaymentOrderId || undefined,
           addressId: selectedAddressId,
           couponCode: cartSummary?.couponCode || null,
           notes: notes || undefined,
@@ -269,12 +275,10 @@ export const CheckoutView: React.FC = () => {
       });
 
       if (res.success && res.orderId) {
-        setPendingPaymentOrderId(null);
+        if (res.amount && res.amount > 0) {
+          setConfirmedGrandTotal(res.amount);
+        }
         handleOrderSuccess(res.orderId);
-      } else if (res.orderId) {
-        // Payment window was closed or payment failed:
-        // Remember pending order ID for immediate retry so cart items remain completely intact
-        setPendingPaymentOrderId(res.orderId);
       }
     } else {
       // Execute COD Flow
@@ -286,6 +290,25 @@ export const CheckoutView: React.FC = () => {
     }
   };
 
+  // Pre-fetch order details upon reaching Confirmation step to ensure total & items are populated
+  useEffect(() => {
+    if (currentStep === CheckoutStep.CONFIRMATION && createdOrderId && !confirmedOrderDetails) {
+      checkoutService
+        .getOrderDetails(createdOrderId)
+        .then((orderData) => {
+          if (orderData) {
+            setConfirmedOrderDetails(orderData);
+            if (orderData.total != null && Number(orderData.total) > 0) {
+              setConfirmedGrandTotal(Number(orderData.total));
+            }
+          }
+        })
+        .catch((err) => {
+          console.warn('Could not fetch confirmation order details:', err);
+        });
+    }
+  }, [currentStep, createdOrderId, confirmedOrderDetails]);
+
   // Dispatch EmailJS Order Alert to vistoraoffice123@gmail.com on order confirmation
   useEffect(() => {
     if (currentStep === CheckoutStep.CONFIRMATION && createdOrderId) {
@@ -296,17 +319,30 @@ export const CheckoutView: React.FC = () => {
 
         const triggerOrderEmails = async () => {
           let itemsList: any[] = cartSummary?.items || [];
+          let finalTotal: number =
+            createdOrder?.total != null && Number(createdOrder.total) > 0
+              ? Number(createdOrder.total)
+              : confirmedGrandTotal && confirmedGrandTotal > 0
+              ? confirmedGrandTotal
+              : summary.grandTotal > 0
+              ? summary.grandTotal
+              : 0;
 
-          // If cartSummary items is empty, fetch order items directly from backend order details
-          if (!itemsList || itemsList.length === 0) {
-            try {
-              const orderData = await checkoutService.getOrderDetails(createdOrderId);
-              if (orderData?.items && orderData.items.length > 0) {
+          // Always fetch order details directly from backend to ensure 100% accurate items and total
+          try {
+            const orderData = await checkoutService.getOrderDetails(createdOrderId);
+            if (orderData) {
+              setConfirmedOrderDetails(orderData);
+              if (orderData.items && orderData.items.length > 0) {
                 itemsList = orderData.items;
               }
-            } catch (err) {
-              console.warn('Could not fetch order details for alert:', err);
+              if (orderData.total != null && Number(orderData.total) > 0) {
+                finalTotal = Number(orderData.total);
+                setConfirmedGrandTotal(finalTotal);
+              }
             }
+          } catch (err) {
+            console.warn('Could not fetch order details for alert:', err);
           }
 
           const itemsListText = (itemsList || [])
@@ -315,6 +351,7 @@ export const CheckoutView: React.FC = () => {
                 it.productName ||
                 it.name ||
                 it.product?.name ||
+                it.product?.title ||
                 it.title ||
                 'Organic Product'
               ).trim();
@@ -345,7 +382,7 @@ export const CheckoutView: React.FC = () => {
             destination: selectedAddress
               ? `${selectedAddress.addressLine1}, ${selectedAddress.city}, ${selectedAddress.state} - ${selectedAddress.postalCode}`
               : undefined,
-            totalAmount: summary.grandTotal.toFixed(2),
+            totalAmount: finalTotal.toFixed(2),
             itemsSummary: itemsListText || undefined,
           });
 
@@ -360,7 +397,7 @@ export const CheckoutView: React.FC = () => {
               destination: selectedAddress
                 ? `${selectedAddress.addressLine1}, ${selectedAddress.city}, ${selectedAddress.state} - ${selectedAddress.postalCode}`
                 : undefined,
-              totalAmount: summary.grandTotal.toFixed(2),
+              totalAmount: finalTotal.toFixed(2),
               itemsSummary: itemsListText || undefined,
             });
           }
@@ -369,7 +406,7 @@ export const CheckoutView: React.FC = () => {
         triggerOrderEmails();
       }
     }
-  }, [currentStep, createdOrderId, selectedAddress, selectedPaymentMethod, summary.grandTotal, user, cartSummary]);
+  }, [currentStep, createdOrderId, selectedAddress, selectedPaymentMethod, summary.grandTotal, user, cartSummary, confirmedGrandTotal, createdOrder]);
 
   // ==================== STEP 5: CONFIRMATION VIEW ====================
   if (currentStep === CheckoutStep.CONFIRMATION && createdOrderId) {
@@ -427,7 +464,18 @@ export const CheckoutView: React.FC = () => {
           <div className="flex items-center justify-between pt-1">
             <span className="text-sm font-bold text-slate-900">Total Payable</span>
             <span className="text-base font-black text-indigo-600">
-              {brandConfig.currency.symbol}{summary.grandTotal.toFixed(2)}
+              {brandConfig.currency.symbol}
+              {(
+                confirmedOrderDetails?.total != null
+                  ? Number(confirmedOrderDetails.total)
+                  : createdOrder?.total != null
+                  ? Number(createdOrder.total)
+                  : confirmedGrandTotal != null
+                  ? confirmedGrandTotal
+                  : summary.grandTotal > 0
+                  ? summary.grandTotal
+                  : 0
+              ).toFixed(2)}
             </span>
           </div>
         </div>

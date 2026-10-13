@@ -28,6 +28,7 @@ export const useCheckout = () => {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<'RAZORPAY' | 'STRIPE' | 'COD'>('COD');
   const [notes, setNotes] = useState<string>('');
   const [createdOrderId, setCreatedOrderId] = useState<string | null>(null);
+  const [createdOrder, setCreatedOrder] = useState<any | null>(null);
 
   const cartItemsCount = cartSummary?.itemCount || 0;
   const hasItemsInCart = cartItemsCount > 0;
@@ -68,8 +69,11 @@ export const useCheckout = () => {
     }
   };
 
-  const handleOrderSuccess = (orderId: string, orderNumber?: string) => {
+  const handleOrderSuccess = (orderId: string, orderNumber?: string, order?: any) => {
     setCreatedOrderId(orderId);
+    if (order) {
+      setCreatedOrder(order);
+    }
     if (typeof window !== 'undefined') {
       sessionStorage.removeItem('buyNowItem');
       localStorage.removeItem('vistora_guest_cart');
@@ -104,7 +108,7 @@ export const useCheckout = () => {
   const createOrderMutation = useMutation({
     mutationFn: (payload: CreateOrderPayload) => checkoutService.createOrder(payload),
     onSuccess: (order) => {
-      handleOrderSuccess(order.id, order.orderNumber);
+      handleOrderSuccess(order.id, order.orderNumber, order);
     },
     onError: (err: any) => {
       toast.error(getErrorMessage(err, 'Failed to place order. Please try again.'));
@@ -159,6 +163,8 @@ export const useCheckout = () => {
     setNotes,
     createdOrderId,
     setCreatedOrderId,
+    createdOrder,
+    setCreatedOrder,
     cartSummary,
     user,
     isAuthenticated,

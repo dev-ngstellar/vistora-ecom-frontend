@@ -19,7 +19,7 @@ export const usePayment = () => {
     userEmail?: string | null;
     userName?: string | null;
     userPhone?: string | null;
-  }): Promise<{ success: boolean; orderId?: string; transactionReference?: string }> => {
+  }): Promise<{ success: boolean; orderId?: string; transactionReference?: string; amount?: number }> => {
     setIsProcessing(true);
     setPaymentError(null);
 
@@ -62,6 +62,7 @@ export const usePayment = () => {
                   success: true,
                   orderId: rzpOrder.orderId,
                   transactionReference: verifyRes.transactionReference || response.razorpay_payment_id,
+                  amount: rzpOrder.amount,
                 });
               } catch (err: any) {
                 setIsProcessing(false);
