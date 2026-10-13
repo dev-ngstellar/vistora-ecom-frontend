@@ -28,15 +28,7 @@ export const CustomerHeader: React.FC = () => {
 
   return (
     <header className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-md border-b border-[#E5E7EB] transition-all duration-300 shadow-xs">
-      {/* 1. TOP OFFER BAR (28-32px height, #A50025 Maroon bg, #E66001 Orange badge) */}
-      <div className="bg-[#A50025] text-white text-[11px] h-7 sm:h-8 px-4 text-center font-medium flex items-center justify-center gap-2 shadow-xs">
-        <Sparkles className="w-3.5 h-3.5 text-[#E66001] fill-[#E66001] shrink-0" />
-        <span>Enjoy <strong>Free Express Delivery</strong> on Orders Over ₹1500</span>
-        <span className="hidden sm:inline-block text-white/30">•</span>
-        <span className="hidden sm:inline-flex items-center gap-1 bg-[#E66001] text-white px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider">
-          CODE: VISTORA1500
-        </span>
-      </div>
+
 
       {/* 2. STICKY MARKETPLACE HEADER */}
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">

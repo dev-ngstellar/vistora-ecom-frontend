@@ -14,6 +14,7 @@ import {
 } from '@/platform/checkout';
 import toast from 'react-hot-toast';
 import { brandConfig } from '@/config';
+import { contactService } from '@/services/contact.service';
 import { InvoiceModal } from '@/components/sales/invoice-modal';
 import { INDIAN_STATES, validateAddress } from '@/platform/checkout/validators/address.validator';
 import {
@@ -39,6 +40,8 @@ import {
   Home,
   FileText,
   AlertCircle,
+  Truck,
+  Package,
 } from 'lucide-react';
 
 export const CheckoutView: React.FC = () => {
@@ -283,6 +286,91 @@ export const CheckoutView: React.FC = () => {
     }
   };
 
+  // Dispatch EmailJS Order Alert to vistoraoffice123@gmail.com on order confirmation
+  useEffect(() => {
+    if (currentStep === CheckoutStep.CONFIRMATION && createdOrderId) {
+      const orderRef = createdOrderId.slice(-8).toUpperCase();
+      const sentSessionKey = `vistora_order_alert_${createdOrderId}`;
+      if (typeof window !== 'undefined' && !sessionStorage.getItem(sentSessionKey)) {
+        sessionStorage.setItem(sentSessionKey, 'true');
+
+        const triggerOrderEmails = async () => {
+          let itemsList: any[] = cartSummary?.items || [];
+
+          // If cartSummary items is empty, fetch order items directly from backend order details
+          if (!itemsList || itemsList.length === 0) {
+            try {
+              const orderData = await checkoutService.getOrderDetails(createdOrderId);
+              if (orderData?.items && orderData.items.length > 0) {
+                itemsList = orderData.items;
+              }
+            } catch (err) {
+              console.warn('Could not fetch order details for alert:', err);
+            }
+          }
+
+          const itemsListText = (itemsList || [])
+            .map((it: any, idx: number) => {
+              const rawName = (
+                it.productName ||
+                it.name ||
+                it.product?.name ||
+                it.title ||
+                'Organic Product'
+              ).trim();
+              const rawSize = (it.variantSize || it.size || '').trim();
+              const size =
+                rawSize && !rawName.toLowerCase().includes(rawSize.toLowerCase())
+                  ? ` (${rawSize})`
+                  : '';
+              const qty = it.quantity || 1;
+              const unitPrice =
+                Number(it.unitPrice) ||
+                Number(it.price) ||
+                (Number(it.totalPrice) / qty) ||
+                (Number(it.total) / qty) ||
+                0;
+              const total = unitPrice * qty;
+              return `  ${idx + 1}. ${rawName}${size} × ${qty} = ₹${total.toFixed(2)}`;
+            })
+            .join('\n');
+
+          // 1. Send Order Notification to Store Admin
+          contactService.sendOrderAlert({
+            orderNumber: orderRef,
+            customerName: user?.fullName || selectedAddress?.fullName || 'Vistora Customer',
+            customerEmail: user?.email || 'customer@vistoracommerce.com',
+            customerPhone: selectedAddress?.phone || user?.phone || 'Not provided',
+            paymentMethod: selectedPaymentMethod === 'RAZORPAY' ? 'Razorpay Online (Verified)' : 'Cash on Delivery (COD)',
+            destination: selectedAddress
+              ? `${selectedAddress.addressLine1}, ${selectedAddress.city}, ${selectedAddress.state} - ${selectedAddress.postalCode}`
+              : undefined,
+            totalAmount: summary.grandTotal.toFixed(2),
+            itemsSummary: itemsListText || undefined,
+          });
+
+          // 2. Send Purchase Confirmation Reply Email to Customer
+          if (user?.email) {
+            contactService.sendCustomerOrderConfirmation({
+              orderNumber: orderRef,
+              customerName: user?.fullName || selectedAddress?.fullName || 'Valued Customer',
+              customerEmail: user.email,
+              customerPhone: selectedAddress?.phone || user?.phone || undefined,
+              paymentMethod: selectedPaymentMethod === 'RAZORPAY' ? 'Razorpay Online (Verified)' : 'Cash on Delivery (COD)',
+              destination: selectedAddress
+                ? `${selectedAddress.addressLine1}, ${selectedAddress.city}, ${selectedAddress.state} - ${selectedAddress.postalCode}`
+                : undefined,
+              totalAmount: summary.grandTotal.toFixed(2),
+              itemsSummary: itemsListText || undefined,
+            });
+          }
+        };
+
+        triggerOrderEmails();
+      }
+    }
+  }, [currentStep, createdOrderId, selectedAddress, selectedPaymentMethod, summary.grandTotal, user, cartSummary]);
+
   // ==================== STEP 5: CONFIRMATION VIEW ====================
   if (currentStep === CheckoutStep.CONFIRMATION && createdOrderId) {
     return (
@@ -291,15 +379,32 @@ export const CheckoutView: React.FC = () => {
           <CheckCircle2 className="w-10 h-10" />
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-3">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-black uppercase tracking-wider">
             <Check className="w-3.5 h-3.5" />
-            Order Confirmed & Placed
+            Order Confirmed & Placed Successfully
           </div>
-          <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">Thank You For Your Order!</h1>
-          <p className="text-sm text-slate-500 max-w-md mx-auto">
-            Your order reference is <span className="font-mono font-bold text-slate-900">#{createdOrderId.slice(-8).toUpperCase()}</span>. A confirmation notification has been dispatched to <strong className="text-slate-900">{user?.email}</strong>.
+          <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
+            Thank You For Your Order!
+          </h1>
+          <p className="text-sm text-slate-600 max-w-lg mx-auto leading-relaxed">
+            We have received your order <span className="font-mono font-bold text-slate-900 bg-slate-100 px-2 py-0.5 rounded-md">#{createdOrderId.slice(-8).toUpperCase()}</span>. A confirmation notification has been sent to <strong className="text-slate-900">{user?.email}</strong> and our team is preparing it for dispatch.
           </p>
+        </div>
+
+        {/* Customer Order Tracking Guidance Box */}
+        <div className="p-4 bg-emerald-50/90 border border-emerald-200/90 rounded-2xl text-left max-w-lg mx-auto flex items-start gap-3 shadow-xs">
+          <div className="w-9 h-9 rounded-xl bg-emerald-600/10 flex items-center justify-center text-emerald-700 shrink-0 mt-0.5">
+            <Truck className="w-5 h-5" />
+          </div>
+          <div className="space-y-1">
+            <h4 className="text-xs font-black uppercase tracking-wider text-emerald-950">
+              Order Tracking & Live Updates
+            </h4>
+            <p className="text-xs text-emerald-900 leading-relaxed font-medium">
+              For order tracking, you can check the <Link href="/orders" className="font-bold underline text-emerald-950 hover:text-emerald-800">My Orders</Link> page at any time to monitor your shipment status, live dispatch progress, and delivery updates.
+            </p>
+          </div>
         </div>
 
         <div className="p-6 bg-slate-50/80 rounded-3xl border border-slate-200/80 text-left space-y-4 max-w-lg mx-auto text-xs text-slate-600 shadow-xs">

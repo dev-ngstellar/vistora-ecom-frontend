@@ -9,7 +9,7 @@ import { contactService } from '@/services/contact.service';
 export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' });
+  const [form, setForm] = useState({ name: '', email: '', phone: '', subject: '', message: '' });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const validateContactForm = () => {
@@ -28,6 +28,19 @@ export default function ContactPage() {
       errs.email = 'Email address is required';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
       errs.email = 'Please enter a valid email address';
+    }
+
+    const cleanPhone = form.phone.trim().replace(/[\s\-+]/g, '').replace(/^91/, '');
+    if (!form.phone.trim()) {
+      errs.phone = 'Mobile number is required';
+    } else if (/[^\d]/.test(cleanPhone)) {
+      errs.phone = 'Mobile number must contain only numbers';
+    } else if (cleanPhone.length !== 10) {
+      errs.phone = 'Mobile number must be exactly 10 digits';
+    } else if (!/^[6-9]/.test(cleanPhone)) {
+      errs.phone = 'Mobile number must start with 6, 7, 8, or 9';
+    } else if (/^(\d)\1{9}$/.test(cleanPhone) || cleanPhone === '1234567890') {
+      errs.phone = 'Please enter a valid mobile number';
     }
 
     const trimmedSubject = form.subject.trim();
@@ -63,6 +76,7 @@ export default function ContactPage() {
       await contactService.submitContact({
         name: form.name.trim(),
         email: form.email.trim(),
+        phone: form.phone.trim() || undefined,
         subject: form.subject.trim(),
         message: form.message.trim(),
       });
@@ -156,7 +170,7 @@ export default function ContactPage() {
                 Our support team will review your inquiry and respond within 24 business hours.
               </p>
               <button
-                onClick={() => { setSubmitted(false); setForm({ name: '', email: '', subject: '', message: '' }); }}
+                onClick={() => { setSubmitted(false); setForm({ name: '', email: '', phone: '', subject: '', message: '' }); }}
                 className="px-6 py-2.5 rounded-2xl bg-slate-900 text-white font-bold text-xs"
               >
                 Send Another Message
@@ -207,25 +221,55 @@ export default function ContactPage() {
                 </div>
               </div>
 
-              <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1">Subject *</label>
-                <input
-                  type="text"
-                  value={form.subject}
-                  onChange={(e) => {
-                    setForm({ ...form, subject: e.target.value });
-                    if (errors.subject) setErrors((prev) => { const u = { ...prev }; delete u.subject; return u; });
-                  }}
-                  placeholder="Order Inquiry, Product Information..."
-                  className={`w-full px-4 py-2.5 rounded-2xl border text-xs font-semibold text-slate-900 transition focus:outline-none ${
-                    errors.subject
-                      ? 'bg-rose-50/30 border-rose-400 focus:border-rose-500 ring-1 ring-rose-400'
-                      : 'bg-slate-50 border-slate-200 focus:border-maroon'
-                  }`}
-                />
-                {errors.subject && (
-                  <p className="text-[11px] font-bold text-rose-600 mt-1">⚠ {errors.subject}</p>
-                )}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">Mobile Number *</label>
+                  <div className="relative">
+                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 select-none">
+                      +91
+                    </span>
+                    <input
+                      type="tel"
+                      inputMode="numeric"
+                      maxLength={10}
+                      value={form.phone}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                        setForm({ ...form, phone: val });
+                        if (errors.phone) setErrors((prev) => { const u = { ...prev }; delete u.phone; return u; });
+                      }}
+                      placeholder="98765 43210"
+                      className={`w-full pl-11 pr-4 py-2.5 rounded-2xl border text-xs font-semibold text-slate-900 transition focus:outline-none ${
+                        errors.phone
+                          ? 'bg-rose-50/30 border-rose-400 focus:border-rose-500 ring-1 ring-rose-400'
+                          : 'bg-slate-50 border-slate-200 focus:border-maroon'
+                      }`}
+                    />
+                  </div>
+                  {errors.phone && (
+                    <p className="text-[11px] font-bold text-rose-600 mt-1">⚠ {errors.phone}</p>
+                  )}
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">Subject *</label>
+                  <input
+                    type="text"
+                    value={form.subject}
+                    onChange={(e) => {
+                      setForm({ ...form, subject: e.target.value });
+                      if (errors.subject) setErrors((prev) => { const u = { ...prev }; delete u.subject; return u; });
+                    }}
+                    placeholder="Order Inquiry, Product Information..."
+                    className={`w-full px-4 py-2.5 rounded-2xl border text-xs font-semibold text-slate-900 transition focus:outline-none ${
+                      errors.subject
+                        ? 'bg-rose-50/30 border-rose-400 focus:border-rose-500 ring-1 ring-rose-400'
+                        : 'bg-slate-50 border-slate-200 focus:border-maroon'
+                    }`}
+                  />
+                  {errors.subject && (
+                    <p className="text-[11px] font-bold text-rose-600 mt-1">⚠ {errors.subject}</p>
+                  )}
+                </div>
               </div>
 
               <div>

@@ -9,6 +9,7 @@ import { checkoutService, CreateOrderPayload } from '../services/checkout.servic
 import { isStepValid } from '../validators/checkout.validator';
 import { useAuth } from '@/platform/context';
 import { useCart } from '@/platform/hooks';
+import { cartService } from '@/services/shopping.service';
 import { getErrorMessage } from '@/lib/axios';
 
 export const useCheckout = () => {
@@ -71,7 +72,25 @@ export const useCheckout = () => {
     setCreatedOrderId(orderId);
     if (typeof window !== 'undefined') {
       sessionStorage.removeItem('buyNowItem');
+      localStorage.removeItem('vistora_guest_cart');
     }
+
+    // Explicitly delete all cart items on server if regular cart purchase
+    if (!isBuyNow) {
+      cartService.clear().catch(() => {});
+    }
+
+    // Immediately zero out the cart cache in React Query so header badges update instantly
+    queryClient.setQueryData(['cart'], {
+      id: '',
+      items: [],
+      itemCount: 0,
+      subtotal: 0,
+      discount: 0,
+      tax: 0,
+      shipping: 0,
+      total: 0,
+    });
     queryClient.invalidateQueries({ queryKey: ['cart'] });
     queryClient.invalidateQueries({ queryKey: ['orders'] });
     setCurrentStep(CheckoutStep.CONFIRMATION);

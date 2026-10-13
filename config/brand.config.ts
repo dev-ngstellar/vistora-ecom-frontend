@@ -7,7 +7,7 @@ export const brandConfig = {
   logoUrl: 'https://res.cloudinary.com/ggvs7siw/image/upload/v1789622236/logo.png',
   
   // Temporary Maintenance / Hold Mode (Set to true to hold site with Coming Soon screen, false to restore normal)
-  isMaintenanceHold: true,
+  isMaintenanceHold: false,
   
   // Official Merchant Details (Razorpay & Legal Compliance)
   merchantLegalName: 'VISTORA TRADING PRIVATE LIMITED',
