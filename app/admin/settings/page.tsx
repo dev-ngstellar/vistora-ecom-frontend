@@ -10,7 +10,6 @@ import {
   DollarSign,
   Receipt,
   Shield,
-  WrenchIcon,
   ChevronRight,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -44,11 +43,9 @@ const INITIAL_SETTINGS: StoreSettings = {
   twoFactorEnabled: false,
   passwordMinLength: 8,
   requireSpecialChars: true,
-  maintenanceMode: false,
-  maintenanceMessage: 'We are currently performing scheduled maintenance. Please check back soon.',
 };
 
-type Tab = 'store' | 'currency' | 'tax' | 'invoice' | 'security' | 'maintenance';
+type Tab = 'store' | 'currency' | 'tax' | 'invoice' | 'security';
 
 const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
   { id: 'store', label: 'Store Info', icon: <Store className="w-4 h-4" /> },
@@ -56,7 +53,6 @@ const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
   { id: 'tax', label: 'Tax & GST', icon: <Receipt className="w-4 h-4" /> },
   { id: 'invoice', label: 'Invoice Settings', icon: <Receipt className="w-4 h-4" /> },
   { id: 'security', label: 'Security', icon: <Shield className="w-4 h-4" /> },
-  { id: 'maintenance', label: 'Maintenance', icon: <WrenchIcon className="w-4 h-4" /> },
 ];
 
 export default function AdminSettingsPage() {
@@ -336,52 +332,6 @@ export default function AdminSettingsPage() {
           </div>
         );
 
-      case 'maintenance':
-        return (
-          <div className="space-y-5">
-            <div
-              className={`p-5 rounded-2xl border transition-all ${
-                settings.maintenanceMode
-                  ? 'bg-amber-50 border-amber-300'
-                  : 'bg-slate-50 border-slate-200'
-              }`}
-            >
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <div className="text-base font-black text-slate-900">Maintenance Mode</div>
-                  <div className="text-xs text-slate-500 mt-1">
-                    {settings.maintenanceMode
-                      ? '⚠ Your store is currently in Maintenance Mode. Customers will see the maintenance message.'
-                      : 'Enable to take the storefront offline for maintenance or updates.'}
-                  </div>
-                </div>
-                <button
-                  onClick={() => update({ maintenanceMode: !settings.maintenanceMode })}
-                  className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors mt-1 ${settings.maintenanceMode ? 'bg-amber-500' : 'bg-slate-200'}`}
-                >
-                  <span className={`inline-block h-4 w-4 rounded-full bg-white shadow-sm transform transition-transform ${settings.maintenanceMode ? 'translate-x-6' : 'translate-x-1'}`} />
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <label className={labelClass}>Maintenance Message</label>
-              <textarea
-                rows={4}
-                className={inputClass}
-                value={settings.maintenanceMessage}
-                onChange={(e) => update({ maintenanceMessage: e.target.value })}
-                placeholder="Message displayed to customers during maintenance…"
-              />
-            </div>
-
-            {settings.maintenanceMode && (
-              <div className="p-4 rounded-2xl bg-red-50 border border-red-200 text-xs text-red-900 font-semibold">
-                🔴 MAINTENANCE MODE IS ACTIVE — Your storefront is currently unavailable to customers. Admins can still log in normally.
-              </div>
-            )}
-          </div>
-        );
 
       default:
         return null;
@@ -394,13 +344,13 @@ export default function AdminSettingsPage() {
         icon={Settings}
         label="Platform Configuration"
         title="Store Settings"
-        description="Configure your store profile, currency, tax rates, invoice settings, security policies, and maintenance mode."
+        description="Configure your store profile, currency, tax rates, invoice settings, and security policies."
         onSave={handleSave}
         isSaving={isSaving}
       />
 
       {/* Quick Nav Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
         {TABS.map((tab) => (
           <button
             key={tab.id}

@@ -148,6 +148,6 @@ export interface StoreSettings {
   requireSpecialChars: boolean;
 
   // Maintenance
-  maintenanceMode: boolean;
-  maintenanceMessage: string;
+  maintenanceMode?: boolean;
+  maintenanceMessage?: string;
 }

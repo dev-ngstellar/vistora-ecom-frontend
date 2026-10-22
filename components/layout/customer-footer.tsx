@@ -27,7 +27,7 @@ export const CustomerFooter: React.FC = () => {
   return (
     <footer className="bg-[#0F172A] text-white pt-14 pb-8 border-t border-slate-800">
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         {/* Top Trust Features Strip */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pb-10 border-b border-slate-800">
           <div className="flex items-center gap-3 p-3.5 rounded-xl bg-[#1E293B]/70 border border-slate-800">
@@ -73,7 +73,7 @@ export const CustomerFooter: React.FC = () => {
 
         {/* 5 Column Adaptable Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8 py-10 border-b border-slate-800">
-          
+
           {/* Column 1: Vistora Brand */}
           <div className="lg:col-span-1 space-y-3.5">
             <Link href="/" className="inline-block bg-white p-2 rounded-xl shadow-xs">
@@ -168,8 +168,8 @@ export const CustomerFooter: React.FC = () => {
         {/* Bottom Bar: Copyright & High-Visibility Social Badges */}
         <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-300 font-medium">
           <p>{brandConfig.copyright}</p>
-          
-          <div className="flex items-center space-x-3">
+
+          {/* <div className="flex items-center space-x-3">
             <span className="text-[11px] font-bold text-slate-400 mr-1">Follow Us:</span>
             
             {socialConfig.links.instagram && (
@@ -220,7 +220,7 @@ export const CustomerFooter: React.FC = () => {
                 <Linkedin className="w-4 h-4" />
               </a>
             )}
-          </div>
+          </div> */}
         </div>
 
       </div>
