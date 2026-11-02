@@ -9,8 +9,6 @@ import {
   ThumbsUp,
   X,
   MessageSquare,
-  Sparkles,
-  Filter,
   ArrowUpDown,
   UserCheck,
   ChevronDown,
@@ -48,7 +46,6 @@ export function ProductReviewsSection({
   const { user, requireCustomerAuth } = useAuth();
 
   // Filters, Sorting & View Density
-  const [activeStarFilter, setActiveStarFilter] = useState<number | null>(null);
   const [sortBy, setSortBy] = useState<string>('newest');
   const [viewMode, setViewMode] = useState<'compact' | 'list'>('compact');
   const [showAll, setShowAll] = useState(false);
@@ -70,7 +67,6 @@ export function ProductReviewsSection({
     data: reviewsResponse,
     isLoading,
   } = useProductReviews(productId, {
-    rating: activeStarFilter ?? undefined,
     sort: sortBy,
   });
 
@@ -177,9 +173,8 @@ export function ProductReviewsSection({
       </div>
 
       {/* COMPACT SUMMARY DASHBOARD CARDS */}
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
-        {/* Card 1: Score Snapshot (4 Cols) */}
-        <div className="md:col-span-4 bg-white rounded-xl border border-[#E5E7EB] p-4 shadow-2xs flex flex-col justify-between">
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-3">        {/* Card 1: Score Snapshot (5 Cols) */}
+        <div className="md:col-span-5 bg-white rounded-xl border border-[#E5E7EB] p-4 shadow-2xs flex flex-col justify-between">
           <div className="space-y-1.5">
             <span className="text-[10px] font-black uppercase tracking-wider text-[#64748B]">
               Overall Score
@@ -217,38 +212,23 @@ export function ProductReviewsSection({
           </div>
         </div>
 
-        {/* Card 2: Rating Breakdown Bars (5 Cols) */}
-        <div className="md:col-span-5 bg-white rounded-xl border border-[#E5E7EB] p-4 shadow-2xs flex flex-col justify-center">
+        {/* Card 2: Rating Breakdown Bars (7 Cols) */}
+        <div className="md:col-span-7 bg-white rounded-xl border border-[#E5E7EB] p-4 shadow-2xs flex flex-col justify-center">
           <div className="flex items-center justify-between mb-2">
             <span className="text-[10px] font-black uppercase tracking-wider text-[#64748B]">
               Rating Breakdown
             </span>
-            {activeStarFilter && (
-              <button
-                onClick={() => setActiveStarFilter(null)}
-                className="text-[10px] font-bold text-[#A50025] hover:underline"
-              >
-                Clear filter ({activeStarFilter}★)
-              </button>
-            )}
           </div>
 
           <div className="space-y-1.5">
             {[5, 4, 3, 2, 1].map((star) => {
               const count = summary.distribution?.[star] || 0;
               const percent = summary.percentages?.[star] || 0;
-              const isSelected = activeStarFilter === star;
 
               return (
-                <button
+                <div
                   key={star}
-                  type="button"
-                  onClick={() =>
-                    setActiveStarFilter((prev) => (prev === star ? null : star))
-                  }
-                  className={`w-full flex items-center gap-2 group text-left px-1.5 py-0.5 -mx-1.5 rounded-lg transition-colors ${
-                    isSelected ? 'bg-amber-50 ring-1 ring-amber-300' : 'hover:bg-slate-50'
-                  }`}
+                  className="w-full flex items-center gap-2 text-left px-1.5 py-0.5 -mx-1.5 rounded-lg"
                 >
                   <span className="flex items-center gap-0.5 w-8 text-xs font-bold text-[#334155] shrink-0">
                     <span>{star}</span>
@@ -259,13 +239,11 @@ export function ProductReviewsSection({
                   <div className="flex-1 h-1.5 rounded-full bg-slate-100 overflow-hidden">
                     <div
                       className={`h-full rounded-full transition-all duration-500 ${
-                        isSelected
-                          ? 'bg-amber-500'
-                          : star >= 4
-                          ? 'bg-emerald-500 group-hover:bg-emerald-600'
+                        star >= 4
+                          ? 'bg-emerald-500'
                           : star === 3
-                          ? 'bg-amber-400 group-hover:bg-amber-500'
-                          : 'bg-rose-400 group-hover:bg-rose-500'
+                          ? 'bg-amber-400'
+                          : 'bg-rose-400'
                       }`}
                       style={{ width: `${percent}%` }}
                     />
@@ -274,81 +252,16 @@ export function ProductReviewsSection({
                   <span className="w-11 text-right text-[10px] font-medium text-[#64748B] shrink-0">
                     {count} ({percent}%)
                   </span>
-                </button>
+                </div>
               );
             })}
           </div>
         </div>
 
-        {/* Card 3: Direct Review Callout (3 Cols) */}
-        <div className="md:col-span-3 bg-gradient-to-br from-[#FFF6F8] to-[#FFF0F3] rounded-xl border border-[#FCE7EB] p-4 shadow-2xs flex flex-col justify-between">
-          <div>
-            <div className="flex items-center gap-2 mb-1.5">
-              <div className="w-6 h-6 rounded-lg bg-white border border-[#F8D2DA] flex items-center justify-center text-[#A50025] shadow-2xs">
-                <Sparkles className="w-3.5 h-3.5" />
-              </div>
-              <h3 className="text-xs font-black text-[#111827] uppercase tracking-wide">
-                Have you tried this?
-              </h3>
-            </div>
-            <p className="text-[11px] text-[#64748B] font-medium leading-relaxed">
-              Share your honest feedback to help fellow food lovers make the best choice.
-            </p>
-          </div>
-
-          <button
-            onClick={handleOpenWriteReview}
-            className="w-full mt-3 h-8 rounded-lg border border-[#A50025] text-[#A50025] hover:bg-[#A50025] hover:text-white transition-all text-[11px] font-black uppercase tracking-wider flex items-center justify-center gap-1 shadow-2xs"
-          >
-            <PenLine className="w-3 h-3" />
-            <span>Leave a Review</span>
-          </button>
-        </div>
       </div>
 
-      {/* COMPACT FILTER & SORT CONTROLS BAR */}
-      <div className="bg-white rounded-xl border border-[#E5E7EB] p-2.5 flex flex-col sm:flex-row items-center justify-between gap-2.5 shadow-2xs">
-        {/* Star Filter Pills */}
-        <div className="flex items-center gap-1 overflow-x-auto w-full sm:w-auto pb-0.5 sm:pb-0 scrollbar-none">
-          <span className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider flex items-center gap-1 mr-1 shrink-0">
-            <Filter className="w-3 h-3" /> Filter:
-          </span>
-
-          <button
-            onClick={() => setActiveStarFilter(null)}
-            className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all shrink-0 ${
-              activeStarFilter === null
-                ? 'bg-[#111827] text-white shadow-2xs'
-                : 'bg-slate-100 text-[#475569] hover:bg-slate-200'
-            }`}
-          >
-            All ({totalReviewsCount})
-          </button>
-
-          {[5, 4, 3, 2, 1].map((star) => {
-            const count = summary.distribution?.[star] || 0;
-            const isSelected = activeStarFilter === star;
-
-            return (
-              <button
-                key={star}
-                onClick={() =>
-                  setActiveStarFilter((prev) => (prev === star ? null : star))
-                }
-                className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold transition-all shrink-0 ${
-                  isSelected
-                    ? 'bg-amber-400 text-slate-900 shadow-2xs'
-                    : 'bg-slate-100 text-[#475569] hover:bg-slate-200'
-                }`}
-              >
-                <span>{star}★</span>
-                <span className="text-[10px] opacity-75">({count})</span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Sort & View Mode Controls */}
+      {/* SORT & VIEW CONTROLS BAR */}
+      <div className="bg-white rounded-xl border border-[#E5E7EB] p-2.5 flex items-center justify-end gap-2.5 shadow-2xs">
         <div className="flex items-center gap-2 w-full sm:w-auto justify-end shrink-0">
           <div className="flex items-center gap-1.5">
             <span className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider flex items-center gap-1">
@@ -421,33 +334,20 @@ export function ProductReviewsSection({
           </div>
 
           <h3 className="text-sm sm:text-base font-black text-[#111827]">
-            {activeStarFilter
-              ? `No ${activeStarFilter}-Star Reviews Found`
-              : 'Be the First to Review This Product!'}
+            Be the First to Review This Product!
           </h3>
 
           <p className="text-xs text-[#64748B] font-medium max-w-md mx-auto leading-relaxed">
-            {activeStarFilter
-              ? 'There are currently no reviews matching this rating tier. Select "All" to view other reviews.'
-              : 'Share your tasting notes, aroma impressions, or recipes to assist fellow gourmet buyers.'}
+            Share your tasting notes, aroma impressions, or recipes to assist fellow gourmet buyers.
           </p>
 
           <div className="pt-1">
-            {activeStarFilter ? (
-              <button
-                onClick={() => setActiveStarFilter(null)}
-                className="px-3.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-800 transition"
-              >
-                Clear Rating Filter
-              </button>
-            ) : (
-              <button
-                onClick={handleOpenWriteReview}
-                className="px-4 py-2 rounded-xl bg-[#A50025] hover:bg-[#85001E] text-white text-xs font-black uppercase tracking-wider shadow-2xs transition"
-              >
-                Write First Review
-              </button>
-            )}
+            <button
+              onClick={handleOpenWriteReview}
+              className="px-4 py-2 rounded-xl bg-[#A50025] hover:bg-[#85001E] text-white text-xs font-black uppercase tracking-wider shadow-2xs transition"
+            >
+              Write First Review
+            </button>
           </div>
         </div>
       ) : (
